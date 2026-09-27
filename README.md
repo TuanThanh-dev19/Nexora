@@ -173,6 +173,7 @@ Further documentation:
 
 - [Hướng dẫn cài đặt và chạy dự án](HUONG_DAN_CHAY_DU_AN.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Shared API contracts](docs/API_CONVENTIONS.md)
 - [SBA301 project structure](docs/PROJECT_STRUCTURE_SBA301.md)
 - [GitHub setup](docs/GITHUB_SETUP.md)
 - [SQL Server and Docker team guide](docs/SQLSERVER_DOCKER_GUIDE.md)
