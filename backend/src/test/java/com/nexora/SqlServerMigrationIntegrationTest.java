@@ -69,6 +69,10 @@ class SqlServerMigrationIntegrationTest {
 				WHERE name IN (
 					'fk_user_roles_assigned_by',
 					'fk_technician_profiles_user',
+					'fk_technician_skills_technician',
+					'fk_technician_skills_skill',
+					'fk_technician_service_areas_technician',
+					'fk_technician_service_areas_location',
 					'fk_category_form_versions_default_skill',
 					'fk_category_form_versions_default_sla',
 					'fk_tickets_required_skill',
@@ -76,6 +80,14 @@ class SqlServerMigrationIntegrationTest {
 					'fk_ticket_attachments_definition_form',
 					'fk_violation_cases_ticket',
 					'fk_violation_appeals_case'
+				)
+				""", Integer.class);
+		Integer workforceCheckConstraintCount = jdbcTemplate.queryForObject("""
+				SELECT COUNT(*)
+				FROM sys.check_constraints
+				WHERE name IN (
+					'ck_technician_profiles_max_active',
+					'ck_technician_skills_proficiency'
 				)
 				""", Integer.class);
 		Integer normalizedEmailComputedColumnCount = jdbcTemplate.queryForObject("""
@@ -100,7 +112,9 @@ class SqlServerMigrationIntegrationTest {
 					'uq_assets_serial_number',
 					'uq_category_form_versions_one_published',
 					'uq_ticket_assignments_one_active',
-					'idx_tickets_required_skill_status'
+					'idx_tickets_required_skill_status',
+					'idx_technician_skills_skill',
+					'idx_technician_service_areas_location'
 				)
 				  AND is_disabled = 0
 				""", Integer.class);
@@ -118,10 +132,11 @@ class SqlServerMigrationIntegrationTest {
 		assertThat(skillCount).isGreaterThanOrEqualTo(4);
 		assertThat(slaPolicyCount).isGreaterThanOrEqualTo(4);
 		assertThat(configuredFormCount).isGreaterThanOrEqualTo(4);
-		assertThat(requiredForeignKeyCount).isEqualTo(9);
+		assertThat(requiredForeignKeyCount).isEqualTo(13);
+		assertThat(workforceCheckConstraintCount).isEqualTo(2);
 		assertThat(normalizedEmailComputedColumnCount).isEqualTo(1);
 		assertThat(nullableAssignedByColumnCount).isEqualTo(1);
-		assertThat(requiredIndexCount).isEqualTo(5);
+		assertThat(requiredIndexCount).isEqualTo(7);
 		assertThat(latestSuccessfulMigration).isEqualTo(1);
 	}
 }

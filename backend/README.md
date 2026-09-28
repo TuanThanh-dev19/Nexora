@@ -26,3 +26,12 @@ which order by name, code, then ID. `EquipmentTypeRepository` provides the
 equivalent ordered active equipment reference query. API responses must map these
 entities to DTOs. The location associations are ignored during JSON serialization,
 and entity equality uses Java object identity to avoid traversing the hierarchy.
+
+## Technician workforce references
+
+`com.nexora.user.entity.Skill` and `com.nexora.user.repository.SkillRepository`
+are the authoritative JPA mapping and repository for `dbo.skills`. Technician,
+dynamic-form, and ticket code must reuse them rather than introduce feature-local
+`Skill` mappings. `TechnicianProfile` similarly extends the existing `AppUser`
+mapping through a shared primary key, while service areas reference the existing
+`com.nexora.location.entity.Location` mapping.
