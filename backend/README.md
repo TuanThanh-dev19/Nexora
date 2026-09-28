@@ -14,3 +14,15 @@ Common commands:
 ```
 
 Swagger UI is available at http://localhost:8080/swagger-ui.html while the application is running.
+
+## Location and equipment references
+
+`com.nexora.location.entity.Location` is the shared JPA mapping for `dbo.locations`.
+Asset and technician modules should reference this entity rather than define another
+location mapping. `LocationType` contains the five schema values. `parent` and
+`children` are lazy persistence associations; selectors should use
+`LocationRepository.findActiveRoots()` and `findActiveDirectChildren(parentId)`,
+which order by name, code, then ID. `EquipmentTypeRepository` provides the
+equivalent ordered active equipment reference query. API responses must map these
+entities to DTOs. The location associations are ignored during JSON serialization,
+and entity equality uses Java object identity to avoid traversing the hierarchy.
