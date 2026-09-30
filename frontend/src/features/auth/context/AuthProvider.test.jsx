@@ -1,60 +1,107 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { act } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { ROLE_CODES } from '../../../shared/constants/roles'
 import { AuthProvider } from './AuthProvider'
 import { useAuth } from './useAuth'
 
-const SESSION_KEY = 'nexora.demo-user'
+const TOKEN_KEY = 'nexora.session.token'
+const USER_KEY = 'nexora.session.user'
 
-function SessionProbe() {
-  const { user } = useAuth()
-  return <span>{user ? user.roles.join(',') : 'anonymous'}</span>
+const MOCK_TOKEN = 'mock.jwt.token'
+const MOCK_USER = {
+  id: 1,
+  email: 'user@example.test',
+  displayName: 'Test User',
+  roles: ['REQUESTER'],
 }
 
-describe('AuthProvider session restoration', () => {
-  beforeEach(() => {
-    sessionStorage.clear()
+function SessionProbe() {
+  const { user, accessToken, isAuthenticated, logout } = useAuth()
+  return (
+    <>
+      <span data-testid="auth-state">{isAuthenticated ? 'authenticated' : 'anonymous'}</span>
+      <span data-testid="token">{accessToken ?? 'none'}</span>
+      <span data-testid="roles">{user?.roles?.join(',') ?? 'none'}</span>
+      <button onClick={logout}>Logout</button>
+    </>
+  )
+}
+
+describe('AuthProvider', () => {
+  beforeEach(() => sessionStorage.clear())
+
+  describe('Token restoration', () => {
+    it('restores authenticated session from sessionStorage', () => {
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      sessionStorage.setItem(USER_KEY, JSON.stringify(MOCK_USER))
+
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
+
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('authenticated')
+      expect(screen.getByTestId('token')).toHaveTextContent(MOCK_TOKEN)
+      expect(screen.getByTestId('roles')).toHaveTextContent('REQUESTER')
+    })
+
+    it('starts unauthenticated when sessionStorage is empty', () => {
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
+    })
+
+    it('clears malformed session and starts unauthenticated', () => {
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      sessionStorage.setItem(USER_KEY, 'INVALID_JSON{{{')
+
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
+
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
+      expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+    })
   })
 
-  it('restores a session containing canonical roles', () => {
-    sessionStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({
-        id: 'requester',
-        email: 'requester@example.test',
-        displayName: 'Requester',
-        roles: [ROLE_CODES.REQUESTER],
-      }),
-    )
+  describe('Logout', () => {
+    it('clears sessionStorage and auth state on logout', () => {
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      sessionStorage.setItem(USER_KEY, JSON.stringify(MOCK_USER))
 
-    render(
-      <AuthProvider>
-        <SessionProbe />
-      </AuthProvider>,
-    )
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
+      fireEvent.click(screen.getByText('Logout'))
 
-    expect(screen.getByText(ROLE_CODES.REQUESTER)).toBeInTheDocument()
-  })
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
+      expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+      expect(sessionStorage.getItem(USER_KEY)).toBeNull()
+    })
 
-  it('clears a session containing an obsolete role', () => {
-    const obsoleteRole = ['US', 'ER'].join('')
-    sessionStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({
-        id: 'legacy-user',
-        email: 'legacy@example.test',
-        displayName: 'Legacy user',
-        roles: [obsoleteRole],
-      }),
-    )
+    it('clears session on nexora:unauthorized event', async () => {
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      sessionStorage.setItem(USER_KEY, JSON.stringify(MOCK_USER))
 
-    render(
-      <AuthProvider>
-        <SessionProbe />
-      </AuthProvider>,
-    )
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
 
-    expect(screen.getByText('anonymous')).toBeInTheDocument()
-    expect(sessionStorage.getItem(SESSION_KEY)).toBeNull()
+      await act(async () => {
+        window.dispatchEvent(new Event('nexora:unauthorized'))
+      })
+
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
+    })
   })
 })

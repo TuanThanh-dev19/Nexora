@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
-import { ROLE_CODES, ROLE_OPTIONS } from '../../../shared/constants/roles'
 import { loginSchema } from '../schemas/authSchema'
 
 export function LoginForm({ onSubmit }) {
@@ -12,14 +11,14 @@ export function LoginForm({ onSubmit }) {
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'student@campus.edu',
-      role: ROLE_CODES.REQUESTER,
+      email: '',
+      password: '',
     },
   })
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Form.Group className="mb-3" controlId="email">
+      <Form.Group className="mb-3" controlId="login-email">
         <Form.Label>Email</Form.Label>
         <Form.Control
           type="email"
@@ -31,19 +30,20 @@ export function LoginForm({ onSubmit }) {
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Form.Group className="mb-3" controlId="role">
-        <Form.Label>Demo role</Form.Label>
-        <Form.Select {...register('role')}>
-          {ROLE_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </Form.Select>
+      <Form.Group className="mb-3" controlId="login-password">
+        <Form.Label>Password</Form.Label>
+        <Form.Control
+          type="password"
+          isInvalid={Boolean(errors.password)}
+          {...register('password')}
+        />
+        <Form.Control.Feedback type="invalid">
+          {errors.password?.message}
+        </Form.Control.Feedback>
       </Form.Group>
 
       <Button type="submit" disabled={isSubmitting}>
-        Continue
+        Login
       </Button>
     </Form>
   )

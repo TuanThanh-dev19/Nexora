@@ -1,56 +1,51 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ROLES } from '../../../shared/constants/roles'
 import { AuthContext } from './auth-context'
 
-const SESSION_KEY = 'nexora.demo-user'
+const TOKEN_KEY = 'nexora.session.token'
+const USER_KEY = 'nexora.session.user'
 
-function isCanonicalDemoUser(value) {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof value.email === 'string' &&
-    Array.isArray(value.roles) &&
-    value.roles.length > 0 &&
-    value.roles.every((role) => ROLES.includes(role))
-  )
-}
-
-function readDemoUser() {
-  const stored = sessionStorage.getItem(SESSION_KEY)
-  if (!stored) {
-    return null
-  }
+function readSession() {
+  const token = sessionStorage.getItem(TOKEN_KEY)
+  const rawUser = sessionStorage.getItem(USER_KEY)
+  if (!token || !rawUser) return { token: null, user: null }
 
   try {
-    const parsed = JSON.parse(stored)
-    if (isCanonicalDemoUser(parsed)) {
-      return parsed
+    const user = JSON.parse(rawUser)
+    // Minimal sanity check — server is authoritative for role claims
+    if (
+      user &&
+      typeof user.id !== 'undefined' &&
+      typeof user.email === 'string' &&
+      Array.isArray(user.roles)
+    ) {
+      return { token, user }
     }
   } catch {
-    // Invalid sessions are cleared below and treated as unauthenticated.
+    // Malformed session → treat as unauthenticated
   }
 
-  sessionStorage.removeItem(SESSION_KEY)
-  return null
+  sessionStorage.removeItem(TOKEN_KEY)
+  sessionStorage.removeItem(USER_KEY)
+  return { token: null, user: null }
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readDemoUser)
+  const [session, setSession] = useState(readSession)
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem(SESSION_KEY)
-    setUser(null)
+    sessionStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(USER_KEY)
+    setSession({ token: null, user: null })
   }, [])
 
-  const loginDemo = useCallback(({ email, role }) => {
-    const demoUser = {
-      id: 'demo-user',
-      email,
-      displayName: email.split('@')[0] || 'Nexora User',
-      roles: [role],
-    }
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(demoUser))
-    setUser(demoUser)
+  /**
+   * Called after the backend returns a valid token + user profile.
+   * @param {{ accessToken: string, user: object }} payload
+   */
+  const login = useCallback(({ accessToken, user }) => {
+    sessionStorage.setItem(TOKEN_KEY, accessToken)
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user))
+    setSession({ token: accessToken, user })
   }, [])
 
   useEffect(() => {
@@ -59,8 +54,14 @@ export function AuthProvider({ children }) {
   }, [logout])
 
   const value = useMemo(
-    () => ({ user, isAuthenticated: user !== null, loginDemo, logout }),
-    [user, loginDemo, logout],
+    () => ({
+      user: session.user,
+      accessToken: session.token,
+      isAuthenticated: session.token !== null,
+      login,
+      logout,
+    }),
+    [session, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,7 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { loginSchema } from '../features/auth/schemas/authSchema'
 import {
   ASSET_STATUSES,
   ASSET_STATUS_LABELS,
@@ -73,18 +72,9 @@ describe('canonical domain vocabulary', () => {
   })
 
   it('accepts the requester role and rejects obsolete role codes', () => {
-    const validResult = loginSchema.safeParse({
-      email: 'requester@example.test',
-      role: ROLE_CODES.REQUESTER,
-    })
     const obsoleteRole = ['US', 'ER'].join('')
-    const obsoleteResult = loginSchema.safeParse({
-      email: 'requester@example.test',
-      role: obsoleteRole,
-    })
 
-    expect(validResult.success).toBe(true)
-    expect(obsoleteResult.success).toBe(false)
+    expect(ROLES).toContain(ROLE_CODES.REQUESTER)
     expect(ROLES).not.toContain(obsoleteRole)
   })
 

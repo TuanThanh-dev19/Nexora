@@ -3,12 +3,22 @@ import { env } from '../config/env'
 
 export const httpClient = axios.create({
   baseURL: env.apiBaseUrl,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
+// Inject Bearer token from sessionStorage before each request
+httpClient.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('nexora.session.token')
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`
+  }
+  return config
+})
+
+// Clear local session on HTTP 401
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
