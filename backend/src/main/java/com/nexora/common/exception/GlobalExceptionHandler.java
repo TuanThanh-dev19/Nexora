@@ -14,6 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.nexora.auth.service.InvalidCredentialsException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -70,6 +72,14 @@ public class GlobalExceptionHandler {
         return ApiProblemDetails.create(HttpStatus.CONFLICT, ProblemTypes.STALE_WRITE,
                 "Concurrent update conflict",
                 "The resource was changed by another request. Reload it and retry your update.", request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    ProblemDetail handleInvalidCredentials(InvalidCredentialsException exception, HttpServletRequest request) {
+        // Trả 401 với thông điệp chung — không phân biệt email không tồn tại,
+        // sai mật khẩu, hay tài khoản bị khoá để tránh lộ thông tin.
+        return ApiProblemDetails.create(HttpStatus.UNAUTHORIZED, ProblemTypes.INVALID_CREDENTIALS,
+                "Unauthorized", "Invalid email or password.", request);
     }
 
     @ExceptionHandler(AuthenticationException.class)

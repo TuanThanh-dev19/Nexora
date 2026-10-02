@@ -12,6 +12,19 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     Optional<AppUser> findByNormalizedEmail(String normalizedEmail);
 
+    /**
+     * Tìm user theo normalized email và eager-load toàn bộ role assignments trong
+     * một câu query duy nhất (tránh N+1 khi login).
+     */
+    @Query("""
+            select distinct u
+            from AppUser u
+            left join fetch u.roleAssignments ra
+            left join fetch ra.role
+            where u.normalizedEmail = :normalizedEmail
+            """)
+    Optional<AppUser> findByNormalizedEmailWithRoles(@Param("normalizedEmail") String normalizedEmail);
+
     @Query("""
             select distinct user
             from AppUser user

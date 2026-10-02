@@ -9,6 +9,7 @@ public final class ProblemTypes {
     public static final URI RESOURCE_NOT_FOUND = type("resource-not-found");
     public static final URI BUSINESS_RULE_VIOLATION = type("business-rule-violation");
     public static final URI UNAUTHENTICATED = type("unauthenticated");
+    public static final URI INVALID_CREDENTIALS = type("invalid-credentials");
     public static final URI ACCESS_DENIED = type("access-denied");
     public static final URI STALE_WRITE = type("stale-write");
     public static final URI INVALID_PAGINATION = type("invalid-pagination");
