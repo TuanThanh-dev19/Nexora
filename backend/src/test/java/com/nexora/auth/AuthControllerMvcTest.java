@@ -10,6 +10,8 @@ import com.nexora.common.exception.GlobalExceptionHandler;
 import com.nexora.common.exception.ProblemTypes;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -27,10 +29,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * MVC slice test cho AuthController.
  *
- * <p>Dùng @WebMvcTest để load chỉ Web layer (controller + filter chain tối giản).
- * Import GlobalExceptionHandler để test ProblemDetail response.
+ * <p>Security auto-configuration bị loại trừ để tránh phụ thuộc vào SecurityConfig
+ * (vốn cần @Value jwt-secret, cors, JwtDecoder...).
+ * Endpoint login vốn là public nên không cần test security filter ở đây —
+ * đó là trách nhiệm của SecurityConfig integration test.
+ *
+ * <p>GlobalExceptionHandler được import để test ProblemDetail response shape.
  */
-@WebMvcTest(controllers = AuthController.class)
+@WebMvcTest(
+        controllers = AuthController.class,
+        excludeAutoConfiguration = {
+                SecurityAutoConfiguration.class,
+                SecurityFilterAutoConfiguration.class
+        }
+)
 @Import(GlobalExceptionHandler.class)
 class AuthControllerMvcTest {
 
@@ -78,7 +90,7 @@ class AuthControllerMvcTest {
     }
 
     // -------------------------------------------------------------------------
-    // Invalid credentials
+    // Invalid credentials → 401 ProblemDetail
     // -------------------------------------------------------------------------
 
     @Test
@@ -111,7 +123,7 @@ class AuthControllerMvcTest {
     }
 
     // -------------------------------------------------------------------------
-    // Bean Validation (400)
+    // Bean Validation → 400 Bad Request
     // -------------------------------------------------------------------------
 
     @Test
