@@ -16,6 +16,7 @@ import com.nexora.asset.entity.AssetStatus;
 import com.nexora.category.entity.DynamicFieldType;
 import com.nexora.category.entity.FormStatus;
 import com.nexora.location.entity.LocationType;
+import com.nexora.ticket.entity.ResolutionOutcome;
 import com.nexora.ticket.workflow.TicketStatus;
 import com.nexora.user.entity.RoleCode;
 import com.nexora.user.entity.UserStatus;
@@ -31,6 +32,8 @@ class CanonicalDomainVocabularyTest {
         assertThat(names(TicketStatus.values())).containsExactly(
                 "SUBMITTED", "UNDER_REVIEW", "ASSIGNED", "IN_PROGRESS",
                 "RESOLVED", "REOPENED", "CLOSED", "REJECTED", "CANCELLED");
+        assertThat(names(ResolutionOutcome.values())).containsExactly(
+                "FIXED", "TEMPORARY_FIX", "NO_FAULT_FOUND", "DUPLICATE", "UNRESOLVED");
         assertThat(names(DynamicFieldType.values())).containsExactly(
                 "TEXT", "TEXTAREA", "NUMBER", "SELECT", "MULTI_SELECT",
                 "DATE", "DATETIME", "BOOLEAN", "IMAGE");
