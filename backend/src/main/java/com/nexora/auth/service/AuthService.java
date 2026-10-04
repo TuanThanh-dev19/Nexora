@@ -5,10 +5,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nexora.auth.dto.request.LoginRequest;
+import com.nexora.auth.dto.response.CurrentUserResponse;
 import com.nexora.auth.dto.response.LoginResponse;
 import com.nexora.auth.security.JwtTokenBuilder;
 import com.nexora.user.entity.AppUser;
@@ -103,6 +105,53 @@ public class AuthService {
                         user.getFullName(),
                         roleCodes
                 )
+        );
+    }
+
+    /**
+     * Tải lại thông tin người dùng hiện tại từ database theo userId trong JWT.
+     *
+     * <p>Luôn đọc từ DB để đảm bảo quyền phản ánh trạng thái thực tế,
+     * không dựa vào claims cũ trong JWT.
+     *
+     * <p>Thứ tự kiểm tra:
+     * <ol>
+     *   <li>Parse userId từ {@code sub} claim</li>
+     *   <li>Load user + roles từ DB trong 1 query (tránh N+1)</li>
+     *   <li>Kiểm tra user vẫn tồn tại và {@code status = ACTIVE}</li>
+     *   <li>Build và trả {@link CurrentUserResponse}</li>
+     * </ol>
+     *
+     * @param jwt JWT đã được Spring Security xác thực
+     * @return {@link CurrentUserResponse} chứa thông tin user và roles từ DB
+     * @throws InvalidCredentialsException nếu user không tồn tại hoặc không còn ACTIVE
+     */
+    public CurrentUserResponse getCurrentUser(Jwt jwt) {
+        Long userId = Long.parseLong(jwt.getSubject());
+
+        AppUser user = userRepository.findByIdWithRoles(userId)
+                .orElseThrow(() -> {
+                    log.warn("GET /auth/me: userId={} not found in DB", userId);
+                    return new InvalidCredentialsException();
+                });
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            log.warn("GET /auth/me: userId={} has status={}, rejecting", userId, user.getStatus());
+            throw new InvalidCredentialsException();
+        }
+
+        List<String> roleCodes = user.getRoleAssignments().stream()
+                .map(ur -> ur.getRole().getCode().name())
+                .toList();
+
+        log.debug("GET /auth/me: userId={} resolved successfully", userId);
+
+        return new CurrentUserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getStatus().name(),
+                roleCodes
         );
     }
 }

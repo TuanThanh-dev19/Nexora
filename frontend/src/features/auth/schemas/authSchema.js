@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  email: z.string().email('Enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Vui lòng nhập email hợp lệ'),
+  password: z.string().min(1, 'Mật khẩu không được để trống'),
 })

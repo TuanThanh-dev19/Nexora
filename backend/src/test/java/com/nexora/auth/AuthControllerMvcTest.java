@@ -27,12 +27,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * MVC slice test cho AuthController.
+ * MVC slice test cho AuthController — chỉ test POST /login.
  *
  * <p>Security auto-configuration bị loại trừ để tránh phụ thuộc vào SecurityConfig
  * (vốn cần @Value jwt-secret, cors, JwtDecoder...).
- * Endpoint login vốn là public nên không cần test security filter ở đây —
- * đó là trách nhiệm của SecurityConfig integration test.
+ * Endpoint login vốn là public nên không cần test security filter ở đây.
+ *
+ * <p>Test cho GET /me (cần Security context) nằm trong {@link AuthControllerMeMvcTest}.
  *
  * <p>GlobalExceptionHandler được import để test ProblemDetail response shape.
  */

@@ -31,7 +31,7 @@ export function LoginForm({ onSubmit }) {
       </Form.Group>
 
       <Form.Group className="mb-3" controlId="login-password">
-        <Form.Label>Password</Form.Label>
+        <Form.Label>Mật khẩu</Form.Label>
         <Form.Control
           type="password"
           isInvalid={Boolean(errors.password)}
@@ -42,8 +42,8 @@ export function LoginForm({ onSubmit }) {
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Button type="submit" disabled={isSubmitting}>
-        Login
+      <Button type="submit" disabled={isSubmitting} id="btn-login">
+        {isSubmitting ? 'Đang đăng nhập…' : 'Đăng nhập'}
       </Button>
     </Form>
   )
