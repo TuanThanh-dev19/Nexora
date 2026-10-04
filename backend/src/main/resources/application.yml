@@ -49,6 +49,8 @@ app:
   mongodb:
     backfill:
       enabled: ${MONGO_BACKFILL_ENABLED:false}
+  file-storage:
+    root: ${FILE_STORAGE_ROOT:../.data/uploads}
 
 springdoc:
   swagger-ui:
