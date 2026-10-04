@@ -5,6 +5,8 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 
 import org.hibernate.annotations.Nationalized;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.nexora.user.entity.AppUser;
 
@@ -51,11 +53,13 @@ public class AssetStatusHistory {
      * {@code null} when the asset is being registered for the first time.
      */
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "from_status", length = 30)
     private AssetStatus fromStatus;
 
     /** The status the asset transitioned <em>to</em>. Never {@code null}. */
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "to_status", nullable = false, length = 30)
     private AssetStatus toStatus;
 
