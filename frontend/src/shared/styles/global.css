@@ -30,3 +30,8 @@ body {
 .metric-card {
   border: 0;
 }
+
+.dashboard-empty-state {
+  border: 1px dashed #cbd5e1;
+  color: #475569;
+}
