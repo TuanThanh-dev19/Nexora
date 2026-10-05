@@ -113,6 +113,45 @@ terminal in the MVP. Assignment changes, status-history writes, timestamps, and
 SLA calculation are documented by the contract as expected effects but remain
 the responsibility of later transactional services.
 
+## Ticket supporting persistence
+
+`TicketFieldValue`, `TicketStatusHistory`, and `TicketAttachment` map the existing
+SQL Server child tables. Ticket has no child collections: query each child through
+its own repository. Associations are unidirectional and lazy, with no cascading
+persist or delete into Ticket, users, forms, or fields. Referenced rows must be
+persisted first. Flyway owns the composite Ticket/form/field foreign keys; the
+entities store a fixed `formVersionId` and reject cross-form field references.
+
+Dynamic answers use verbatim `NVARCHAR(MAX)` JSON strings: text/select/date/datetime
+are JSON strings, numbers remain numbers, booleans remain booleans, and multi-select
+uses an array of option-value strings. Persistence never parses or re-serializes
+them. SQL Server checks JSON syntax; later creation services validate field types,
+required values, options, and validation rules. Published/archived form data remains
+readable. `findByTicketIdOrderByFieldOrder` fetches field metadata and orders by
+`displayOrder ASC, field ID ASC` to break display-order ties.
+
+History uses the existing `TicketStatus` and `TicketAction` enums. Initial SUBMIT
+has a null source status; actions such as REASSIGN may keep the same status. History
+has no mutation methods and its columns are not updateable through JPA. Read it
+with `findByTicketIdOrderByChangedAtAscIdAsc`. Generic repository delete methods
+are not business operations: callers must treat history as append-only. Later
+workflow services must write history in the same SQL transaction as the Ticket
+update, never through an `AFTER_COMMIT` listener. Persistence itself does not
+automatically enforce that every Ticket update has a corresponding history row.
+
+Attachments store only an opaque storage key, original display filename, content
+type, byte count, uploader, and references/timestamp. They contain no binary data
+and perform no filesystem access. Original filenames are never paths. A dynamic
+IMAGE is a `REPORT_EVIDENCE` attachment linked to an IMAGE field; no scalar value
+row is required. Every attachment has the Ticket's form-version ID, even without
+a field. `WORK_RESULT` is supported; `COMMENT` is mapped for schema compatibility
+and remains P1. Attachment queries filter by Ticket and optionally type, then
+order by `createdAt ASC, ID ASC`. Services map entities to DTOs within a transaction
+when accessing lazy references because open-in-view is disabled.
+
+This foundation introduces no upload/download endpoint, creation service, workflow
+service, or schema migration. Existing FK `NO ACTION` behavior is preserved.
+
 ## Dynamic category forms
 
 An administrator creates a category, edits a draft form version, validates it, and publishes it. Published versions are immutable. Each ticket stores the form version used when it was created, so later category changes do not invalidate historical reports.
