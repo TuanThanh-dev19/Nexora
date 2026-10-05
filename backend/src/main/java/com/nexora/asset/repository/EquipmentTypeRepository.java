@@ -1,6 +1,7 @@
 package com.nexora.asset.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,12 @@ public interface EquipmentTypeRepository extends JpaRepository<EquipmentType, Lo
             order by equipmentType.name asc, equipmentType.code asc, equipmentType.id asc
             """)
     List<EquipmentType> findActiveOrderByNameAndCode();
+
+    Optional<EquipmentType> findByCode(String code);
+
+    @Query("""
+            select equipmentType from EquipmentType equipmentType
+            order by equipmentType.name asc, equipmentType.code asc, equipmentType.id asc
+            """)
+    List<EquipmentType> findAllOrderByNameAndCode();
 }
