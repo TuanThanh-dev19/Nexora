@@ -16,6 +16,7 @@ import com.nexora.asset.entity.AssetStatus;
 import com.nexora.category.entity.DynamicFieldType;
 import com.nexora.category.entity.FormStatus;
 import com.nexora.location.entity.LocationType;
+import com.nexora.ticket.entity.AttachmentType;
 import com.nexora.ticket.entity.ResolutionOutcome;
 import com.nexora.ticket.workflow.TicketStatus;
 import com.nexora.user.entity.RoleCode;
@@ -37,6 +38,8 @@ class CanonicalDomainVocabularyTest {
         assertThat(names(DynamicFieldType.values())).containsExactly(
                 "TEXT", "TEXTAREA", "NUMBER", "SELECT", "MULTI_SELECT",
                 "DATE", "DATETIME", "BOOLEAN", "IMAGE");
+        assertThat(names(AttachmentType.values())).containsExactly(
+                "REPORT_EVIDENCE", "WORK_RESULT", "COMMENT");
         assertThat(names(AssetStatus.values())).containsExactly(
                 "ACTIVE", "UNDER_MAINTENANCE", "OUT_OF_SERVICE", "RETIRED");
         assertThat(names(Priority.values())).containsExactly(

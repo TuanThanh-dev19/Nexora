@@ -69,6 +69,44 @@ The root `.env` file is read by both Docker Compose and Spring Boot when the
 backend is started from either the repository root or `backend/`. Environment
 variables and IDE run-configuration values still override the file.
 
+`FILE_STORAGE_ROOT` accepts a relative or absolute filesystem path, including
+directories outside Tomcat's web root. With the backend started from `backend/`,
+the default `../.data/uploads` points to the repository's `.data/uploads` folder.
+
+### First local/demo Admin
+
+Team members starting without an Admin can follow
+[the local account and token guide](docs/LOCAL_ACCOUNTS_GUIDE.md) for first
+bootstrap, Swagger/Postman tokens, additional test accounts, and local password reset.
+
+From `backend/`, enable the first Admin bootstrap explicitly:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = 'local'
+$env:ADMIN_BOOTSTRAP_ENABLED = 'true'
+$env:ADMIN_BOOTSTRAP_EMAIL = 'admin@example.test'
+$env:ADMIN_BOOTSTRAP_PASSWORD = '<choose a local password>'
+.\mvnw.cmd spring-boot:run
+```
+
+Use your own local email and a password of at least 8 characters and at most
+72 UTF-8 bytes. The startup runner BCrypt-hashes the password and creates an
+`ACTIVE` user with the `ADMIN` role in one transaction. It runs only in `local`
+or `demo` with the enable flag set; ordinary startup creates no account.
+If any Admin already exists, it skips creation without changing credentials.
+An existing non-Admin email causes an error instead of granting that user access.
+Credentials are never printed by the bootstrap; keep real values out of Git.
+
+After the startup log confirms creation, log in using `/api/v1/auth/login` or
+the frontend login page. This bootstrap creates the initial account. Until the
+Admin management API is implemented, use the linked guide's SQL procedure to
+prepare additional local test accounts.
+After stopping the backend, clear the one-time settings:
+
+```powershell
+Remove-Item Env:ADMIN_BOOTSTRAP_ENABLED, Env:ADMIN_BOOTSTRAP_EMAIL, Env:ADMIN_BOOTSTRAP_PASSWORD
+```
+
 ## Database connection
 
 Use these local settings in SQL Server Management Studio or another SQL client:
