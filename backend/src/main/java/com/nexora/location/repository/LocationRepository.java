@@ -20,10 +20,28 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     @Query("""
             select location from Location location
+            where location.parent is null
+            order by location.name asc, location.code asc, location.id asc
+            """)
+    List<Location> findAllRoots();
+
+    @Query("""
+            select location from Location location
             where location.active = true and location.parent.id = :parentId
             order by location.name asc, location.code asc, location.id asc
             """)
     List<Location> findActiveDirectChildren(@Param("parentId") Long parentId);
 
+    @Query("""
+            select location from Location location
+            where location.parent.id = :parentId
+            order by location.name asc, location.code asc, location.id asc
+            """)
+    List<Location> findAllDirectChildren(@Param("parentId") Long parentId);
+
     Optional<Location> findByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, Long id);
+
+    boolean existsByCode(String code);
 }

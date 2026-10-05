@@ -93,6 +93,10 @@ public class Location {
         this.active = active;
     }
 
+    public void changeParent(Location parent) {
+        this.parent = parent;
+    }
+
     @PrePersist
     void initializeTimestamps() {
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
