@@ -17,7 +17,15 @@ const variants = {
 }
 
 export function TicketStatusBadge({ status }) {
-  const label = TICKET_STATUS_LABELS[status] ?? status ?? 'Unknown'
+  const label = TICKET_STATUS_LABELS[status] ?? status ?? 'Không xác định'
 
-  return <Badge bg={variants[status] ?? 'secondary'}>{label}</Badge>
+  return (
+    <Badge
+      bg={variants[status] ?? 'secondary'}
+      className="status-badge"
+      data-status={status}
+    >
+      {label}
+    </Badge>
+  )
 }

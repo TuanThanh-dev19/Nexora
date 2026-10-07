@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
+import { FiArrowRight } from 'react-icons/fi'
 import { loginSchema } from '../schemas/authSchema'
 
 export function LoginForm({ onSubmit }) {
@@ -22,6 +23,8 @@ export function LoginForm({ onSubmit }) {
         <Form.Label>Email</Form.Label>
         <Form.Control
           type="email"
+          autoComplete="username"
+          placeholder="Email của bạn"
           isInvalid={Boolean(errors.email)}
           {...register('email')}
         />
@@ -34,6 +37,8 @@ export function LoginForm({ onSubmit }) {
         <Form.Label>Mật khẩu</Form.Label>
         <Form.Control
           type="password"
+          autoComplete="current-password"
+          placeholder="Nhập mật khẩu"
           isInvalid={Boolean(errors.password)}
           {...register('password')}
         />
@@ -42,8 +47,14 @@ export function LoginForm({ onSubmit }) {
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Button type="submit" disabled={isSubmitting} id="btn-login">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        id="btn-login"
+        className="login-submit w-100"
+      >
         {isSubmitting ? 'Đang đăng nhập…' : 'Đăng nhập'}
+        <FiArrowRight aria-hidden="true" />
       </Button>
     </Form>
   )

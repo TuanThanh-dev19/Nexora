@@ -33,8 +33,8 @@ import com.nexora.ticket.entity.Ticket;
 import com.nexora.ticket.entity.TicketAttachment;
 import com.nexora.ticket.entity.TicketFieldValue;
 import com.nexora.ticket.entity.TicketStatusHistory;
-import com.nexora.ticket.workflow.TicketAction;
-import com.nexora.ticket.workflow.TicketStatus;
+import com.nexora.ticket.entity.TicketAction;
+import com.nexora.ticket.entity.TicketStatus;
 import com.nexora.user.entity.AppUser;
 
 import jakarta.persistence.PersistenceException;

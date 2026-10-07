@@ -13,11 +13,19 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.nexora.auth.service.InvalidCredentialsException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, HandlerMethodValidationException.class})
+    ProblemDetail handleInvalidParameter(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
+                "Validation failed", "One or more request parameters are invalid.", request);
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     ProblemDetail handleNotFound(ResourceNotFoundException exception, HttpServletRequest request) {

@@ -3,12 +3,17 @@ package com.nexora.ticket.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import com.nexora.ticket.entity.AttachmentType;
 import com.nexora.ticket.entity.TicketAttachment;
 
 /** Persistence of metadata only; this repository never reads or writes stored files. */
 public interface TicketAttachmentRepository extends JpaRepository<TicketAttachment, Long> {
+
+    @EntityGraph(attributePaths = {"uploadedBy", "fieldDefinition"})
+    List<TicketAttachment> findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(
+            Long ticketId, List<AttachmentType> attachmentTypes);
 
     /** Oldest first, with ID breaking timestamp ties; empty if absent. */
     List<TicketAttachment> findByTicketIdOrderByCreatedAtAscIdAsc(Long ticketId);

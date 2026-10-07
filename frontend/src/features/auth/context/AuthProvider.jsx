@@ -1,27 +1,36 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { getCurrentUserApi } from '../api/authApi'
 import { AuthContext } from './auth-context'
 
 const TOKEN_KEY = 'nexora.session.token'
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient()
+  const clearTicketCache = useCallback(() => {
+    void queryClient.cancelQueries({ queryKey: ['tickets'] })
+    queryClient.removeQueries({ queryKey: ['tickets'] })
+  }, [queryClient])
   const [session, setSession] = useState({ token: null, user: null })
   /**
    * isChecking = true khi đang verify token lúc khởi động tab.
    * ProtectedRoute và RequireRole phải kiểm tra flag này để tránh
    * nháy sai màn hình login trước khi session restore hoàn tất.
    */
-  const [isChecking, setIsChecking] = useState(true)
+  const [isChecking, setIsChecking] = useState(
+    () => sessionStorage.getItem(TOKEN_KEY) !== null,
+  )
 
   // ---------------------------------------------------------------------------
   // Restore session khi tab mở lại trong cùng phiên
   // ---------------------------------------------------------------------------
   useEffect(() => {
+    let active = true
+    clearTicketCache()
     const token = sessionStorage.getItem(TOKEN_KEY)
 
     if (!token) {
       // Không có token — xác nhận ngay là chưa đăng nhập
-      setIsChecking(false)
       return
     }
 
@@ -29,35 +38,47 @@ export function AuthProvider({ children }) {
     // httpClient tự gắn Authorization: Bearer từ sessionStorage
     getCurrentUserApi()
       .then((user) => {
-        setSession({ token, user })
+        if (active && sessionStorage.getItem(TOKEN_KEY) === token)
+          setSession({ token, user })
       })
       .catch(() => {
+        if (!active || sessionStorage.getItem(TOKEN_KEY) !== token) return
         // Token hết hạn hoặc user bị disable → xóa session
         sessionStorage.removeItem(TOKEN_KEY)
         setSession({ token: null, user: null })
       })
       .finally(() => {
-        setIsChecking(false)
+        if (active) setIsChecking(false)
       })
-  }, []) // Chỉ chạy 1 lần khi mount
+    return () => {
+      active = false
+    }
+  }, [clearTicketCache])
 
   // ---------------------------------------------------------------------------
   // Logout
   // ---------------------------------------------------------------------------
   const logout = useCallback(() => {
+    clearTicketCache()
     sessionStorage.removeItem(TOKEN_KEY)
     setSession({ token: null, user: null })
-  }, [])
+    setIsChecking(false)
+  }, [clearTicketCache])
 
   // ---------------------------------------------------------------------------
   // Login: gọi sau khi backend trả accessToken + user
   // Không lưu user vào sessionStorage — user luôn được fetch từ /auth/me
   // khi restore session, đảm bảo roles là mới nhất từ DB.
   // ---------------------------------------------------------------------------
-  const login = useCallback(({ accessToken, user }) => {
-    sessionStorage.setItem(TOKEN_KEY, accessToken)
-    setSession({ token: accessToken, user })
-  }, [])
+  const login = useCallback(
+    ({ accessToken, user }) => {
+      clearTicketCache()
+      sessionStorage.setItem(TOKEN_KEY, accessToken)
+      setSession({ token: accessToken, user })
+      setIsChecking(false)
+    },
+    [clearTicketCache],
+  )
 
   // ---------------------------------------------------------------------------
   // Lắng nghe sự kiện 401 global từ httpClient interceptor

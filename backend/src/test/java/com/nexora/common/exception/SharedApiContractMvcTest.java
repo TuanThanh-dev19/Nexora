@@ -135,6 +135,15 @@ class SharedApiContractMvcTest {
     }
 
     @Test
+    void invalidParameterTypeUsesSafeValidationProblem() throws Exception {
+        mockMvc.perform(get("/api/v1/contracts/query").param("page", "secret-parser-input"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.type").value(ProblemTypes.VALIDATION_FAILED.toString()))
+                .andExpect(jsonPath("$.detail").value("One or more request parameters are invalid."));
+    }
+
+    @Test
     void versionedMutationRequiresANonNegativeExpectedVersion() throws Exception {
         mockMvc.perform(post("/api/v1/contracts/versioned")
                         .contentType(MediaType.APPLICATION_JSON)

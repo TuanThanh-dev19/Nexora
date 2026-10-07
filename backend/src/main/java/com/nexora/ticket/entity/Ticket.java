@@ -13,7 +13,6 @@ import com.nexora.category.entity.CategoryFormVersion;
 import com.nexora.category.entity.IncidentCategory;
 import com.nexora.common.domain.Priority;
 import com.nexora.location.entity.Location;
-import com.nexora.ticket.workflow.TicketStatus;
 import com.nexora.user.entity.AppUser;
 import com.nexora.user.entity.Skill;
 

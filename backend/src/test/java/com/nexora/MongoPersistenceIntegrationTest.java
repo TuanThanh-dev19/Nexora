@@ -23,8 +23,8 @@ import com.nexora.audit.document.AuditEvent;
 import com.nexora.audit.repository.AuditEventRepository;
 import com.nexora.notification.document.NotificationDocument;
 import com.nexora.notification.repository.NotificationRepository;
-import com.nexora.ticket.comment.document.TicketCommentDocument;
-import com.nexora.ticket.comment.repository.TicketCommentRepository;
+import com.nexora.ticket.document.TicketCommentDocument;
+import com.nexora.ticket.repository.TicketCommentRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")

@@ -16,8 +16,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.nexora.category.entity.CategoryFormVersion;
 import com.nexora.category.entity.FieldDefinition;
-import com.nexora.ticket.workflow.TicketAction;
-import com.nexora.ticket.workflow.TicketStatus;
 import com.nexora.user.entity.AppUser;
 
 class TicketSupportingEntitiesTest {

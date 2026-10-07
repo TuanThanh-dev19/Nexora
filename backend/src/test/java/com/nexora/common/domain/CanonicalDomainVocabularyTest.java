@@ -18,7 +18,7 @@ import com.nexora.category.entity.FormStatus;
 import com.nexora.location.entity.LocationType;
 import com.nexora.ticket.entity.AttachmentType;
 import com.nexora.ticket.entity.ResolutionOutcome;
-import com.nexora.ticket.workflow.TicketStatus;
+import com.nexora.ticket.entity.TicketStatus;
 import com.nexora.user.entity.RoleCode;
 import com.nexora.user.entity.UserStatus;
 

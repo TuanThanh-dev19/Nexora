@@ -13,15 +13,15 @@ export const TICKET_STATUS_CODES = Object.freeze({
 export const TICKET_STATUSES = Object.freeze(Object.values(TICKET_STATUS_CODES))
 
 export const TICKET_STATUS_LABELS = Object.freeze({
-  [TICKET_STATUS_CODES.SUBMITTED]: 'Submitted',
-  [TICKET_STATUS_CODES.UNDER_REVIEW]: 'Under review',
-  [TICKET_STATUS_CODES.ASSIGNED]: 'Assigned',
-  [TICKET_STATUS_CODES.IN_PROGRESS]: 'In progress',
-  [TICKET_STATUS_CODES.RESOLVED]: 'Resolved',
-  [TICKET_STATUS_CODES.REOPENED]: 'Reopened',
-  [TICKET_STATUS_CODES.CLOSED]: 'Closed',
-  [TICKET_STATUS_CODES.REJECTED]: 'Rejected',
-  [TICKET_STATUS_CODES.CANCELLED]: 'Cancelled',
+  [TICKET_STATUS_CODES.SUBMITTED]: 'Đã gửi',
+  [TICKET_STATUS_CODES.UNDER_REVIEW]: 'Đang xem xét',
+  [TICKET_STATUS_CODES.ASSIGNED]: 'Đã phân công',
+  [TICKET_STATUS_CODES.IN_PROGRESS]: 'Đang xử lý',
+  [TICKET_STATUS_CODES.RESOLVED]: 'Đã xử lý',
+  [TICKET_STATUS_CODES.REOPENED]: 'Mở lại',
+  [TICKET_STATUS_CODES.CLOSED]: 'Đã đóng',
+  [TICKET_STATUS_CODES.REJECTED]: 'Đã từ chối',
+  [TICKET_STATUS_CODES.CANCELLED]: 'Đã hủy',
 })
 
 export const TICKET_STATUS_OPTIONS = Object.freeze(

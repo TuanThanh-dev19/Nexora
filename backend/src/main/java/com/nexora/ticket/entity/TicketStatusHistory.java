@@ -8,8 +8,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Nationalized;
 import org.hibernate.type.SqlTypes;
 
-import com.nexora.ticket.workflow.TicketAction;
-import com.nexora.ticket.workflow.TicketStatus;
 import com.nexora.user.entity.AppUser;
 
 import jakarta.persistence.Column;
