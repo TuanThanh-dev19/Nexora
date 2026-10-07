@@ -24,6 +24,11 @@ export function AppLayout() {
               <Nav.Link as={NavLink} to="/tickets">
                 Tickets
               </Nav.Link>
+              {user?.roles.includes(ROLE_CODES.ADMIN) && (
+                <Nav.Link as={NavLink} to="/categories">
+                  Categories
+                </Nav.Link>
+              )}
               {user?.roles.some((role) =>
                 ASSET_MANAGEMENT_ROLES.includes(role),
               ) && (

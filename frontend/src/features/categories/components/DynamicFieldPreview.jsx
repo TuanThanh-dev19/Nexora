@@ -9,7 +9,9 @@ export function DynamicFieldPreview({ field }) {
         {field.required && <span className="text-danger ms-1">*</span>}
       </span>
       <Badge bg="light" text="dark">
-        {DYNAMIC_FIELD_TYPE_LABELS[field.type] ?? field.type}
+        {DYNAMIC_FIELD_TYPE_LABELS[field.fieldType ?? field.type] ??
+          field.fieldType ??
+          field.type}
       </Badge>
     </ListGroup.Item>
   )

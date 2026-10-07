@@ -121,7 +121,7 @@ class SqlServerMigrationIntegrationTest {
 		Integer latestSuccessfulMigration = jdbcTemplate.queryForObject("""
 				SELECT COUNT(*)
 				FROM dbo.flyway_schema_history
-				WHERE version = '8' AND success = 1
+				WHERE version = '9' AND success = 1
 				""", Integer.class);
 
 		assertThat(tableCount).isEqualTo(26);

@@ -16,6 +16,14 @@ import com.nexora.category.entity.IncidentCategory;
  */
 public interface IncidentCategoryRepository extends JpaRepository<IncidentCategory, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select c from IncidentCategory c where c.id = :id")
+    Optional<IncidentCategory> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
+    List<IncidentCategory> findAllByOrderByNameAscIdAsc();
+
+    List<IncidentCategory> findByActiveTrueOrderByNameAscIdAsc();
+
     /**
      * Returns all categories that are currently active, ordered by display name.
      *

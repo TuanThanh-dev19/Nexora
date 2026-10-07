@@ -62,6 +62,18 @@ import jakarta.persistence.UniqueConstraint;
 )
 public class CategoryFormVersion {
 
+    @jakarta.persistence.Version
+    @Column(name = "lock_version", nullable = false)
+    private long lockVersion;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
+
+    public long getLockVersion() { return lockVersion; }
+
+    /** Makes field-only draft replacements participate in optimistic locking. */
+    public void touch() { updatedAt = OffsetDateTime.now(ZoneOffset.UTC); }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

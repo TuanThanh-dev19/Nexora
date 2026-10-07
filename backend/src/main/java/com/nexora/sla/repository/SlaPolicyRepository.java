@@ -15,6 +15,8 @@ import com.nexora.sla.entity.SlaPolicy;
  */
 public interface SlaPolicyRepository extends JpaRepository<SlaPolicy, Long> {
 
+    List<SlaPolicy> findByActiveTrueOrderByPolicyNameAscIdAsc();
+
     /**
      * Returns all active SLA policies ordered by policy name.
      *

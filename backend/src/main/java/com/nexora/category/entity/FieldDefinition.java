@@ -56,6 +56,13 @@ import jakarta.persistence.UniqueConstraint;
 )
 public class FieldDefinition {
 
+    @Column(nullable = false)
+    private boolean active = true;
+
+    public boolean isActive() { return active; }
+
+    public void changeActive(boolean active) { this.active = active; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

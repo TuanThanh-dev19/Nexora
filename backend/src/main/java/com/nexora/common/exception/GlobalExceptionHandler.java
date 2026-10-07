@@ -19,6 +19,15 @@ import com.nexora.auth.service.InvalidCredentialsException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(com.nexora.category.service.FormValidationException.class)
+    ProblemDetail handleFormValidation(com.nexora.category.service.FormValidationException exception,
+            HttpServletRequest request) {
+        ProblemDetail problem = ApiProblemDetails.create(HttpStatus.UNPROCESSABLE_ENTITY,
+                ProblemTypes.BUSINESS_RULE_VIOLATION, "Form validation failed", exception.getMessage(), request);
+        problem.setProperty("fieldErrors", exception.getFieldErrors());
+        return problem;
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     ProblemDetail handleNotFound(ResourceNotFoundException exception, HttpServletRequest request) {
         return ApiProblemDetails.create(HttpStatus.NOT_FOUND, ProblemTypes.RESOURCE_NOT_FOUND,
