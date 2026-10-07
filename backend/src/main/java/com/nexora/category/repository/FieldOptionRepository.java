@@ -16,6 +16,9 @@ import com.nexora.category.entity.FieldOption;
  */
 public interface FieldOptionRepository extends JpaRepository<FieldOption, Long> {
 
+    /** Historical reads include inactive options and load all fields in one query. */
+    List<FieldOption> findByFieldDefinitionIdInOrderByDisplayOrderAscIdAsc(List<Long> fieldIds);
+
     /**
      * Returns only active options for the given field definition, ordered by
      * {@code display_order} ascending.

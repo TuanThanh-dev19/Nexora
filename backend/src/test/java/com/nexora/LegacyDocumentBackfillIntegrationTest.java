@@ -26,7 +26,7 @@ import org.testcontainers.utility.DockerImageName;
 import com.nexora.audit.repository.AuditEventRepository;
 import com.nexora.migration.LegacyDocumentBackfillRunner;
 import com.nexora.notification.repository.NotificationRepository;
-import com.nexora.ticket.comment.repository.TicketCommentRepository;
+import com.nexora.ticket.repository.TicketCommentRepository;
 
 @SpringBootTest(properties = {
         "spring.flyway.target=7",

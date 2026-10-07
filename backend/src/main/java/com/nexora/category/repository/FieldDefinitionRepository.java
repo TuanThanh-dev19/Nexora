@@ -15,6 +15,8 @@ import com.nexora.category.entity.FieldDefinition;
  */
 public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition, Long> {
 
+    List<FieldDefinition> findByFormVersionIdOrderByDisplayOrderAscIdAsc(Long formVersionId);
+
     /**
      * Returns all field definitions belonging to the given form version,
      * ordered by {@code display_order} ascending.

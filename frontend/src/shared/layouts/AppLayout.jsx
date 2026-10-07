@@ -1,5 +1,13 @@
 import { Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { NavLink, Outlet } from 'react-router'
+import {
+  FiGrid,
+  FiLayers,
+  FiLogIn,
+  FiLogOut,
+  FiPackage,
+  FiTag,
+} from 'react-icons/fi'
 import { useAuth } from '../../features/auth/context/useAuth'
 import { ROLE_CODES } from '../constants/roles'
 
@@ -7,51 +15,72 @@ const ASSET_MANAGEMENT_ROLES = [ROLE_CODES.MANAGER, ROLE_CODES.ADMIN]
 
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const name = user?.fullName ?? user?.displayName ?? 'Tài khoản'
 
   return (
-    <>
-      <Navbar bg="dark" data-bs-theme="dark" expand="lg">
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Đến nội dung chính
+      </a>
+      <Navbar expand="lg" collapseOnSelect className="app-navbar">
         <Container>
-          <Navbar.Brand as={NavLink} to="/">
-            Nexora
+          <Navbar.Brand as={NavLink} to="/" className="brand">
+            <span className="brand-mark">
+              <FiLayers aria-hidden="true" />
+            </span>
+            <span className="brand-name">
+              Nexora<small>CAMPUS CARE</small>
+            </span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-navigation" />
           <Navbar.Collapse id="main-navigation">
-            <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/dashboard">
-                Dashboard
+            <Nav className="me-auto app-navigation" activeKey={null}>
+              <Nav.Link as={NavLink} to="/dashboard" eventKey="dashboard">
+                <FiGrid aria-hidden="true" /> Tổng quan
               </Nav.Link>
-              <Nav.Link as={NavLink} to="/tickets">
-                Tickets
+              <Nav.Link as={NavLink} to="/tickets" eventKey="tickets">
+                <FiTag aria-hidden="true" /> Phiếu yêu cầu
               </Nav.Link>
               {user?.roles.some((role) =>
                 ASSET_MANAGEMENT_ROLES.includes(role),
               ) && (
-                <Nav.Link as={NavLink} to="/assets">
-                  Assets
+                <Nav.Link as={NavLink} to="/assets" eventKey="assets">
+                  <FiPackage aria-hidden="true" /> Tài sản
                 </Nav.Link>
               )}
             </Nav>
             {user ? (
-              <div className="d-flex align-items-center gap-3 text-light">
-                <small>
-                  {user.displayName} · {user.roles.join(', ')}
-                </small>
-                <Button variant="outline-light" size="sm" onClick={logout}>
-                  Log out
+              <div className="account-menu">
+                <span className="account-avatar" aria-hidden="true">
+                  {name.trim().charAt(0).toUpperCase()}
+                </span>
+                <span className="account-details">
+                  <strong>{name}</strong>
+                  <small>{user.roles.join(' · ')}</small>
+                </span>
+                <Button variant="outline-secondary" size="sm" onClick={logout}>
+                  <FiLogOut aria-hidden="true" /> Đăng xuất
                 </Button>
               </div>
             ) : (
-              <NavLink to="/login" className="btn btn-outline-light btn-sm">
-                Log in
+              <NavLink to="/login" className="btn btn-primary btn-sm">
+                <FiLogIn aria-hidden="true" /> Đăng nhập
               </NavLink>
             )}
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <main>
+      <main id="main-content" className="app-main" tabIndex={-1}>
         <Outlet />
       </main>
-    </>
+      <footer className="app-footer">
+        <Container>
+          <span>
+            <strong>Nexora</strong> · Campus care
+          </span>
+          <span>Kết nối để chăm sóc không gian chung.</span>
+        </Container>
+      </footer>
+    </div>
   )
 }

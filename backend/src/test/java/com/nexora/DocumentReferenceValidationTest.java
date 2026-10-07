@@ -13,8 +13,8 @@ import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.persistence.SqlReferenceValidator;
 import com.nexora.notification.repository.NotificationRepository;
 import com.nexora.notification.service.NotificationService;
-import com.nexora.ticket.comment.repository.TicketCommentRepository;
-import com.nexora.ticket.comment.service.TicketCommentService;
+import com.nexora.ticket.repository.TicketCommentRepository;
+import com.nexora.ticket.service.TicketCommentService;
 
 class DocumentReferenceValidationTest {
 

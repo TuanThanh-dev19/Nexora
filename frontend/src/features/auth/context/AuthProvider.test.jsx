@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render as testingRender,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getCurrentUserApi } from '../api/authApi'
@@ -17,15 +23,36 @@ const MOCK_USER = {
   roles: ['REQUESTER'],
 }
 
+function render(
+  ui,
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  }),
+) {
+  return testingRender(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  )
+}
+
 function SessionProbe() {
-  const { user, accessToken, isAuthenticated, isChecking, logout } = useAuth()
+  const { user, accessToken, isAuthenticated, isChecking, logout, login } =
+    useAuth()
   return (
     <>
       <span data-testid="is-checking">{isChecking ? 'checking' : 'done'}</span>
-      <span data-testid="auth-state">{isAuthenticated ? 'authenticated' : 'anonymous'}</span>
+      <span data-testid="auth-state">
+        {isAuthenticated ? 'authenticated' : 'anonymous'}
+      </span>
       <span data-testid="token">{accessToken ?? 'none'}</span>
       <span data-testid="roles">{user?.roles?.join(',') ?? 'none'}</span>
       <button onClick={logout}>Logout</button>
+      <button
+        onClick={() =>
+          login({ accessToken: 'second.token', user: { ...MOCK_USER, id: 2 } })
+        }
+      >
+        Switch account
+      </button>
     </>
   )
 }
@@ -53,7 +80,9 @@ describe('AuthProvider', () => {
         expect(screen.getByTestId('is-checking')).toHaveTextContent('done')
       })
 
-      expect(screen.getByTestId('auth-state')).toHaveTextContent('authenticated')
+      expect(screen.getByTestId('auth-state')).toHaveTextContent(
+        'authenticated',
+      )
       expect(screen.getByTestId('token')).toHaveTextContent(MOCK_TOKEN)
       expect(screen.getByTestId('roles')).toHaveTextContent('REQUESTER')
     })
@@ -88,6 +117,69 @@ describe('AuthProvider', () => {
   })
 
   describe('Logout', () => {
+    it.each(['Logout', 'Switch account'])(
+      'cancels requests and removes ticket data on %s',
+      async (action) => {
+        const client = new QueryClient({
+          defaultOptions: { queries: { retry: false } },
+        })
+        sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+        getCurrentUserApi.mockResolvedValueOnce(MOCK_USER)
+        render(
+          <AuthProvider>
+            <SessionProbe />
+          </AuthProvider>,
+          client,
+        )
+        await waitFor(() =>
+          expect(screen.getByTestId('is-checking')).toHaveTextContent('done'),
+        )
+        client.setQueryData(['tickets', 1, 'REQUESTER', 'detail', '10'], {
+          description: 'Private ticket',
+        })
+        let aborted = false
+        const pending = client
+          .fetchQuery({
+            queryKey: ['tickets', 1, 'REQUESTER', 'list'],
+            queryFn: ({ signal }) =>
+              new Promise((resolve, reject) => {
+                signal.addEventListener('abort', () => {
+                  aborted = true
+                  reject(new Error('cancelled'))
+                })
+              }),
+          })
+          .catch(() => undefined)
+        fireEvent.click(screen.getByText(action))
+        await pending
+        expect(aborted).toBe(true)
+        expect(client.getQueriesData({ queryKey: ['tickets'] })).toEqual([])
+      },
+    )
+
+    it('removes private cache when a 401 event logs the user out', async () => {
+      const client = new QueryClient()
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      getCurrentUserApi.mockResolvedValueOnce(MOCK_USER)
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+        client,
+      )
+      await waitFor(() =>
+        expect(screen.getByTestId('is-checking')).toHaveTextContent('done'),
+      )
+      client.setQueryData(['tickets', 1, 'detail', '10'], {
+        description: 'Private ticket',
+      })
+      await act(async () =>
+        window.dispatchEvent(new Event('nexora:unauthorized')),
+      )
+      expect(client.getQueriesData({ queryKey: ['tickets'] })).toEqual([])
+      expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+    })
+
     it('clears sessionStorage and auth state on logout', async () => {
       sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
       getCurrentUserApi.mockResolvedValueOnce(MOCK_USER)
