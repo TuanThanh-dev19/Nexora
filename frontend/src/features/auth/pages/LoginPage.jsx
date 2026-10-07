@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Card, Container } from 'react-bootstrap'
 import { useLocation, useNavigate } from 'react-router'
-import { FiClipboard, FiLayers, FiShield } from 'react-icons/fi'
+import { FiClipboard, FiShield } from 'react-icons/fi'
 import { loginApi } from '../api/authApi'
 import { LoginForm } from '../components/LoginForm'
 import { useAuth } from '../context/useAuth'
@@ -33,7 +33,7 @@ export function LoginPage() {
       <div className="login-layout">
         <section className="login-story">
           <span className="login-story-mark">
-            <FiLayers aria-hidden="true" />
+            <img src="/logo.jpg" alt="Nexora Logo" />
           </span>
           <p className="eyebrow">NEXORA · CAMPUS CARE</p>
           <h2>
