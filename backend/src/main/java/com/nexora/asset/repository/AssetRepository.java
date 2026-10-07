@@ -3,7 +3,14 @@ package com.nexora.asset.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.nexora.asset.entity.Asset;
 import com.nexora.asset.entity.AssetStatus;
@@ -14,7 +21,7 @@ import com.nexora.asset.entity.AssetStatus;
  * <p>All status-changing operations must go through a dedicated transactional
  * service — do not use {@link #save} to change {@code asset_status} directly.
  */
-public interface AssetRepository extends JpaRepository<Asset, Long> {
+public interface AssetRepository extends JpaRepository<Asset, Long>, JpaSpecificationExecutor<Asset> {
 
     /**
      * Looks up an asset by its unique business identifier.
@@ -23,6 +30,22 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
      * @return the asset wrapped in an {@link Optional}, or empty if not found
      */
     Optional<Asset> findByAssetCode(String assetCode);
+
+    boolean existsByAssetCode(String assetCode);
+
+    boolean existsByAssetCodeAndIdNot(String assetCode, Long id);
+
+    boolean existsBySerialNumber(String serialNumber);
+
+    boolean existsBySerialNumberAndIdNot(String serialNumber, Long id);
+
+    @Override
+    @EntityGraph(attributePaths = {"equipmentType", "location"})
+    Page<Asset> findAll(Specification<Asset> spec, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"equipmentType", "location"})
+    @Query("select a from Asset a where a.id = :id")
+    Optional<Asset> findWithDetailsById(@Param("id") Long id);
 
     /**
      * Returns all assets located at the given location.

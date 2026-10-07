@@ -129,6 +129,20 @@ public class Asset {
         this.location = Objects.requireNonNull(location, "location is required");
     }
 
+    /** Changes the equipment classification. Must not be {@code null}. */
+    public void changeEquipmentType(EquipmentType equipmentType) {
+        this.equipmentType = Objects.requireNonNull(equipmentType, "equipmentType is required");
+    }
+
+    /**
+     * Updates the status of the asset.
+     * Must only be invoked by a dedicated transactional service that concurrently
+     * records the corresponding {@link AssetStatusHistory} entry.
+     */
+    public void changeStatus(AssetStatus status) {
+        this.status = Objects.requireNonNull(status, "status is required");
+    }
+
     /** Sets or clears the optional manufacturer serial number. */
     public void changeSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
