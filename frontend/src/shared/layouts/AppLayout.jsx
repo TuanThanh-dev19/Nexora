@@ -2,7 +2,6 @@ import { Button, Container, Nav, Navbar } from 'react-bootstrap'
 import { NavLink, Outlet } from 'react-router'
 import {
   FiGrid,
-  FiLayers,
   FiLogIn,
   FiLogOut,
   FiPackage,
@@ -27,7 +26,7 @@ export function AppLayout() {
         <Container>
           <Navbar.Brand as={NavLink} to="/" className="brand">
             <span className="brand-mark">
-              <FiLayers aria-hidden="true" />
+              <img src="/logo.jpg" alt="Nexora Logo" />
             </span>
             <span className="brand-name">
               Nexora<small>CAMPUS CARE</small>

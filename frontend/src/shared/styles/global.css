@@ -1,16 +1,16 @@
 :root {
-  --nexa-brand: #0d766d;
-  --nexa-brand-dark: #09574f;
-  --nexa-ink: #183433;
-  --nexa-muted: #5d7271;
-  --nexa-border: #dce6e5;
-  --nexa-soft: #edf6f3;
-  --nexa-shadow: 0 8px 30px rgba(24, 52, 51, 0.045);
+  --nexa-brand: #2c1e56;
+  --nexa-brand-dark: #1e143f;
+  --nexa-ink: #1d172e;
+  --nexa-muted: #625a7a;
+  --nexa-border: #dfd9ec;
+  --nexa-soft: #f1eef8;
+  --nexa-shadow: 0 8px 30px rgba(29, 23, 46, 0.045);
   --bs-body-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --bs-body-color: var(--nexa-ink);
-  --bs-body-bg: #f6f8f7;
+  --bs-body-bg: #f6f5f8;
   --bs-primary: var(--nexa-brand);
-  --bs-primary-rgb: 13, 118, 109;
+  --bs-primary-rgb: 44, 30, 86;
   --bs-secondary-color: var(--nexa-muted);
   --bs-link-color: var(--nexa-brand);
   --bs-link-hover-color: var(--nexa-brand-dark);
@@ -118,15 +118,20 @@ select {
   margin-right: 38px;
 }
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 39px;
   height: 39px;
   border-radius: 12px;
-  color: white;
-  background: var(--nexa-brand);
-  box-shadow: 0 4px 12px #0d766d20;
-  font-size: 23px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(44, 30, 86, 0.12);
+  background: white;
+}
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .brand-name {
   color: var(--nexa-ink);
@@ -162,7 +167,7 @@ select {
 }
 .app-navigation .nav-link:hover {
   color: var(--nexa-brand);
-  background: #f4f8f6;
+  background: #eae6f4;
 }
 .account-menu {
   display: flex;
@@ -175,7 +180,7 @@ select {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #e5efec;
+  background: #e2daf0;
   color: var(--nexa-brand);
   font-size: 0.85rem;
   font-weight: 700;
@@ -271,27 +276,27 @@ select {
   --bs-btn-active-border-color: var(--nexa-brand-dark);
   --bs-btn-disabled-bg: var(--nexa-brand);
   --bs-btn-disabled-border-color: var(--nexa-brand);
-  --bs-btn-focus-shadow-rgb: 13, 118, 109;
-  box-shadow: 0 3px 8px #0d766d13;
+  --bs-btn-focus-shadow-rgb: 44, 30, 86;
+  box-shadow: 0 3px 8px rgba(44, 30, 86, 0.08);
 }
 .btn-outline-primary {
   --bs-btn-color: var(--nexa-brand);
-  --bs-btn-border-color: #9dc9bf;
+  --bs-btn-border-color: #a797ce;
   --bs-btn-hover-bg: var(--nexa-brand);
   --bs-btn-hover-border-color: var(--nexa-brand);
   --bs-btn-active-bg: var(--nexa-brand-dark);
   --bs-btn-active-border-color: var(--nexa-brand-dark);
-  --bs-btn-focus-shadow-rgb: 13, 118, 109;
+  --bs-btn-focus-shadow-rgb: 44, 30, 86;
 }
 .btn-outline-secondary {
-  --bs-btn-color: #486462;
-  --bs-btn-border-color: #cddcd7;
+  --bs-btn-color: #4f4769;
+  --bs-btn-border-color: #d2cbe2;
   --bs-btn-hover-color: var(--nexa-ink);
-  --bs-btn-hover-bg: #edf4f1;
-  --bs-btn-hover-border-color: #b4cbc3;
+  --bs-btn-hover-bg: #ece6f6;
+  --bs-btn-hover-border-color: #b7a9d9;
   --bs-btn-active-color: var(--nexa-ink);
-  --bs-btn-active-bg: #e3efea;
-  --bs-btn-active-border-color: #b4cbc3;
+  --bs-btn-active-bg: #e2d9f1;
+  --bs-btn-active-border-color: #b7a9d9;
 }
 .btn-link {
   color: var(--nexa-brand);
@@ -310,7 +315,7 @@ select {
 .form-control,
 .form-select {
   min-height: 44px;
-  border-color: #d6e1dc;
+  border-color: #d8cfe5;
   border-radius: 10px;
   font-size: 0.88rem;
   padding-block: 10px;
@@ -321,8 +326,8 @@ select {
 }
 .form-control:not(.is-invalid):focus,
 .form-select:focus {
-  border-color: #5aa89a;
-  box-shadow: 0 0 0 3px #0d766d15;
+  border-color: #8468b8;
+  box-shadow: 0 0 0 3px rgba(44, 30, 86, 0.08);
 }
 .badge {
   border-radius: 7px;
@@ -346,7 +351,7 @@ select {
   --bs-alert-color: #82651e;
 }
 :focus-visible {
-  outline: 3px solid #0d766d55;
+  outline: 3px solid rgba(44, 30, 86, 0.33);
   outline-offset: 3px;
 }
 
@@ -395,8 +400,8 @@ select {
   border-radius: 40px;
   background: radial-gradient(
     ellipse at center,
-    #d5eee4,
-    #eef6f1 65%,
+    #e1d8f2,
+    #f2eff8 65%,
     transparent 66%
   );
 }
@@ -404,7 +409,7 @@ select {
   position: absolute;
   width: 300px;
   height: 300px;
-  border: 1px dashed #a1cfc0;
+  border: 1px dashed #b7a6d5;
   border-radius: 50%;
   transform: rotate(-20deg);
 }
@@ -419,7 +424,7 @@ select {
   border-radius: 32px;
   color: var(--nexa-brand);
   background: #fff;
-  box-shadow: 0 18px 55px #255b4420;
+  box-shadow: 0 18px 55px rgba(44, 30, 86, 0.12);
   transform: rotate(-6deg);
 }
 .campus-emblem > svg {
@@ -441,8 +446,8 @@ select {
   padding: 13px 18px;
   border-radius: 13px;
   background: #fff;
-  border: 1px solid #dbe9e2;
-  box-shadow: 0 6px 24px #255b4410;
+  border: 1px solid #e1dced;
+  box-shadow: 0 6px 24px rgba(44, 30, 86, 0.06);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -468,7 +473,7 @@ select {
 .scene-dot {
   position: absolute;
   border-radius: 50%;
-  background: #e7c883;
+  background: #ff6b6b; /* coral/pink accent */
   width: 14px;
   height: 14px;
 }
@@ -481,7 +486,7 @@ select {
   bottom: 10%;
   width: 8px;
   height: 8px;
-  background: #70b69e;
+  background: #8b79b6;
 }
 .module-card {
   transition:
@@ -541,7 +546,7 @@ select {
   border: 1px solid var(--nexa-border);
   border-radius: 24px;
   background: #fff;
-  box-shadow: 0 20px 60px #1834330a;
+  box-shadow: 0 20px 60px rgba(29, 23, 46, 0.04);
   overflow: hidden;
 }
 .login-story {
@@ -551,9 +556,9 @@ select {
   flex-direction: column;
   justify-content: center;
   padding: 54px 42px;
-  color: #c9e8dc;
+  color: #d1c8ea;
   background:
-    radial-gradient(ellipse at 0 100%, #197969, transparent 70%), #123f38;
+    radial-gradient(ellipse at 0 100%, #3a2575, transparent 70%), #1b1136;
 }
 .login-story::after {
   position: absolute;
@@ -570,19 +575,25 @@ select {
   pointer-events: none;
 }
 .login-story .eyebrow {
-  color: #a2cfbe;
+  color: #b5a4d6;
   margin-bottom: 18px;
 }
 .login-story-mark {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 50px;
   height: 50px;
   margin-bottom: 34px;
-  border: 1px solid #ffffff30;
+  background: white;
   border-radius: 15px;
-  color: #d5f1e5;
-  font-size: 26px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.login-story-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .login-story h2 {
   color: #fff;
@@ -650,8 +661,8 @@ select {
 }
 
 .metric-card {
-  --metric-color: #0d766d;
-  --metric-bg: #edf6f3;
+  --metric-color: var(--nexa-brand);
+  --metric-bg: var(--nexa-soft);
 }
 .metric-blue {
   --metric-color: #4d79ad;
@@ -703,9 +714,9 @@ select {
   margin-top: 17px;
 }
 .dashboard-empty-state {
-  border: 1px dashed #b9cdc4;
-  background: #f0f6f2;
-  color: #557067;
+  border: 1px dashed #cac3df;
+  background: #f4f2f8;
+  color: #635b7a;
   padding: 24px;
 }
 .placeholder-card {
@@ -1118,7 +1129,7 @@ select {
     padding: 6px 9px;
   }
   .navbar-toggler:focus {
-    box-shadow: 0 0 0 3px #0d766d20;
+    box-shadow: 0 0 0 3px rgba(44, 30, 86, 0.12);
   }
   .home-hero {
     grid-template-columns: 1fr 0.75fr;
