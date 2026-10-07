@@ -378,7 +378,7 @@ Depends on M1-03 — Align Canonical Domain Vocabulary. Replace this planning ID
 
 ## Technical Notes
 
-- Place workflow types under `com.nexora.ticket.workflow`.
+- Place `TicketStatus` and `TicketAction` under `com.nexora.ticket.entity`; place the workflow contract and supporting policy types directly under `com.nexora.ticket.service`.
 - The contract should express policy, not mutate a ticket entity in this issue.
 - Required side effects such as assignment changes, status history, timestamps, and SLA recalculation should be represented as documented expectations, not implemented prematurely.
 - `DUPLICATE` resolution behavior is outside the MVP even though the database constraint retains the value.

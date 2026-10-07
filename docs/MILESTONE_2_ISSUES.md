@@ -51,7 +51,7 @@ Các issue M2 khác là **Backend/API/Persistence**. M2-02 là **Full-stack Auth
 |---|---|---|
 | M3-FE02 | Giao diện quản lý User, Role và Technician | M2-03 |
 | M3-FE03 | Giao diện quản trị Category và Dynamic Form | M2-04, M2-05 |
-| M3-FE04 | Giao diện Ticket List và Ticket Detail chỉ đọc | M2-09 |
+| M3-FE04 | Giao diện Ticket List và Ticket Detail chỉ đọc — được bao gồm trong GitHub #35 | M2-09 |
 | M3-FE05 | Giao diện quản trị Location và Equipment Type | M2-10 |
 | M3-FE06 | Giao diện quản trị Asset và lịch sử trạng thái | M2-11 |
 | M3-FE07 | Component chọn Asset hợp lệ theo Location | M2-12 |
@@ -623,6 +623,9 @@ Mapping các bảng phụ thuộc trực tiếp vào Ticket để luồng tạo 
 
 # M2-09 — Xây dựng API đọc danh sách và chi tiết Ticket
 
+> GitHub #35 bao gồm cả Ticket List/Detail Frontend theo scope issue đã cập nhật.
+> Nội dung M3-FE04 trùng với phần này, không tạo implementation độc lập.
+
 **Owner:** Member 3  
 **Module:** `ticket`  
 **Loại issue:** Backend  
@@ -687,8 +690,7 @@ Chi tiết trả thêm:
 - `POST /tickets`.
 - Review, assign, start, resolve, close.
 - Comment và feedback.
-- Ticket List/Detail UI; chuyển sang M3-FE04.
-- Frontend API client, hook và component tests.
+- Các màn hình/action workflow Ticket ngoài list/detail chỉ đọc.
 
 ---
 
@@ -1112,7 +1114,7 @@ Milestone 2 được đóng khi:
 
 - M3-FE02: User/Role/Technician Administration UI.
 - M3-FE03: Category/Dynamic Form Administration UI.
-- M3-FE04: Ticket List/Detail UI.
+- M3-FE04: Ticket List/Detail UI — đã được gộp vào scope GitHub #35.
 - M3-FE05: Location/Equipment Administration UI.
 - M3-FE06: Asset Administration/Status History UI.
 - M3-FE07: Eligible Asset Selector.

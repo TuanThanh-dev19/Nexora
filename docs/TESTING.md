@@ -124,3 +124,36 @@ Remove-Item Env:RUN_SQLSERVER_IT
 The backend CI already sets `RUN_SQLSERVER_IT=true`. Full regression/build
 verification is `.\mvnw.cmd verify` with that flag set; normal local tests remain
 independent of Docker when it is absent.
+
+## Ticket read API and UI (#35)
+
+`TicketReadApiIntegrationTest` and `TicketReadSqlServerIntegrationTest` execute the
+same HTTP contract against H2 and SQL Server. `TicketReadFixtures` creates fresh
+users/reference rows, archived/current form versions, values for all field types,
+IMAGE evidence, ordered history, public attachment metadata, and repeated past
+assignments. Setup commits before MockMvc calls and cleanup removes only owned
+rows. Canonical role seed rows are reused and retained.
+
+Coverage includes all four roles and their union, SQL-scoped counts/pagination,
+stale JWT roles and revoked roles, ACTIVE checks, safe missing/invisible detail,
+stored form/option history, null optional references, metadata confidentiality,
+OpenAPI, and unchanged Ticket version/timestamps. Repository and unit/MVC tests
+cover strict query validation and ensure children are not queried before access.
+
+From `backend`:
+
+```powershell
+.\mvnw.cmd '-Dtest=TicketListQueryTest,TicketReadServiceTest,TicketResponseMapperTest,TicketControllerMvcTest,TicketVisibilityRepositoryTest,TicketReadApiIntegrationTest,SharedApiContractMvcTest' test
+$env:RUN_SQLSERVER_IT='true'
+.\mvnw.cmd verify
+Remove-Item Env:RUN_SQLSERVER_IT
+```
+
+Frontend MSW/Testing Library tests cover list/detail loading, success/empty/error,
+URL restoration and Back/Forward, sort/filter/page changes, historical dynamic
+values, metadata-only attachments, location lookup, and private cache cancellation
+on logout/login/401. All mock Ticket data lives under feature test support and is
+never substituted into application responses. Test retry delays are zero to keep
+network/5xx retry assertions deterministic; production retains Query's defaults.
+
+From `frontend`, run `npm run lint`, `npm run test`, and `npm run build`.

@@ -35,13 +35,17 @@ ticket/
 ├── controller/
 ├── dto/request/
 ├── dto/response/
+├── document/
 ├── entity/
 ├── repository/
-├── service/
-└── workflow/
+└── service/
 ```
 
-Add `specification/` only when ticket search/filter logic becomes complex enough to need dedicated JPA specifications.
+Keep ticket packages flat by layer. MongoDB comment documents belong in `document/`,
+JPA entities and the `TicketStatus`/`TicketAction` enums in `entity/`, comment
+repositories and JPA specifications in `repository/`, and comment services and
+workflow policy classes directly in `service/`. Keep these responsibilities in
+separate classes without introducing nested comment or workflow packages.
 
 Keep the application as a modular monolith for the eight-week MVP. Microservices, Kafka, Redis, and a separate state-machine framework are not required.
 
@@ -103,7 +107,8 @@ The canonical SQL Server status set also includes `REOPENED`, `REJECTED`, and
 `CANCELLED`. Display labels remain separate from these stored/API codes. Ticket
 status and action vocabulary, transition rules, actor constraints, mandatory
 inputs, and expected side effects are defined by the pure Java contract in
-`com.nexora.ticket.workflow`. `SUBMIT` starts from the explicit `NEW_REQUEST`
+`com.nexora.ticket.service`, using the `TicketStatus` and `TicketAction` enums from
+`com.nexora.ticket.entity`. `SUBMIT` starts from the explicit `NEW_REQUEST`
 source rather than introducing a non-persisted ticket status.
 
 Workflow changes are action-driven. Later application services select an

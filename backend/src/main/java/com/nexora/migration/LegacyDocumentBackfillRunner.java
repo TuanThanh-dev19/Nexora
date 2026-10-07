@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexora.audit.document.AuditEvent;
 import com.nexora.notification.document.NotificationDocument;
-import com.nexora.ticket.comment.document.TicketCommentDocument;
+import com.nexora.ticket.document.TicketCommentDocument;
 
 @Component
 @ConditionalOnProperty(name = "app.mongodb.backfill.enabled", havingValue = "true")

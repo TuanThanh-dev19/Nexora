@@ -6,20 +6,18 @@ import {
 } from '../constants/ticketStatuses'
 import { TicketFilters } from './TicketFilters'
 import { TicketStatusBadge } from './TicketStatusBadge'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 describe('ticket vocabulary presentation', () => {
   it('offers every canonical ticket status as a filter', () => {
     render(
-      <TicketFilters
-        keyword=""
-        status=""
-        onKeywordChange={vi.fn()}
-        onStatusChange={vi.fn()}
-      />,
+      <QueryClientProvider client={new QueryClient()}>
+        <TicketFilters status="" onChange={vi.fn()} />
+      </QueryClientProvider>,
     )
 
     const statusSelect = screen.getByRole('combobox', {
-      name: 'Filter by status',
+      name: 'Trạng thái',
     })
     const options = within(statusSelect).getAllByRole('option')
 

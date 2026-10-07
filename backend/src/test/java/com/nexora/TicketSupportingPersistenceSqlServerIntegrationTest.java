@@ -41,8 +41,8 @@ import com.nexora.ticket.entity.TicketStatusHistory;
 import com.nexora.ticket.repository.TicketAttachmentRepository;
 import com.nexora.ticket.repository.TicketFieldValueRepository;
 import com.nexora.ticket.repository.TicketStatusHistoryRepository;
-import com.nexora.ticket.workflow.TicketAction;
-import com.nexora.ticket.workflow.TicketStatus;
+import com.nexora.ticket.entity.TicketAction;
+import com.nexora.ticket.entity.TicketStatus;
 import com.nexora.user.entity.AppUser;
 
 import jakarta.persistence.EntityManager;

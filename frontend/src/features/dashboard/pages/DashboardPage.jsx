@@ -1,14 +1,41 @@
 import { Alert, Button, Col, Container, Row } from 'react-bootstrap'
+import {
+  FiActivity,
+  FiCheckCircle,
+  FiClock,
+  FiInbox,
+  FiPieChart,
+} from 'react-icons/fi'
 import { ROLE_CODES } from '../../../shared/constants/roles'
 import { useAuth } from '../../auth/context/useAuth'
 import { MetricCard } from '../components/MetricCard'
 import { useDashboardSummary } from '../hooks/useDashboardSummary'
 
 const METRICS = [
-  { label: 'Open tickets', field: 'openTickets' },
-  { label: 'In progress', field: 'inProgressTickets' },
-  { label: 'SLA at risk', field: 'slaAtRiskTickets' },
-  { label: 'Resolved this week', field: 'resolvedThisWeek' },
+  {
+    label: 'Open tickets',
+    field: 'openTickets',
+    icon: FiInbox,
+    accent: 'teal',
+  },
+  {
+    label: 'In progress',
+    field: 'inProgressTickets',
+    icon: FiActivity,
+    accent: 'blue',
+  },
+  {
+    label: 'SLA at risk',
+    field: 'slaAtRiskTickets',
+    icon: FiClock,
+    accent: 'amber',
+  },
+  {
+    label: 'Resolved this week',
+    field: 'resolvedThisWeek',
+    icon: FiCheckCircle,
+    accent: 'green',
+  },
 ]
 
 function getScopeDescription(roles = []) {
@@ -34,11 +61,17 @@ export function DashboardPage() {
 
   return (
     <Container className="page-container">
-      <div className="mb-4">
-        <h1 className="h2 mb-1">Dashboard</h1>
-        <p className="text-secondary mb-0">
-          {getScopeDescription(user?.roles)}
-        </p>
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">KHÔNG GIAN LÀM VIỆC</p>
+          <h1 className="h2 mb-1">Dashboard</h1>
+          <p className="text-secondary mb-0">
+            {getScopeDescription(user?.roles)}
+          </p>
+        </div>
+        <span className="page-heading-icon">
+          <FiPieChart aria-hidden="true" />
+        </span>
       </div>
 
       {summary.isError && (
@@ -57,12 +90,14 @@ export function DashboardPage() {
       )}
 
       <Row className="g-3">
-        {METRICS.map(({ label, field }) => (
-          <Col sm={6} xl={3} key={field}>
+        {METRICS.map(({ label, field, icon, accent }) => (
+          <Col xs={6} xl={3} key={field}>
             <MetricCard
               label={label}
               value={summary.data?.[field] ?? 0}
               state={state}
+              icon={icon}
+              accent={accent}
             />
           </Col>
         ))}

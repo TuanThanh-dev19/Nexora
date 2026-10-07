@@ -80,10 +80,10 @@ backend/src/main/java/com/nexora/
 │   ├── controller/
 │   ├── dto/request/
 │   ├── dto/response/
+│   ├── document/
 │   ├── entity/
 │   ├── repository/
-│   ├── service/
-│   └── workflow/
+│   └── service/
 └── dashboard/
 ```
 
@@ -92,6 +92,7 @@ Quy ước:
 - Controller chỉ xử lý HTTP, `@Valid` và gọi service.
 - Service chứa business rule, transaction và status transition.
 - Repository chỉ truy cập dữ liệu.
+- Trong `ticket`, comment dùng chung các package `document`, `repository`, `service`; lớp JPA specification đặt trong `repository`. `TicketStatus` và `TicketAction` đặt trong `entity`, các lớp quy tắc workflow đặt trực tiếp trong `service` theo cấu trúc phẳng.
 - Không trả trực tiếp JPA entity qua REST API; dùng DTO request/response.
 - Chỉ tạo package mà feature thực sự cần. Ví dụ dashboard có thể không cần entity.
 - Không dùng `BaseService`, `BaseRepository`, microservices hoặc Spring StateMachine cho MVP.

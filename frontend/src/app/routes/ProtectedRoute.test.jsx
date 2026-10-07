@@ -1,28 +1,39 @@
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AuthContext } from '../../features/auth/context/auth-context'
 
 describe('ProtectedRoute', () => {
+  function LoginProbe() {
+    const location = useLocation()
+    return <div data-testid="login-page">{location.state?.from}</div>
+  }
   function renderWithAuth(authValue, initialEntry = '/protected') {
     return render(
       <AuthContext.Provider value={authValue}>
         <MemoryRouter initialEntries={[initialEntry]}>
           <Routes>
-            <Route path="/login" element={<div data-testid="login-page">Login Page</div>} />
+            <Route path="/login" element={<LoginProbe />} />
             <Route element={<ProtectedRoute />}>
-              <Route path="/protected" element={<div data-testid="protected-content">Protected Content</div>} />
+              <Route
+                path="/protected"
+                element={
+                  <div data-testid="protected-content">Protected Content</div>
+                }
+              />
             </Route>
           </Routes>
         </MemoryRouter>
-      </AuthContext.Provider>
+      </AuthContext.Provider>,
     )
   }
 
   it('shows spinner while checking session', () => {
     renderWithAuth({ isAuthenticated: false, isChecking: true })
-    expect(screen.getByText('Đang kiểm tra phiên đăng nhập...')).toBeInTheDocument()
+    expect(
+      screen.getByText('Đang kiểm tra phiên đăng nhập...'),
+    ).toBeInTheDocument()
     expect(screen.queryByTestId('protected-content')).toBeNull()
     expect(screen.queryByTestId('login-page')).toBeNull()
   })
@@ -37,5 +48,15 @@ describe('ProtectedRoute', () => {
     renderWithAuth({ isAuthenticated: true, isChecking: false })
     expect(screen.getByTestId('protected-content')).toBeInTheDocument()
     expect(screen.queryByTestId('login-page')).toBeNull()
+  })
+
+  it('preserves filters in the login return destination', () => {
+    renderWithAuth(
+      { isAuthenticated: false, isChecking: false },
+      '/protected?page=2&priority=HIGH',
+    )
+    expect(screen.getByTestId('login-page')).toHaveTextContent(
+      '/protected?page=2&priority=HIGH',
+    )
   })
 })
