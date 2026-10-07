@@ -9,6 +9,9 @@ import { ROLE_CODES } from '../shared/constants/roles'
 import { AppLayout } from '../shared/layouts/AppLayout'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RequireRole } from './routes/RequireRole'
+import { CategoryListPage } from '../features/categories/pages/CategoryListPage'
+import { CategoryVersionsPage } from '../features/categories/pages/CategoryVersionsPage'
+import { FormEditorPage } from '../features/categories/pages/FormEditorPage'
 
 export const router = createBrowserRouter([
   {
@@ -36,20 +39,20 @@ export const router = createBrowserRouter([
                   />
                 ),
               },
-              {
-                path: 'categories',
-                element: (
-                  <PlaceholderPage
-                    title="Dynamic categories"
-                    description="Build, validate, version, and publish incident forms here."
-                  />
-                ),
-              },
             ],
           },
           {
             element: <RequireRole roles={[ROLE_CODES.ADMIN]} />,
             children: [
+              { path: 'categories', element: <CategoryListPage /> },
+              {
+                path: 'categories/:categoryId/forms',
+                element: <CategoryVersionsPage />,
+              },
+              {
+                path: 'categories/forms/:formVersionId',
+                element: <FormEditorPage />,
+              },
               {
                 path: 'administration',
                 element: (

@@ -17,6 +17,10 @@ public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition
 
     List<FieldDefinition> findByFormVersionIdOrderByDisplayOrderAscIdAsc(Long formVersionId);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("delete from FieldDefinition f where f.formVersion.id = :id")
+    void deleteForForm(@org.springframework.data.repository.query.Param("id") Long id);
+
     /**
      * Returns all field definitions belonging to the given form version,
      * ordered by {@code display_order} ascending.

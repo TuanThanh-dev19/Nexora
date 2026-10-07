@@ -20,6 +20,12 @@ import com.nexora.category.entity.FormStatus;
  */
 public interface CategoryFormVersionRepository extends JpaRepository<CategoryFormVersion, Long> {
 
+    @org.springframework.data.jpa.repository.Query("select f.category.id from CategoryFormVersion f where f.id = :id")
+    Optional<Long> findCategoryId(@org.springframework.data.repository.query.Param("id") Long id);
+
+    @org.springframework.data.jpa.repository.Query("select coalesce(max(f.versionNumber), 0) from CategoryFormVersion f where f.category.id = :id")
+    int maximumVersion(@org.springframework.data.repository.query.Param("id") Long id);
+
     /**
      * Returns the single form version of the given category that matches the
      * given status, or empty if none exists.

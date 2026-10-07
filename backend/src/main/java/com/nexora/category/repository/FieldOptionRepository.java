@@ -16,6 +16,11 @@ import com.nexora.category.entity.FieldOption;
  */
 public interface FieldOptionRepository extends JpaRepository<FieldOption, Long> {
 
+    List<FieldOption> findByFieldDefinitionFormVersionIdOrderByDisplayOrderAscIdAsc(Long formVersionId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("delete from FieldOption o where o.fieldDefinition.formVersion.id = :id")
+    void deleteForForm(@org.springframework.data.repository.query.Param("id") Long id);
     /** Historical reads include inactive options and load all fields in one query. */
     List<FieldOption> findByFieldDefinitionIdInOrderByDisplayOrderAscIdAsc(List<Long> fieldIds);
 
