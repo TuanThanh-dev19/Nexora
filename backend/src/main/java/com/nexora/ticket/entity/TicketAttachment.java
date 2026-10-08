@@ -21,7 +21,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -117,13 +116,6 @@ public class TicketAttachment {
         }
         this.sizeBytes = sizeBytes;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt is required");
-    }
-
-    @PrePersist
-    void initializeCreatedAt() {
-        if (createdAt == null) {
-            createdAt = OffsetDateTime.now(ZoneOffset.UTC);
-        }
     }
 
     public Long getId() {

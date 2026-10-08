@@ -10,9 +10,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import com.nexora.auth.dto.response.CurrentUserResponse;
 import com.nexora.auth.service.AuthService;
+import com.nexora.auth.service.InvalidCredentialsException;
 import com.nexora.category.repository.*;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.ticket.repository.*;
+import com.nexora.ticket.dto.request.TicketListQuery;
+import org.springframework.util.LinkedMultiValueMap;
 
 class TicketReadServiceTest {
     private final AuthService auth = mock(AuthService.class);
@@ -36,12 +39,30 @@ class TicketReadServiceTest {
         verify(tickets, never()).findById(any());
     }
     @Test
-    void invalidSubjectNeverReadsDatabaseAndNoRolesNeverReadsTickets() {
-        assertThatThrownBy(() -> service.detail(Jwt.withTokenValue("test").header("alg", "HS256").subject("bad").build(), 1L))
+    void invalidIdentityFromAuthNeverReadsTicketsOrChildren() {
+        when(auth.getCurrentUser(jwt)).thenThrow(new BadCredentialsException("Invalid identity."));
+        assertThatThrownBy(() -> service.detail(jwt, 1L)).isInstanceOf(BadCredentialsException.class);
+        assertThatThrownBy(() -> service.list(jwt, TicketListQuery.from(new LinkedMultiValueMap<>())))
                 .isInstanceOf(BadCredentialsException.class);
-        verifyNoInteractions(auth, tickets);
+        verifyNoInteractions(tickets, fields, options, values, history, attachments);
+    }
+
+    @Test
+    void missingOrInactiveCurrentUserKeepsTicketUnauthorizedConvention() {
+        when(auth.getCurrentUser(jwt)).thenThrow(new InvalidCredentialsException());
+        assertThatThrownBy(() -> service.detail(jwt, 1L)).isInstanceOf(BadCredentialsException.class)
+                .hasMessage("Invalid identity.");
+        assertThatThrownBy(() -> service.list(jwt, TicketListQuery.from(new LinkedMultiValueMap<>())))
+                .isInstanceOf(BadCredentialsException.class);
+        verifyNoInteractions(tickets, fields, options, values, history, attachments);
+    }
+
+    @Test
+    void noRolesNeverReadsTicketsOrChildren() {
         when(auth.getCurrentUser(jwt)).thenReturn(new CurrentUserResponse(10L, "user@example.test", "User", "ACTIVE", List.of()));
         assertThatThrownBy(() -> service.detail(jwt, 1L)).isInstanceOf(AccessDeniedException.class);
-        verifyNoInteractions(tickets);
+        assertThatThrownBy(() -> service.list(jwt, TicketListQuery.from(new LinkedMultiValueMap<>())))
+                .isInstanceOf(AccessDeniedException.class);
+        verifyNoInteractions(tickets, fields, options, values, history, attachments);
     }
 }

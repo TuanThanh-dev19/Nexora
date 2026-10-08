@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -30,6 +33,8 @@ import com.nexora.user.repository.AppUserRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Unit test cho {@link AuthService#getCurrentUser(Jwt)}.
@@ -118,6 +123,30 @@ class AuthServiceCurrentUserTest {
         when(userRepository.findByIdWithRoles(USER_ID)).thenReturn(Optional.of(lockedUser));
 
         assertThatThrownBy(() -> authService.getCurrentUser(mockJwt(USER_ID)))
+                .isInstanceOf(InvalidCredentialsException.class);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "bad", "0", "-1", "+1", "1.5", " 10", "10 ", "9223372036854775808"})
+    void malformedSubjectIsRejectedBeforeReadingUsers(String subject) {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getSubject()).thenReturn(subject);
+        assertThatThrownBy(() -> authService.getCurrentUser(jwt))
+                .isInstanceOf(BadCredentialsException.class).hasMessage("Invalid identity.");
+        verifyNoInteractions(userRepository, passwordEncoder, jwtTokenBuilder);
+    }
+
+    @Test
+    void absentJwtIsRejectedBeforeReadingUsers() {
+        assertThatThrownBy(() -> authService.getCurrentUser(null)).isInstanceOf(BadCredentialsException.class);
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void maximumLongSubjectIsReadWithoutOverflow() {
+        when(userRepository.findByIdWithRoles(Long.MAX_VALUE)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> authService.getCurrentUser(mockJwt(Long.MAX_VALUE)))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 

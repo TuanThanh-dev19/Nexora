@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.nexora.category.entity.CategoryFormVersion;
 import com.nexora.category.entity.FieldDefinition;
 import com.nexora.category.entity.FieldOption;
 import com.nexora.ticket.dto.response.TicketDetailResponse;
@@ -40,23 +41,37 @@ public class TicketResponseMapper {
     public TicketDetailResponse detail(Ticket ticket, List<FieldDefinition> fields, List<FieldOption> options,
             List<TicketFieldValue> values, List<TicketStatusHistory> history, List<TicketAttachment> attachments) {
         TicketSummaryResponse summary = summary(ticket);
-        Map<Long, List<FieldOption>> byField = options.stream().collect(
-                Collectors.groupingBy(option -> option.getFieldDefinition().getId()));
-        var form = ticket.getFormVersion();
+        StoredForm storedForm = storedForm(ticket.getFormVersion(), fields, options);
+        List<DynamicValue> dynamicValues = values.stream()
+                .map(value -> new DynamicValue(value.getFieldDefinition().getId(), value.getValueJson())).toList();
+        List<HistoryEntry> statusHistory = history.stream()
+                .map(entry -> new HistoryEntry(entry.getId(), entry.getFromStatus(), entry.getToStatus(),
+                        entry.getTransitionAction(), entry.getReason(), user(entry.getChangedBy()), entry.getChangedAt())).toList();
+        List<AttachmentMetadata> attachmentMetadata = attachments.stream()
+                .map(attachment -> new AttachmentMetadata(attachment.getId(),
+                        attachment.getFieldDefinition() == null ? null : attachment.getFieldDefinition().getId(),
+                        attachment.getAttachmentType(), attachment.getOriginalName(), attachment.getContentType(),
+                        attachment.getSizeBytes(), user(attachment.getUploadedBy()), attachment.getCreatedAt())).toList();
+
         return new TicketDetailResponse(summary.id(), summary.ticketNumber(), summary.title(), summary.status(),
                 summary.priority(), summary.category(), summary.location(), summary.asset(), summary.reporter(),
                 summary.slaDueAt(), summary.createdAt(), summary.updatedAt(), ticket.getDescription(), ticket.getVersion(),
-                new StoredForm(form.getId(), form.getVersionNumber(), form.getFormStatus(), fields.stream().map(field ->
-                        new Field(field.getId(), field.getFieldKey(), field.getLabel(), field.getFieldType(),
-                                field.isRequired(), field.getDisplayOrder(), byField.getOrDefault(field.getId(), List.of())
-                                        .stream().map(option -> new Option(option.getOptionValue(), option.getOptionLabel())).toList())).toList()),
-                values.stream().map(value -> new DynamicValue(value.getFieldDefinition().getId(), value.getValueJson())).toList(),
-                history.stream().map(entry -> new HistoryEntry(entry.getId(), entry.getFromStatus(), entry.getToStatus(),
-                        entry.getTransitionAction(), entry.getReason(), user(entry.getChangedBy()), entry.getChangedAt())).toList(),
-                attachments.stream().map(attachment -> new AttachmentMetadata(attachment.getId(),
-                        attachment.getFieldDefinition() == null ? null : attachment.getFieldDefinition().getId(),
-                        attachment.getAttachmentType(), attachment.getOriginalName(), attachment.getContentType(),
-                        attachment.getSizeBytes(), user(attachment.getUploadedBy()), attachment.getCreatedAt())).toList());
+                storedForm, dynamicValues, statusHistory, attachmentMetadata);
+    }
+
+    private StoredForm storedForm(CategoryFormVersion form, List<FieldDefinition> fields, List<FieldOption> options) {
+        Map<Long, List<FieldOption>> optionsByField = options.stream().collect(
+                Collectors.groupingBy(option -> option.getFieldDefinition().getId()));
+        List<Field> storedFields = fields.stream()
+                .map(field -> field(field, optionsByField.getOrDefault(field.getId(), List.of()))).toList();
+        return new StoredForm(form.getId(), form.getVersionNumber(), form.getFormStatus(), storedFields);
+    }
+
+    private Field field(FieldDefinition field, List<FieldOption> options) {
+        List<Option> storedOptions = options.stream()
+                .map(option -> new Option(option.getOptionValue(), option.getOptionLabel())).toList();
+        return new Field(field.getId(), field.getFieldKey(), field.getLabel(), field.getFieldType(),
+                field.isRequired(), field.getDisplayOrder(), storedOptions);
     }
 
     private UserReference user(AppUser user) {

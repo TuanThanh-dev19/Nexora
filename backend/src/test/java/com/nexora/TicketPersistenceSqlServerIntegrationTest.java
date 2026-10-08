@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nexora.asset.entity.Asset;
@@ -223,6 +224,24 @@ class TicketPersistenceSqlServerIntegrationTest {
                 OffsetDateTime.now(ZoneOffset.UTC),
                 OffsetDateTime.now(ZoneOffset.UTC)))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void rejectsAStaleTicketUpdateInSqlServer() {
+        References references = savedReferences("SQL-STALE", false);
+        Ticket staleTicket = tickets.saveAndFlush(new Ticket("NX-2026-000206",
+                references.reporter(), references.category(), references.formVersion(),
+                references.location(), null, "Original title", "Stale update", Priority.NORMAL));
+        entityManager.detach(staleTicket);
+
+        jdbcTemplate.update("""
+                UPDATE dbo.tickets
+                SET title = ?, version = version + 1
+                WHERE id = ?
+                """, "Updated concurrently", staleTicket.getId());
+
+        assertThatThrownBy(() -> tickets.saveAndFlush(staleTicket))
+                .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 
     private References savedReferences(String suffix, boolean withAsset) {

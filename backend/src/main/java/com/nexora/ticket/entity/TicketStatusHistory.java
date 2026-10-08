@@ -20,7 +20,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
@@ -89,13 +88,6 @@ public class TicketStatusHistory {
         this.changedBy = Objects.requireNonNull(changedBy, "changedBy is required");
         Objects.requireNonNull(changedBy.getId(), "changedBy must be persisted before adding history");
         this.changedAt = Objects.requireNonNull(changedAt, "changedAt is required");
-    }
-
-    @PrePersist
-    void initializeChangedAt() {
-        if (changedAt == null) {
-            changedAt = OffsetDateTime.now(ZoneOffset.UTC);
-        }
     }
 
     public Long getId() {

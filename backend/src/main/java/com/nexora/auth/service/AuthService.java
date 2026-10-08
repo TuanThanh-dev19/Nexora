@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ import com.nexora.user.repository.AppUserRepository;
  * Xử lý logic đăng nhập: xác thực email/mật khẩu, kiểm tra trạng thái tài khoản,
  * phát hành JWT HS256.
  *
- * <p>Tất cả lỗi xác thực đều ném {@link InvalidCredentialsException} với cùng thông điệp
+ * <p>Tất cả lỗi đăng nhập đều ném {@link InvalidCredentialsException} với cùng thông điệp
  * để không lộ nguyên nhân cụ thể (email không tồn tại, sai mật khẩu, hay bị khoá).
  */
 @Service
@@ -124,10 +125,21 @@ public class AuthService {
      *
      * @param jwt JWT đã được Spring Security xác thực
      * @return {@link CurrentUserResponse} chứa thông tin user và roles từ DB
+     * @throws BadCredentialsException nếu subject không phải user ID hợp lệ
      * @throws InvalidCredentialsException nếu user không tồn tại hoặc không còn ACTIVE
      */
     public CurrentUserResponse getCurrentUser(Jwt jwt) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        String subject = jwt == null ? null : jwt.getSubject();
+        if (subject == null || !subject.matches("[0-9]+")) {
+            throw new BadCredentialsException("Invalid identity.");
+        }
+        long userId;
+        try {
+            userId = Long.parseLong(subject);
+        } catch (NumberFormatException exception) {
+            throw new BadCredentialsException("Invalid identity.");
+        }
+        if (userId <= 0) throw new BadCredentialsException("Invalid identity.");
 
         AppUser user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> {
