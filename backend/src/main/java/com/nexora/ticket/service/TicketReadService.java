@@ -16,7 +16,6 @@ import com.nexora.auth.service.AuthService;
 import com.nexora.auth.service.InvalidCredentialsException;
 import com.nexora.category.repository.FieldDefinitionRepository;
 import com.nexora.category.repository.FieldOptionRepository;
-import com.nexora.category.entity.FieldOption;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.pagination.PageResponse;
 import com.nexora.ticket.dto.request.TicketListQuery;
@@ -67,23 +66,20 @@ public class TicketReadService {
         var ticket = tickets.findOne(TicketSpecifications.visibleTo(viewer.id(), roles(viewer))
                 .and(TicketSpecifications.id(ticketId))).orElseThrow(() ->
                         new ResourceNotFoundException("The requested ticket is unavailable."));
-        var storedFields = fields.findByFormVersionIdOrderByDisplayOrderAscIdAsc(ticket.getFormVersion().getId());
-        var storedOptions = storedFields.isEmpty() ? List.<FieldOption>of()
-                : options.findByFieldDefinitionIdInOrderByDisplayOrderAscIdAsc(
-                        storedFields.stream().map(field -> field.getId()).toList());
-        return mapper.detail(ticket, storedFields, storedOptions,
-                values.findByTicketIdOrderByFieldOrder(ticketId),
-                history.findByTicketIdOrderByChangedAtAscIdAsc(ticketId),
-                attachments.findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(ticketId,
-                        List.of(AttachmentType.REPORT_EVIDENCE, AttachmentType.WORK_RESULT)));
+        Long formVersionId = ticket.getFormVersion().getId();
+        var storedFields = fields.findByFormVersionIdOrderByDisplayOrderAscIdAsc(formVersionId);
+        var storedOptions = options.findByFieldDefinitionFormVersionIdOrderByDisplayOrderAscIdAsc(formVersionId);
+        var dynamicValues = values.findByTicketIdOrderByFieldOrder(ticketId);
+        var statusHistory = history.findByTicketIdOrderByChangedAtAscIdAsc(ticketId);
+        var attachmentMetadata = attachments.findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(ticketId,
+                List.of(AttachmentType.REPORT_EVIDENCE, AttachmentType.WORK_RESULT));
+        return mapper.detail(ticket, storedFields, storedOptions, dynamicValues, statusHistory, attachmentMetadata);
     }
 
     private CurrentUserResponse viewer(Jwt jwt) {
         try {
-            if (jwt == null || jwt.getSubject() == null || !jwt.getSubject().matches("[0-9]+")
-                    || Long.parseLong(jwt.getSubject()) <= 0) throw new BadCredentialsException("Invalid identity.");
             return auth.getCurrentUser(jwt);
-        } catch (NumberFormatException | InvalidCredentialsException exception) {
+        } catch (InvalidCredentialsException exception) {
             throw new BadCredentialsException("Invalid identity.");
         }
     }
