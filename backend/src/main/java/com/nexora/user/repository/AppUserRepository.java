@@ -1,16 +1,21 @@
 package com.nexora.user.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.nexora.user.entity.AppUser;
 
-public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+public interface AppUserRepository extends JpaRepository<AppUser, Long>, JpaSpecificationExecutor<AppUser> {
 
     Optional<AppUser> findByNormalizedEmail(String normalizedEmail);
+
+    boolean existsByNormalizedEmail(String normalizedEmail);
 
     /**
      * Tìm user theo normalized email và eager-load toàn bộ role assignments trong
@@ -33,4 +38,14 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
             where user.id = :id
             """)
     Optional<AppUser> findByIdWithRoles(@Param("id") Long id);
+
+    @Query("""
+            select distinct user
+            from AppUser user
+            left join fetch user.roleAssignments assignment
+            left join fetch assignment.role
+            where user.id in :ids
+            """)
+    List<AppUser> findAllByIdWithRoles(@Param("ids") Collection<Long> ids);
 }
+
