@@ -3,6 +3,8 @@ package com.nexora.location.controller;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +16,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nexora.asset.dto.EligibleAssetResponse;
+import com.nexora.asset.service.AssetService;
+import com.nexora.common.pagination.PageResponse;
 import com.nexora.location.dto.LocationCreateRequest;
 import com.nexora.location.dto.LocationResponse;
 import com.nexora.location.dto.LocationUpdateRequest;
 import com.nexora.location.service.LocationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 /**
@@ -33,9 +44,11 @@ import jakarta.validation.Valid;
 public class LocationController {
 
     private final LocationService locationService;
+    private final AssetService assetService;
 
-    public LocationController(LocationService locationService) {
+    public LocationController(LocationService locationService, AssetService assetService) {
         this.locationService = locationService;
+        this.assetService = assetService;
     }
 
     // =========================================================================
@@ -68,6 +81,37 @@ public class LocationController {
     public LocationResponse getById(@PathVariable Long locationId) {
         return locationService.getById(locationId);
     }
+
+    /**
+     * Lists assets eligible for ticket reporting at the specified location (Issue #30).
+     * Accessible to all authenticated users.
+     */
+    @GetMapping(value = "/api/v1/locations/{locationId}/eligible-assets", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get eligible assets by location",
+            description = "Returns active or under-maintenance assets at the exact location for ticket reporting.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Page of eligible assets"),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination or unsupported equipment type",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Location or equipment type not found",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public PageResponse<EligibleAssetResponse> getEligibleAssets(
+            @Parameter(description = "ID of the location", required = true)
+            @PathVariable Long locationId,
+            @Parameter(description = "Zero-based page index", schema = @Schema(defaultValue = "0", minimum = "0"))
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page", schema = @Schema(defaultValue = "20", minimum = "1", maximum = "100"))
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Optional equipment type ID filter")
+            @RequestParam(required = false) Long equipmentTypeId,
+            @Parameter(description = "Optional search query by asset code or name/description")
+            @RequestParam(required = false) String query) {
+        return assetService.getEligibleAssets(locationId, page, size, equipmentTypeId, query);
+    }
+
 
     // =========================================================================
     // WRITE — ADMIN only

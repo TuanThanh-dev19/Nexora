@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +16,7 @@ import com.nexora.asset.dto.AssetResponse;
 import com.nexora.asset.dto.AssetStatusChangeRequest;
 import com.nexora.asset.dto.AssetStatusHistoryResponse;
 import com.nexora.asset.dto.AssetUpdateRequest;
+import com.nexora.asset.dto.EligibleAssetResponse;
 import com.nexora.asset.entity.Asset;
 import com.nexora.asset.entity.AssetStatus;
 import com.nexora.asset.entity.AssetStatusHistory;
@@ -21,10 +25,13 @@ import com.nexora.asset.repository.AssetRepository;
 import com.nexora.asset.repository.AssetStatusHistoryRepository;
 import com.nexora.asset.repository.EquipmentTypeRepository;
 import com.nexora.common.exception.BusinessRuleException;
+import com.nexora.common.exception.InvalidPaginationException;
 import com.nexora.common.exception.InvalidStateTransitionException;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.exception.StaleWriteException;
+import com.nexora.common.exception.UnsupportedFilterException;
 import com.nexora.common.pagination.PageResponse;
+import com.nexora.common.pagination.PaginationDefaults;
 import com.nexora.location.entity.Location;
 import com.nexora.location.repository.LocationRepository;
 import com.nexora.user.entity.AppUser;
@@ -77,6 +84,53 @@ public class AssetService {
         Page<Asset> page = assetRepository.findAll(query.toSpecification(), query.pageable());
         return PageResponse.from(page.map(AssetResponse::from));
     }
+
+    /**
+     * Lists assets eligible for ticket reporting at the given location (Issue #30).
+     *
+     * @param locationId      exact location ID (BR-1, BR-6)
+     * @param page            zero-based page index (BR-5)
+     * @param size            page size, 1 to 100 (BR-5)
+     * @param equipmentTypeId optional equipment type filter (BR-4)
+     * @param query           optional keyword for code/description search (BR-5)
+     * @return page of eligible assets wrapped in PageResponse
+     * @throws ResourceNotFoundException  if location or equipment type is not found
+     * @throws UnsupportedFilterException if equipment type is invalid/inactive
+     * @throws InvalidPaginationException if page or size is out of allowed range
+     */
+    public PageResponse<EligibleAssetResponse> getEligibleAssets(
+            Long locationId,
+            int page,
+            int size,
+            Long equipmentTypeId,
+            String query) {
+
+        if (page < 0 || size < 1 || size > PaginationDefaults.MAX_PAGE_SIZE) {
+            throw new InvalidPaginationException(
+                    "Page must be zero or greater and size between 1 and " + PaginationDefaults.MAX_PAGE_SIZE + ".");
+        }
+
+        // BR-6: Ensure location exists (throws ResourceNotFoundException if missing)
+        findLocationOrThrow(locationId);
+
+        // BR-4: Ensure equipment type exists and is active (allowlist check)
+        if (equipmentTypeId != null) {
+            EquipmentType equipmentType = findEquipmentTypeOrThrow(equipmentTypeId);
+            if (!equipmentType.isActive()) {
+                throw new UnsupportedFilterException("Equipment type is inactive: " + equipmentTypeId);
+            }
+        }
+
+        String trimmedQuery = (query != null && !query.isBlank()) ? query.trim() : null;
+
+        // BR-5: Stable sort by assetCode ASC, id ASC
+        Pageable pageable = PageRequest.of(page, size, Sort.by("assetCode").ascending().and(Sort.by("id").ascending()));
+
+        Page<Asset> assetPage = assetRepository.findEligibleAssets(locationId, equipmentTypeId, trimmedQuery, pageable);
+
+        return PageResponse.from(assetPage.map(EligibleAssetResponse::from));
+    }
+
 
     /**
      * Fetches details of a single asset by its primary key.

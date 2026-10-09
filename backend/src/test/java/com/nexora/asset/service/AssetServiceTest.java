@@ -3,6 +3,7 @@ package com.nexora.asset.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +26,12 @@ import com.nexora.asset.dto.AssetResponse;
 import com.nexora.asset.dto.AssetStatusChangeRequest;
 import com.nexora.asset.dto.AssetStatusHistoryResponse;
 import com.nexora.asset.dto.AssetUpdateRequest;
+import com.nexora.asset.dto.EligibleAssetResponse;
+import com.nexora.common.exception.InvalidPaginationException;
+import com.nexora.common.exception.UnsupportedFilterException;
+import com.nexora.common.pagination.PageResponse;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import com.nexora.asset.entity.Asset;
 import com.nexora.asset.entity.AssetStatus;
 import com.nexora.asset.entity.AssetStatusHistory;
@@ -359,4 +366,113 @@ class AssetServiceTest {
                     .hasMessageContaining("Asset not found: id=999");
         }
     }
+
+    @Nested
+    @DisplayName("Eligible Assets by Location (Issue #30)")
+    class EligibleAssetsTests {
+
+        @Test
+        @DisplayName("Returns eligible assets with status ACTIVE and UNDER_MAINTENANCE")
+        void getEligibleAssets_success_returnsActiveAndUnderMaintenance() {
+            Asset asset1 = new Asset("AST-001", testEquipmentType, testLocation);
+            ReflectionTestUtils.setField(asset1, "id", 101L);
+            asset1.changeStatus(AssetStatus.ACTIVE);
+            asset1.changeDescription("Projector in Room A101");
+
+            Asset asset2 = new Asset("AST-002", testEquipmentType, testLocation);
+            ReflectionTestUtils.setField(asset2, "id", 102L);
+            asset2.changeStatus(AssetStatus.UNDER_MAINTENANCE);
+            asset2.changeDescription("Under repair projector");
+
+            when(locationRepository.findById(20L)).thenReturn(Optional.of(testLocation));
+            when(assetRepository.findEligibleAssets(eq(20L), any(), any(), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of(asset1, asset2)));
+
+            PageResponse<EligibleAssetResponse> response = assetService.getEligibleAssets(20L, 0, 20, null, null);
+
+            assertThat(response.content()).hasSize(2);
+            assertThat(response.content().get(0).assetCode()).isEqualTo("AST-001");
+            assertThat(response.content().get(0).status()).isEqualTo(AssetStatus.ACTIVE);
+            assertThat(response.content().get(0).equipmentType().code()).isEqualTo("EQ-PROJ");
+            assertThat(response.content().get(0).location().code()).isEqualTo("LOC-A101");
+
+            assertThat(response.content().get(1).assetCode()).isEqualTo("AST-002");
+            assertThat(response.content().get(1).status()).isEqualTo(AssetStatus.UNDER_MAINTENANCE);
+        }
+
+        @Test
+        @DisplayName("Throws ResourceNotFoundException when location does not exist (BR-6)")
+        void getEligibleAssets_locationNotFound_throwsResourceNotFoundException() {
+            when(locationRepository.findById(999L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> assetService.getEligibleAssets(999L, 0, 20, null, null))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Location not found: id=999");
+        }
+
+        @Test
+        @DisplayName("Filters by equipmentTypeId when valid and active (BR-4)")
+        void getEligibleAssets_withEquipmentTypeId_filtersCorrectly() {
+            when(locationRepository.findById(20L)).thenReturn(Optional.of(testLocation));
+            when(equipmentTypeRepository.findById(10L)).thenReturn(Optional.of(testEquipmentType));
+            when(assetRepository.findEligibleAssets(eq(20L), eq(10L), any(), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of()));
+
+            PageResponse<EligibleAssetResponse> response = assetService.getEligibleAssets(20L, 0, 20, 10L, null);
+
+            assertThat(response.content()).isEmpty();
+            verify(assetRepository).findEligibleAssets(eq(20L), eq(10L), any(), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Throws UnsupportedFilterException when equipment type is inactive (BR-4 allowlist)")
+        void getEligibleAssets_inactiveEquipmentType_throwsUnsupportedFilterException() {
+            EquipmentType inactiveType = new EquipmentType("EQ-OLD", "Old Type");
+            inactiveType.changeActive(false);
+
+            when(locationRepository.findById(20L)).thenReturn(Optional.of(testLocation));
+            when(equipmentTypeRepository.findById(99L)).thenReturn(Optional.of(inactiveType));
+
+            assertThatThrownBy(() -> assetService.getEligibleAssets(20L, 0, 20, 99L, null))
+                    .isInstanceOf(UnsupportedFilterException.class)
+                    .hasMessageContaining("Equipment type is inactive: 99");
+        }
+
+        @Test
+        @DisplayName("Throws ResourceNotFoundException when equipment type does not exist")
+        void getEligibleAssets_equipmentTypeNotFound_throwsResourceNotFoundException() {
+            when(locationRepository.findById(20L)).thenReturn(Optional.of(testLocation));
+            when(equipmentTypeRepository.findById(999L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> assetService.getEligibleAssets(20L, 0, 20, 999L, null))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("EquipmentType not found: id=999");
+        }
+
+        @Test
+        @DisplayName("Trims search query before querying repository (BR-5)")
+        void getEligibleAssets_withQuery_trimsAndQueries() {
+            when(locationRepository.findById(20L)).thenReturn(Optional.of(testLocation));
+            when(assetRepository.findEligibleAssets(eq(20L), any(), eq("sony"), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of()));
+
+            assetService.getEligibleAssets(20L, 0, 20, null, "  sony  ");
+
+            verify(assetRepository).findEligibleAssets(eq(20L), any(), eq("sony"), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Throws InvalidPaginationException for invalid page or size (BR-5)")
+        void getEligibleAssets_invalidPagination_throwsInvalidPaginationException() {
+            assertThatThrownBy(() -> assetService.getEligibleAssets(20L, -1, 20, null, null))
+                    .isInstanceOf(InvalidPaginationException.class);
+
+            assertThatThrownBy(() -> assetService.getEligibleAssets(20L, 0, 0, null, null))
+                    .isInstanceOf(InvalidPaginationException.class);
+
+            assertThatThrownBy(() -> assetService.getEligibleAssets(20L, 0, 101, null, null))
+                    .isInstanceOf(InvalidPaginationException.class);
+        }
+    }
 }
+

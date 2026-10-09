@@ -81,4 +81,31 @@ public interface AssetRepository extends JpaRepository<Asset, Long>, JpaSpecific
      * @return matching assets, unordered
      */
     List<Asset> findByEquipmentTypeId(Long equipmentTypeId);
+
+    /**
+     * Finds assets eligible for ticket reporting at the given location (Issue #30).
+     *
+     * @param locationId      exact location ID
+     * @param equipmentTypeId optional equipment type filter
+     * @param query           optional search keyword (matches code, description, or equipment type name)
+     * @param pageable        pagination and sorting
+     * @return page of matching eligible assets
+     */
+    @EntityGraph(attributePaths = {"equipmentType", "location"})
+    @Query("""
+            select a from Asset a
+            where a.location.id = :locationId
+              and a.status in (com.nexora.asset.entity.AssetStatus.ACTIVE, com.nexora.asset.entity.AssetStatus.UNDER_MAINTENANCE)
+              and (:equipmentTypeId is null or a.equipmentType.id = :equipmentTypeId)
+              and (:query is null or :query = ''
+                   or lower(a.assetCode) like lower(concat('%', :query, '%'))
+                   or lower(a.description) like lower(concat('%', :query, '%'))
+                   or lower(a.equipmentType.name) like lower(concat('%', :query, '%')))
+            """)
+    Page<Asset> findEligibleAssets(
+            @Param("locationId") Long locationId,
+            @Param("equipmentTypeId") Long equipmentTypeId,
+            @Param("query") String query,
+            Pageable pageable);
 }
+
