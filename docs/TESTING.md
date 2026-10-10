@@ -1,5 +1,24 @@
 # Testing and local demo data
 
+## Technician work UI mock (#53)
+
+The current-assignment query and technician actions are available only with
+`VITE_TICKET_WORKFLOW_MOCK=true` on the Vite development server. Sign in with a
+real Technician account, then open `/my-work`. The browser mock uses real
+`/auth/me` identity and binds the first two Technician accounts to its demo
+assignments. The first has an `ASSIGNED` ticket: start it, add a work log, select
+JPEG/PNG result images, then resolve. The second has an `IN_PROGRESS` ticket.
+Resolved and reassigned tickets remain visible through `/tickets` history but are
+not in `/my-work` after their assignment ends. `window.ticketWorkflowMock.reset()`
+resets the fixtures; `failNextAction(409)` or `failNextAction(403)` demonstrates
+stale version or assignment loss. All mock success feedback explicitly says that
+the operation was simulated.
+
+With the flag off, or in a production build, `/my-work` and technician controls
+report unavailable future APIs while real ticket reads remain usable. The
+frontend tests cover the mock contract and UI; backend persistence and
+authorization tests belong to the later API issues.
+
 Tests must be deterministic, independent, and safe to run in any order. Shared fixtures live under `backend/src/test/java/com/nexora/testsupport`; feature-specific data remains with its feature tests.
 
 ## Choosing a test type

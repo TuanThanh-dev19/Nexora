@@ -1311,3 +1311,18 @@ select {
     scroll-behavior: auto !important;
   }
 }
+
+.work-previews {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.work-previews > div {
+  width: 130px;
+}
+.work-previews img {
+  width: 130px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}

@@ -8,6 +8,7 @@ export async function startTicketWorkflowMock() {
   const mock = createTicketWorkflowMock({
     baseUrl,
     actionDelay: 300,
+    adaptTechnicianIds: true,
     // Keep real authentication. This identity is used only for demo visibility/history.
     getActor: async (request) => {
       const authRequest = new Request(

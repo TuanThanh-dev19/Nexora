@@ -4,6 +4,7 @@ import { DashboardPage } from '../features/dashboard/pages/DashboardPage'
 import { HomePage } from '../features/home/pages/HomePage'
 import { TicketListPage } from '../features/tickets/pages/TicketListPage'
 import { TicketDetailPage } from '../features/tickets/pages/TicketDetailPage'
+import { MyWorkPage } from '../features/tickets/pages/MyWorkPage'
 import { PlaceholderPage } from '../shared/components/PlaceholderPage'
 import { ROLE_CODES } from '../shared/constants/roles'
 import { AppLayout } from '../shared/layouts/AppLayout'
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <DashboardPage /> },
           { path: 'tickets', element: <TicketListPage /> },
           { path: 'tickets/:ticketId', element: <TicketDetailPage /> },
+          {
+            element: <RequireRole roles={[ROLE_CODES.TECHNICIAN]} />,
+            children: [{ path: 'my-work', element: <MyWorkPage /> }],
+          },
           {
             element: (
               <RequireRole roles={[ROLE_CODES.MANAGER, ROLE_CODES.ADMIN]} />
