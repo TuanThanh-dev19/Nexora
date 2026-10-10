@@ -1,18 +1,28 @@
 import { Alert, Button } from 'react-bootstrap'
 import { FiAlertCircle } from 'react-icons/fi'
 
-export function TicketErrorState({ error, onRetry, onReset }) {
-  const status = error?.response?.status
-  const message =
-    status === 400
-      ? 'Tham số không hợp lệ. Vui lòng kiểm tra bộ lọc.'
-      : status === 401
-        ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
-        : status === 403 || status === 404
-          ? 'Không thể truy cập phiếu yêu cầu này.'
-          : status == null
-            ? 'Không thể kết nối máy chủ. Vui lòng thử lại.'
-            : 'Không thể tải dữ liệu lúc này. Vui lòng thử lại.'
+function errorMessage(status) {
+  switch (status) {
+    case 400:
+      return 'Tham số không hợp lệ. Vui lòng kiểm tra bộ lọc.'
+    case 401:
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+    case 403:
+    case 404:
+      return 'Không thể truy cập phiếu yêu cầu này.'
+    default:
+      if (status == null) return 'Không thể kết nối máy chủ. Vui lòng thử lại.'
+      return 'Không thể tải dữ liệu lúc này. Vui lòng thử lại.'
+  }
+}
+
+export function TicketErrorState({
+  error,
+  status = error?.response?.status,
+  onRetry,
+  onReset,
+}) {
+  const message = errorMessage(status)
   return (
     <Alert variant="danger" role="alert" className="ticket-error-state">
       <FiAlertCircle aria-hidden="true" className="error-state-icon" />

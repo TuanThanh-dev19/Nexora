@@ -2,6 +2,11 @@ import { Badge, Card, Col, Container, Row, Stack } from 'react-bootstrap'
 import { Link, useLocation, useParams } from 'react-router'
 import { FiEye } from 'react-icons/fi'
 import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
+import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { useAuth } from '../../auth/context/useAuth'
+import { TicketActionPanel } from '../components/TicketActionPanel'
+import { canManageTickets } from '../constants/ticketWorkflow'
+import { ticketViewerKey } from '../hooks/ticketQueryOptions'
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner'
 import { TicketErrorState } from '../components/TicketErrorState'
 import { TicketStatusBadge } from '../components/TicketStatusBadge'
@@ -18,6 +23,7 @@ import { formatTicketTime } from '../utils/ticketFormatting'
 export function TicketDetailPage() {
   const { ticketId } = useParams()
   const location = useLocation()
+  const { user } = useAuth()
   const query = useTicket(ticketId)
   const ticket = query.data
   const listSearch = location.state?.listSearch
@@ -33,11 +39,14 @@ export function TicketDetailPage() {
           <h1 className="h2 mb-0">Chi tiết phiếu yêu cầu</h1>
         </div>
         <span className="read-only-label">
-          <FiEye aria-hidden="true" /> Chỉ đọc
+          <FiEye aria-hidden="true" />{' '}
+          {isTicketWorkflowMockEnabled() && canManageTickets(user)
+            ? 'Mô phỏng workflow'
+            : 'Chỉ đọc'}
         </span>
       </div>
       {!isPositiveId(ticketId) ? (
-        <TicketErrorState error={{ response: { status: 400 } }} />
+        <TicketErrorState status={400} />
       ) : query.isError ? (
         <TicketErrorState error={query.error} onRetry={query.refetch} />
       ) : query.isPending ? (
@@ -88,6 +97,10 @@ export function TicketDetailPage() {
                 </Row>
               </Card.Body>
             </Card>
+            <TicketActionPanel
+              key={`${ticket.id}-${ticketViewerKey(user).join('-')}`}
+              ticket={ticket}
+            />
             <div className="ticket-detail-grid">
               <div>
                 <Card className="ticket-section mb-3">

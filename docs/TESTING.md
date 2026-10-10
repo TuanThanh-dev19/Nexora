@@ -139,6 +139,13 @@ stale JWT roles and revoked roles, ACTIVE checks, safe missing/invisible detail,
 stored form/option history, null optional references, metadata confidentiality,
 OpenAPI, and unchanged Ticket version/timestamps. Repository and unit/MVC tests
 cover strict query validation and ensure children are not queried before access.
+`AuthServiceCurrentUserTest` verifies malformed, missing, non-positive and overflowing
+JWT subjects are rejected before reading users. Ticket service tests verify invalid
+or inactive identities and users without read roles never query Tickets or children.
+`TicketResponseMapperTest` checks public DTOs, stored inactive options, ordered data,
+raw JSON precision, optional assets and metadata confidentiality.
+`TicketPersistenceSqlServerIntegrationTest` also rejects a stale detached Ticket
+after a competing SQL update increments its optimistic-lock version.
 
 From `backend`:
 
@@ -155,5 +162,77 @@ values, metadata-only attachments, location lookup, and private cache cancellati
 on logout/login/401. All mock Ticket data lives under feature test support and is
 never substituted into application responses. Test retry delays are zero to keep
 network/5xx retry assertions deterministic; production retains Query's defaults.
+List queries are validated by the backend. Frontend tests assert that Axios receives
+all URL query entries, including duplicates, unknown keys, empty values and large ID
+strings; a backend 400 is displayed without silently changing the URL. Controls read
+display values separately from the raw request, pagination uses the response page,
+and explicit reset clears the query. A network failure remains a network error even
+when the URL query is invalid. The small detail-ID guard remains for immediate UX.
 
 From `frontend`, run `npm run lint`, `npm run test`, and `npm run build`.
+
+## Manager review and assignment UI/mock (#52)
+
+The UI/mock contract is documented in `docs/API_CONVENTIONS.md`. The backend
+workflow/eligibility endpoints and current-assignment detail extension remain
+future work. Existing real detail reads do not depend on them.
+
+From `frontend`, run the focused tests:
+
+```powershell
+npm run test -- src/features/tickets
+```
+
+New validation, MSW HTTP, and rendered UI tests cover Manager/Admin/mixed roles
+and all ticket states; exact version payloads including zero; required reasons;
+candidate search/filter/pagination and empty/error states; soft overrides and
+hard blockers; consistent status/history/version/assignment/workload changes;
+same-status reassignment; 400/403/404/409/422 and network/server failures; pending
+locks; changed capacity refresh; stale dialog snapshots and explicit reload; and
+mock-disabled/production presentation. Existing read, auth/cache, and vocabulary
+tests remain regression checks. Run full `npm run lint`, `npm run test`, and
+`npm run build` before handoff. These mocks do not prove backend authorization or
+transactional concurrency.
+
+### Development demo
+
+Start the real backend/authentication normally, then enable only ticket mocks:
+
+```powershell
+$env:VITE_TICKET_WORKFLOW_MOCK='true'
+npm run dev
+# After stopping Vite:
+Remove-Item Env:VITE_TICKET_WORKFLOW_MOCK
+```
+
+Sign in with an ACTIVE Manager/Admin account (see `docs/LOCAL_ACCOUNTS_GUIDE.md`).
+Authentication is unchanged: mock requests obtain the current user from real
+`/auth/me`; mock history uses that user's identity. Ticket data is fictional and
+the panel/success notices explicitly identify simulation. Other APIs pass through.
+The worker starts before React mounts. Never use demo fixtures as real fallback
+responses when mocks are off.
+
+Fixture tickets: 10 SUBMITTED, 11 UNDER_REVIEW, 12 ASSIGNED, 13 IN_PROGRESS,
+14 REOPENED, 15 RESOLVED, 16 REJECTED, 17 CLOSED, 18 CANCELLED. Candidate 21 is
+eligible, 22 unavailable, 23 skill mismatch, 24 at capacity, 25 coverage mismatch,
+26 inactive, 27 missing TECHNICIAN role, 28 missing profile. Active assignments
+and counts change together after each action.
+
+The development browser console provides deterministic scenarios:
+
+```javascript
+window.ticketWorkflowMock.failNextAction(400) // Also accepts 403, 404, 409
+window.ticketWorkflowMock.reset() // Then reload the page to refresh query data
+```
+
+409 simulates a complete competing review/assignment/unassignment before rejecting
+the pending action, so reload shows a consistent newer version. Capacity errors
+can be demonstrated by submitting an eligible selection after capacity changes in
+the HTTP/UI tests; normal mismatch selection exposes required override input.
+Reloading the page also resets the in-memory fixtures. There is no persistence.
+
+`npm run preview` serves a production build: workflow stays unavailable even if
+the mock flag is true. Production never starts/imports the browser mock module.
+Verify that the real detail/history remain readable and no future candidate/action
+request is made. Responsive table/modal styling uses existing React Bootstrap
+components; browser/mobile visual QA should also be performed with real login.
