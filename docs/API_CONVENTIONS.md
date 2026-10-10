@@ -105,3 +105,126 @@ references remain null. Timestamps retain ISO-8601 offsets. No storage key,
 filesystem path, binary, comment attachment, password, or download URL is exposed.
 These endpoints perform no writes or workflow actions. OpenAPI publishes both
 response schemas and the query parameter allowlists.
+
+## Manager ticket workflow UI/mock contract (#52)
+
+This section fixes the frontend/demo contract for the later backend milestone.
+**The workflow endpoints and detail assignment extension are not implemented in
+the backend by this issue.** Existing real ticket reads retain the contract above.
+Production keeps workflow controls unavailable and never substitutes fixture data.
+
+### Actions and versions
+
+Only MANAGER/ADMIN controls are implemented here, using the existing
+`TicketWorkflowContract` and approved DEC-009/DEC-021 rules. No generic status patch
+or client-supplied target status is accepted.
+
+| POST suffix under `/api/v1/tickets/{ticketId}` | JSON body | Allowed source → target |
+| --- | --- | --- |
+| `/review` | `{version}` | SUBMITTED → UNDER_REVIEW |
+| `/reject` | `{version,reason}` | SUBMITTED/UNDER_REVIEW → REJECTED |
+| `/cancel` | `{version,reason}` | SUBMITTED/UNDER_REVIEW/ASSIGNED/IN_PROGRESS/REOPENED → CANCELLED |
+| `/assign` | `{version,technicianId,overrideReason?}` | UNDER_REVIEW/REOPENED → ASSIGNED |
+| `/reassign` | `{version,technicianId,reason,overrideReason?}` | ASSIGNED/IN_PROGRESS → ASSIGNED |
+| `/unassign` | `{version,reason}` | ASSIGNED/IN_PROGRESS → UNDER_REVIEW |
+
+`version` is the required non-negative **ticket** version, including zero, captured
+when the confirmation dialog opens. It is never the technician profile version.
+`technicianId` is the user ID shared with `technician_profiles.technician_id`.
+Reasons are non-blank and limited to 500 characters for this UI/mock contract, so
+they fit both history and assignment end reasons. Override reasons are non-blank
+when needed and limited to 1,000 characters. Input is trimmed, never truncated.
+Later backend owners must implement/confirm these documented request limits.
+
+The common mock action result is `{id,status,version,currentAssignment}`. Each
+success increments version, updates `updatedAt`, appends canonical status history,
+and changes assignment records together. `/cancel` writes
+`CANCEL_BEFORE_ASSIGNMENT` from SUBMITTED/UNDER_REVIEW and
+`CANCEL_AFTER_ASSIGNMENT` otherwise. Reassignment may have identical history source
+and target statuses; it still ends the old assignment and creates a new one with
+`acceptedAt: null`. Cancellation ends an active assignment when present.
+
+### Current assignment: future additive detail field
+
+The mock detail includes `currentAssignment: null | Assignment`. Real detail today
+omits this field; the UI displays "assignment data unavailable" for omission and
+"unassigned" only for explicit null. Assignee identity is not inferred from history.
+
+```json
+{
+  "id": 171,
+  "ticketId": 11,
+  "technician": {"technicianId": 21, "fullName": "Nguyễn An"},
+  "assignedBy": {"id": 5, "fullName": "Quản lý demo"},
+  "assignedAt": "2026-10-09T08:00:00+07:00",
+  "acceptedAt": null,
+  "endedAt": null,
+  "endReason": null,
+  "overrideReason": null
+}
+```
+
+### Candidate query and eligibility DTO
+
+`GET /api/v1/tickets/{ticketId}/eligible-technicians` uses only `page`, `size`,
+`query`, and `eligibility`. Pagination uses the shared zero-based envelope and
+size 1–100 (default 20). `query` is an optional non-blank, case-insensitive substring
+of full name/email. Optional `eligibility` is `ELIGIBLE`, `OVERRIDE_REQUIRED`, or
+`BLOCKED`; omission means all candidates. Blank, duplicate, or unknown parameters
+are rejected with 400. The dialog resets page/selection when search or filters
+change. Candidates include overrideable mismatches; the endpoint name does not
+mean all returned rows can be assigned without an override.
+
+Each `content` item has:
+
+```json
+{
+  "technicianId": 24,
+  "fullName": "Phạm Dũng",
+  "email": "technician24@example.test",
+  "userStatus": "ACTIVE",
+  "hasTechnicianRole": true,
+  "hasProfile": true,
+  "available": true,
+  "activeTicketCount": 1,
+  "maxActiveTickets": 1,
+  "skills": [{"id": 1, "name": "Thiết bị trình chiếu"}],
+  "serviceAreas": [{"id": 2, "name": "Phòng 201"}],
+  "eligibilityReasons": [{"code": "CAPACITY_REACHED", "overridable": true}]
+}
+```
+
+Profile-less rows have nullable capacity and empty skill/service-area arrays.
+Hard-blocked rows are shown disabled for explanation. `UNAVAILABLE`,
+`CAPACITY_REACHED`, `SKILL_MISMATCH`, and `COVERAGE_MISMATCH` require a documented
+override. `USER_INACTIVE`, `MISSING_TECHNICIAN_ROLE`,
+`MISSING_TECHNICIAN_PROFILE`, unknown reason codes, or `overridable: false` cannot
+be bypassed. The identity flags also block selection even if reason metadata is
+incorrectly permissive.
+
+Eligibility is supplied by this ticket-specific query. Technician profile/list
+APIs serve administration and do not replace it. The UI does not calculate skill
+matches, location ancestry, or capacity. Mock workload counts derive from fixture
+assignments with `endedAt: null`; skill/coverage matches are fixture scenarios,
+not a backend eligibility engine.
+
+### Errors and refresh
+
+Mocks use the existing RFC 9457 problem shape: 400 for invalid fields/query,
+401 for unavailable authentication, 403 for permission, 404 for unavailable
+tickets, 409 `stale-write` for expected-version conflicts, and 422
+`business-rule-violation` for invalid transitions/hard eligibility blockers or a
+mismatch without the required override. Field problems can include `fieldErrors`.
+Clients branch on status/type, never translated error text.
+
+After success the frontend invalidates the viewer's ticket list/detail/candidate
+queries and refetches active reads. It does not synthesize missing history from
+the action result. A 422 refreshes candidates so changed capacity/eligibility is
+visible. A 409 locks submission and offers explicit reload, closing/resetting the
+dialog before a new confirmation. Mutations are never retried automatically.
+Candidate/action failures stay local; read denial still uses the existing safe
+detail error behavior and session/cache cleanup.
+
+Mock tests verify presentation and fixture consistency only, not backend
+authorization, SQL transactions, or concurrency guarantees. Backend integration
+must confirm these proposed DTOs/query fields before enabling real workflow.

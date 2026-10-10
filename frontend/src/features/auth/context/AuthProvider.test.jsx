@@ -137,6 +137,19 @@ describe('AuthProvider', () => {
         client.setQueryData(['tickets', 1, 'REQUESTER', 'detail', '10'], {
           description: 'Private ticket',
         })
+        client.setQueryData(
+          [
+            'tickets',
+            1,
+            'REQUESTER',
+            'eligible-technicians',
+            '10',
+            { page: 0 },
+          ],
+          {
+            content: [{ fullName: 'Private candidate' }],
+          },
+        )
         let aborted = false
         const pending = client
           .fetchQuery({
@@ -173,6 +186,12 @@ describe('AuthProvider', () => {
       client.setQueryData(['tickets', 1, 'detail', '10'], {
         description: 'Private ticket',
       })
+      client.setQueryData(
+        ['tickets', 1, 'MANAGER', 'eligible-technicians', '10'],
+        {
+          content: [{ fullName: 'Private candidate' }],
+        },
+      )
       await act(async () =>
         window.dispatchEvent(new Event('nexora:unauthorized')),
       )

@@ -1,8 +1,4 @@
 import { useSearchParams } from 'react-router'
-import { TICKET_STATUSES } from '../constants/ticketStatuses'
-import { PRIORITIES } from '../../../shared/constants/priorities'
-
-const keys = ['page', 'size', 'sort', 'status', 'priority', 'locationId']
 export const TICKET_SORT_OPTIONS = [
   { value: 'createdAt,desc', label: 'Mới tạo trước' },
   { value: 'createdAt,asc', label: 'Cũ trước' },
@@ -21,58 +17,25 @@ export function isPositiveId(value) {
   )
 }
 
-export function parseTicketSearchParams(search) {
-  const fail = () => ({ params: null, error: { response: { status: 400 } } })
-  for (const key of search.keys()) {
-    if (!keys.includes(key) || search.getAll(key).length !== 1) return fail()
-  }
-  const integer = (key, fallback) => {
-    if (!search.has(key)) return fallback
-    const raw = search.get(key)
-    return /^[0-9]+$/.test(raw) ? Number(raw) : NaN
-  }
-  const page = integer('page', 0)
-  const size = integer('size', 20)
-  if (
-    !Number.isInteger(page) ||
-    page < 0 ||
-    page > 2147483647 ||
-    !Number.isInteger(size) ||
-    size < 1 ||
-    size > 100 ||
-    page * size > 2147483647
-  )
-    return fail()
+export function readTicketSearchParams(search) {
+  // Normalize sort only for the select control; the request keeps the raw query.
   const rawSort = search.get('sort') ?? 'createdAt,desc'
   const parts = rawSort.split(',')
-  const field = parts[0].trim()
-  const direction = parts.length === 1 ? 'asc' : parts[1].trim().toLowerCase()
-  if (
-    parts.length > 2 ||
-    !['createdAt', 'updatedAt', 'ticketNumber'].includes(field) ||
-    !['asc', 'desc'].includes(direction)
-  )
-    return fail()
-  const params = { page, size, sort: `${field},${direction}` }
-  for (const [key, allowed] of [
-    ['status', TICKET_STATUSES],
-    ['priority', PRIORITIES],
-  ]) {
-    if (search.has(key)) {
-      if (!allowed.includes(search.get(key))) return fail()
-      params[key] = search.get(key)
-    }
+  const sort =
+    parts.length <= 2
+      ? `${parts[0].trim()},${(parts[1] ?? 'asc').trim().toLowerCase()}`
+      : rawSort
+  return {
+    size: search.get('size') ?? '20',
+    sort,
+    status: search.get('status') ?? '',
+    priority: search.get('priority') ?? '',
+    locationId: search.get('locationId') ?? '',
   }
-  if (search.has('locationId')) {
-    if (!isPositiveId(search.get('locationId'))) return fail()
-    params.locationId = search.get('locationId')
-  }
-  return { params, error: null }
 }
 
 export function useTicketSearchParams() {
   const [search, setSearch] = useSearchParams()
-  const parsed = parseTicketSearchParams(search)
   function update(changes) {
     const next = new URLSearchParams(search)
     for (const [key, value] of Object.entries(changes)) {
@@ -83,5 +46,10 @@ export function useTicketSearchParams() {
       next.set('page', '0')
     setSearch(next)
   }
-  return { ...parsed, update, reset: () => setSearch(new URLSearchParams()) }
+  return {
+    params: readTicketSearchParams(search),
+    requestSearch: search.toString(),
+    update,
+    reset: () => setSearch(new URLSearchParams()),
+  }
 }

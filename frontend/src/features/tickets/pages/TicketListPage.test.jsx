@@ -177,21 +177,64 @@ describe('TicketListPage', () => {
       expect(screen.getByLabelText('Sắp xếp')).toHaveValue('ticketNumber,asc'),
     )
   })
-  it('does not silently discard an invalid URL and resets it explicitly', async () => {
-    let calls = 0
-    server.use(
-      http.get('*/api/v1/tickets', () => {
-        calls++
-        return HttpResponse.json(page([]))
-      }),
-    )
+  it.each([
+    'keyword=unsupported',
+    'page=0&page=1',
+    'priority=',
+    'size=101',
+    'sort=title,asc',
+    'locationId=9223372036854775808',
+    'locationId=9007199254740993&keyword=unsupported',
+  ])(
+    'sends %s unchanged, renders backend 400 and resets explicitly',
+    async (search) => {
+      const requests = []
+      server.use(
+        http.get('*/api/v1/locations/:locationId', () =>
+          HttpResponse.json({
+            id: 2,
+            name: 'Địa điểm',
+            code: 'L',
+            active: true,
+          }),
+        ),
+        http.get('*/api/v1/tickets', ({ request }) => {
+          const query = new URL(request.url).searchParams
+          requests.push([...query])
+          if ([...query].length > 0)
+            return HttpResponse.json({}, { status: 400 })
+          return HttpResponse.json(page([]))
+        }),
+      )
+      renderTicketApp(`/tickets?${search}`)
+      const alert = await screen.findByRole('alert')
+      expect(alert).toHaveTextContent('Tham số không hợp lệ')
+      expect(requests).toEqual([[...new URLSearchParams(search)]])
+      expect(screen.getByLabelText('URL hiện tại')).toHaveTextContent(
+        `/tickets?${search}`,
+      )
+      fireEvent.click(
+        within(alert).getByRole('button', { name: 'Đặt lại bộ lọc' }),
+      )
+      expect(
+        await screen.findByText('Không có phiếu yêu cầu phù hợp.'),
+      ).toBeInTheDocument()
+      expect(requests.at(-1)).toEqual([])
+      expect(screen.getByLabelText('URL hiện tại')).toHaveTextContent(
+        /^\/tickets$/,
+      )
+    },
+  )
+  it('shows a network failure for an invalid URL when no backend response arrives', async () => {
+    server.use(http.get('*/api/v1/tickets', () => HttpResponse.error()))
     renderTicketApp('/tickets?keyword=unsupported')
-    expect(screen.getByRole('alert')).toHaveTextContent('Tham số không hợp lệ')
-    expect(calls).toBe(0)
-    fireEvent.click(screen.getByRole('button', { name: 'Đặt lại bộ lọc' }))
-    expect(
-      await screen.findByText('Không có phiếu yêu cầu phù hợp.'),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Không thể kết nối máy chủ',
+    )
+    expect(screen.queryByText(/Tham số không hợp lệ/)).toBeNull()
+    expect(screen.getByLabelText('URL hiện tại')).toHaveTextContent(
+      'keyword=unsupported',
+    )
   })
   it('keeps the list search when navigating to detail and back', async () => {
     server.use(
@@ -212,16 +255,7 @@ describe('TicketListPage', () => {
   it('does not show cached data from another viewer', async () => {
     const { QueryClient } = await import('@tanstack/react-query')
     const client = new QueryClient()
-    client.setQueryData(
-      [
-        'tickets',
-        99,
-        'ADMIN',
-        'list',
-        { page: 0, size: 20, sort: 'createdAt,desc' },
-      ],
-      page(),
-    )
+    client.setQueryData(['tickets', 99, 'ADMIN', 'list', ''], page())
     server.use(
       http.get('*/api/v1/tickets', async () => {
         await delay(30)
