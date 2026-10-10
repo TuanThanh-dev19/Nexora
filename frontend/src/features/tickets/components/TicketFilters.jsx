@@ -6,6 +6,7 @@ import { TicketLocationFilter } from './TicketLocationFilter'
 
 export function TicketFilters({
   status = '',
+  statusOptions = TICKET_STATUS_OPTIONS,
   priority = '',
   locationId = '',
   onChange,
@@ -27,7 +28,7 @@ export function TicketFilters({
             onChange={(event) => onChange({ status: event.target.value })}
           >
             <option value="">Tất cả</option>
-            {TICKET_STATUS_OPTIONS.map(({ value, label }) => (
+            {statusOptions.map(({ value, label }) => (
               <option key={value} value={value}>
                 {label}
               </option>

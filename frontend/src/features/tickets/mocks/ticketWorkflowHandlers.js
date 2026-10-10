@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from 'msw'
 import { PRIORITIES } from '../../../shared/constants/priorities'
 import { TICKET_STATUSES } from '../constants/ticketStatuses'
+import { WORK_IMAGE_LIMIT, WORK_IMAGE_TYPES } from '../constants/technicianWork'
 import {
   canManageTickets,
   TICKET_WORKFLOW_ACTIONS,
@@ -10,6 +11,11 @@ import {
   candidateEligibility,
   validateWorkflowPayload,
 } from '../schemas/ticketWorkflowValidation'
+import {
+  validVersion,
+  validateResolution,
+  validateWorkLog,
+} from '../schemas/technicianWorkValidation'
 import {
   createWorkflowFixtures,
   WORKFLOW_MOCK_MANAGER,
@@ -75,9 +81,48 @@ export function createTicketWorkflowMock({
   baseUrl = '*/api/v1',
   getActor = () => WORKFLOW_MOCK_MANAGER,
   actionDelay = 0,
+  adaptTechnicianIds = false,
 } = {}) {
   let store = createWorkflowFixtures()
   let scenario = null
+  const adaptedIds = new Set()
+  const adaptTechnician = (actor) => {
+    if (!adaptTechnicianIds || !actor.roles.includes('TECHNICIAN')) return
+    if (
+      store.candidates.some((candidate) => candidate.technicianId === actor.id)
+    ) {
+      if ([21, 24].includes(actor.id)) adaptedIds.add(actor.id)
+      return
+    }
+    const originalId = [21, 24].find((id) => !adaptedIds.has(id))
+    if (!originalId) return
+    adaptedIds.add(originalId)
+    const candidate = store.candidates.find(
+      (item) => item.technicianId === originalId,
+    )
+    candidate.technicianId = actor.id
+    candidate.fullName = actor.fullName
+    store.assignments.forEach((assignment) => {
+      if (assignment.technician.technicianId === originalId) {
+        assignment.technician.technicianId = actor.id
+        assignment.technician.fullName = actor.fullName
+      }
+    })
+    store.tickets.forEach((ticket) =>
+      ticket.statusHistory.forEach((entry) => {
+        if (entry.changedBy?.id === originalId) {
+          entry.changedBy.id = actor.id
+          entry.changedBy.fullName = actor.fullName
+        }
+      }),
+    )
+    store.workLogs.forEach((log) => {
+      if (log.technician.id === originalId) {
+        log.technician.id = actor.id
+        log.technician.fullName = actor.fullName
+      }
+    })
+  }
   const visible = (ticket, actor) =>
     canManageTickets(actor) ||
     (actor.roles.includes('REQUESTER') && ticket.reporter.id === actor.id) ||
@@ -124,10 +169,360 @@ export function createTicketWorkflowMock({
       return {
         error: problem(403, 'access-denied', 'Không có quyền xem phiếu.'),
       }
+    adaptTechnician(actor)
     return { actor }
   }
   const ticketEndpoint = `${baseUrl.replace(/\/$/, '')}/tickets`
+  const workTicket = (id) =>
+    store.tickets.find((ticket) => String(ticket.id) === id)
+  const workAccess = (ticket, actor) =>
+    actor.roles.includes('TECHNICIAN') &&
+    ticket.currentAssignment?.endedAt === null &&
+    String(ticket.currentAssignment.technician.technicianId) ===
+      String(actor.id)
+  const workFailure = (ticket) => {
+    if (!scenario) return null
+    const failure = scenario
+    scenario = null
+    if (failure === 409) ticket.version += 1
+    if (failure === 403) {
+      ticket.currentAssignment.endedAt = new Date().toISOString()
+      ticket.currentAssignment = null
+    }
+    return problem(
+      failure,
+      failure === 409
+        ? 'stale-write'
+        : failure === 403
+          ? 'access-denied'
+          : 'resource-not-found',
+      'Lỗi mô phỏng theo kịch bản.',
+    )
+  }
+  const changedAt = (ticket) =>
+    new Date(
+      Math.max(Date.now(), Date.parse(ticket.updatedAt) + 1),
+    ).toISOString()
+  const actionResult = (ticket) => ({
+    id: ticket.id,
+    status: ticket.status,
+    version: ticket.version,
+    currentAssignment: ticket.currentAssignment,
+  })
+  const workActor = async (request) => {
+    const auth = await authenticate(request)
+    if (auth.error) return auth
+    if (!auth.actor.roles.includes('TECHNICIAN'))
+      return {
+        error: problem(
+          403,
+          'access-denied',
+          'Chỉ kỹ thuật viên được thao tác.',
+        ),
+      }
+    return auth
+  }
+  const workWrite = async (request, params, state) => {
+    if (actionDelay) await delay(actionDelay)
+    const auth = await workActor(request)
+    if (auth.error) return auth
+    const ticket = workTicket(params.ticketId)
+    if (!ticket || !visible(ticket, auth.actor))
+      return {
+        error: problem(404, 'resource-not-found', 'Không thể truy cập phiếu.'),
+      }
+    if (scenario) return { error: workFailure(ticket) }
+    if (!workAccess(ticket, auth.actor))
+      return {
+        error: problem(
+          422,
+          'business-rule-violation',
+          'Bạn không còn là người được phân công.',
+        ),
+      }
+    if (ticket.status !== state)
+      return {
+        error: problem(
+          422,
+          'business-rule-violation',
+          'Trạng thái phiếu không phù hợp.',
+        ),
+      }
+    return { ticket, actor: auth.actor }
+  }
+  const parseBody = async (request, fields) => {
+    let body
+    try {
+      body = await request.json()
+    } catch {
+      return { error: problem(400, 'malformed-request', 'JSON không hợp lệ.') }
+    }
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      Array.isArray(body) ||
+      Object.keys(body).some((key) => !fields.includes(key))
+    )
+      return {
+        error: problem(
+          400,
+          'validation-failed',
+          'Trường dữ liệu không hợp lệ.',
+        ),
+      }
+    return { body }
+  }
   const handlers = [
+    http.get(
+      `${baseUrl.replace(/\/$/, '')}/technicians/me/assigned-tickets`,
+      async ({ request }) => {
+        const auth = await workActor(request)
+        if (auth.error) return auth.error
+        const query = queryParameters(request, [
+          'page',
+          'size',
+          'sort',
+          'status',
+          'priority',
+          'locationId',
+        ])
+        if (query.error) return query.error
+        const { params, page, size } = query
+        const status = params.get('status')
+        const priority = params.get('priority')
+        const locationId = params.get('locationId')
+        const [sort, direction = 'asc', extra] = (
+          params.get('sort') ?? 'createdAt,desc'
+        ).split(',')
+        if (
+          !['createdAt', 'updatedAt', 'ticketNumber'].includes(sort) ||
+          !['asc', 'desc'].includes(direction.toLowerCase()) ||
+          extra !== undefined
+        )
+          return problem(400, 'unsupported-sort', 'Sắp xếp không hợp lệ.')
+        if (
+          (status && !['ASSIGNED', 'IN_PROGRESS'].includes(status)) ||
+          (priority && !PRIORITIES.includes(priority)) ||
+          (locationId && !/^[1-9]\d*$/.test(locationId))
+        )
+          return problem(400, 'unsupported-filter', 'Bộ lọc không hợp lệ.')
+        const content = store.tickets
+          .filter(
+            (ticket) =>
+              workAccess(ticket, auth.actor) &&
+              (!status || ticket.status === status) &&
+              (!priority || ticket.priority === priority) &&
+              (!locationId || String(ticket.location.id) === locationId),
+          )
+          .sort(
+            (a, b) =>
+              (direction.toLowerCase() === 'desc' ? -1 : 1) *
+                String(a[sort]).localeCompare(String(b[sort])) || a.id - b.id,
+          )
+          .map(
+            ({
+              description: _description,
+              version: _version,
+              formVersion: _formVersion,
+              dynamicValues: _dynamicValues,
+              attachments: _attachments,
+              statusHistory: _history,
+              ...summary
+            }) => summary,
+          )
+        return pageResponse(content, page, size)
+      },
+    ),
+    http.get(
+      `${ticketEndpoint}/:ticketId/work-logs`,
+      async ({ request, params }) => {
+        const auth = await authenticate(request)
+        if (auth.error) return auth.error
+        const ticket = workTicket(params.ticketId)
+        if (!ticket || !visible(ticket, auth.actor))
+          return problem(404, 'resource-not-found', 'Không thể truy cập phiếu.')
+        return HttpResponse.json(
+          store.workLogs
+            .filter((log) => log.ticketId === ticket.id)
+            .sort(
+              (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id,
+            ),
+        )
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/start`,
+      async ({ request, params }) => {
+        const access = await workWrite(request, params, 'ASSIGNED')
+        if (access.error) return access.error
+        const parsed = await parseBody(request, ['version'])
+        if (parsed.error) return parsed.error
+        const { ticket, actor } = access
+        if (!validVersion(parsed.body.version))
+          return problem(400, 'validation-failed', 'Phiên bản không hợp lệ.', {
+            version: 'Không hợp lệ',
+          })
+        if (parsed.body.version !== ticket.version)
+          return problem(409, 'stale-write', 'Phiếu đã thay đổi.')
+        const at = changedAt(ticket)
+        ticket.currentAssignment.acceptedAt = at
+        ticket.status = 'IN_PROGRESS'
+        ticket.version += 1
+        ticket.updatedAt = at
+        ticket.statusHistory.push({
+          id: ticket.id * 1000 + ticket.statusHistory.length,
+          fromStatus: 'ASSIGNED',
+          toStatus: 'IN_PROGRESS',
+          transitionAction: 'START_WORK',
+          reason: null,
+          changedBy: { id: actor.id, fullName: actor.fullName },
+          changedAt: at,
+        })
+        return HttpResponse.json(actionResult(ticket))
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/work-logs`,
+      async ({ request, params }) => {
+        const access = await workWrite(request, params, 'IN_PROGRESS')
+        if (access.error) return access.error
+        const parsed = await parseBody(request, [
+          'version',
+          'logType',
+          'content',
+          'startedAt',
+          'endedAt',
+          'minutesSpent',
+        ])
+        if (parsed.error) return parsed.error
+        const errors = validateWorkLog(parsed.body)
+        if (Object.keys(errors).length)
+          return problem(
+            400,
+            'validation-failed',
+            'Nhật ký không hợp lệ.',
+            errors,
+          )
+        const { ticket, actor } = access
+        if (parsed.body.version !== ticket.version)
+          return problem(409, 'stale-write', 'Phiếu đã thay đổi.')
+        const at = changedAt(ticket)
+        const log = {
+          id: Math.max(0, ...store.workLogs.map((item) => item.id)) + 1,
+          ticketId: ticket.id,
+          technician: { id: actor.id, fullName: actor.fullName },
+          ...parsed.body,
+          content: parsed.body.content.trim(),
+          endedAt: parsed.body.endedAt || null,
+          minutesSpent: parsed.body.minutesSpent ?? null,
+          createdAt: at,
+        }
+        delete log.version
+        store.workLogs.push(log)
+        ticket.version += 1
+        ticket.updatedAt = at
+        return HttpResponse.json(
+          { ...log, ticketVersion: ticket.version },
+          { status: 201 },
+        )
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/attachments`,
+      async ({ request, params }) => {
+        const access = await workWrite(request, params, 'IN_PROGRESS')
+        if (access.error) return access.error
+        let form
+        try {
+          form = await request.formData()
+        } catch {
+          return problem(400, 'malformed-request', 'Multipart không hợp lệ.')
+        }
+        const files = form.getAll('files')
+        let metadata
+        try {
+          metadata = JSON.parse(form.get('metadata'))
+        } catch {
+          return problem(400, 'validation-failed', 'Metadata không hợp lệ.')
+        }
+        if (
+          metadata?.attachmentType !== 'WORK_RESULT' ||
+          !files.length ||
+          files.length > 5 ||
+          files.some(
+            (file) =>
+              !WORK_IMAGE_TYPES.includes(file.type) ||
+              file.size < 1 ||
+              file.size > WORK_IMAGE_LIMIT,
+          )
+        )
+          return problem(400, 'validation-failed', 'Ảnh kết quả không hợp lệ.')
+        const { ticket, actor } = access
+        const at = changedAt(ticket)
+        const attachments = files.map((file, index) => ({
+          id:
+            Math.max(0, ...ticket.attachments.map((item) => item.id)) +
+            index +
+            1,
+          fieldDefinitionId: null,
+          attachmentType: 'WORK_RESULT',
+          originalName: file.name,
+          contentType: file.type,
+          sizeBytes: file.size,
+          uploadedBy: { id: actor.id, fullName: actor.fullName },
+          createdAt: at,
+        }))
+        ticket.attachments.push(...attachments)
+        return HttpResponse.json(attachments, { status: 201 })
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/resolve`,
+      async ({ request, params }) => {
+        const access = await workWrite(request, params, 'IN_PROGRESS')
+        if (access.error) return access.error
+        const parsed = await parseBody(request, [
+          'version',
+          'resolutionOutcome',
+          'resolutionSummary',
+        ])
+        if (parsed.error) return parsed.error
+        const { ticket, actor } = access
+        const errors = validateResolution(
+          parsed.body,
+          store.workLogs.filter((log) => log.ticketId === ticket.id).length,
+        )
+        if (errors.workLogs)
+          return problem(422, 'business-rule-violation', errors.workLogs)
+        if (Object.keys(errors).length)
+          return problem(
+            400,
+            'validation-failed',
+            'Kết quả không hợp lệ.',
+            errors,
+          )
+        if (parsed.body.version !== ticket.version)
+          return problem(409, 'stale-write', 'Phiếu đã thay đổi.')
+        const at = changedAt(ticket)
+        ticket.currentAssignment.endedAt = at
+        ticket.currentAssignment = null
+        ticket.status = 'RESOLVED'
+        ticket.resolutionOutcome = parsed.body.resolutionOutcome
+        ticket.resolutionSummary = parsed.body.resolutionSummary.trim()
+        ticket.version += 1
+        ticket.updatedAt = at
+        ticket.statusHistory.push({
+          id: ticket.id * 1000 + ticket.statusHistory.length,
+          fromStatus: 'IN_PROGRESS',
+          toStatus: 'RESOLVED',
+          transitionAction: 'RESOLVE',
+          reason: null,
+          changedBy: { id: actor.id, fullName: actor.fullName },
+          changedAt: at,
+        })
+        return HttpResponse.json(actionResult(ticket))
+      },
+    ),
     http.get(ticketEndpoint, async ({ request }) => {
       const auth = await authenticate(request)
       if (auth.error) return auth.error
@@ -459,6 +854,7 @@ export function createTicketWorkflowMock({
     reset() {
       store = createWorkflowFixtures()
       scenario = null
+      adaptedIds.clear()
     },
     failNextAction(status) {
       if (![400, 403, 404, 409].includes(status))

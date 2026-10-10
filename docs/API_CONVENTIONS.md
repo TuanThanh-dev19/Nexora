@@ -228,3 +228,55 @@ detail error behavior and session/cache cleanup.
 Mock tests verify presentation and fixture consistency only, not backend
 authorization, SQL transactions, or concurrency guarantees. Backend integration
 must confirm these proposed DTOs/query fields before enabling real workflow.
+
+## Technician work UI/mock contract (#53, proposed)
+
+These endpoints are implemented by the development/test mock only. Backend owners
+must confirm this contract before the UI can call real write endpoints. Production
+continues to use real ticket reads and reports technician work as unavailable.
+
+- `GET /technicians/me/assigned-tickets`: `page`, `size`, `sort`, `status`,
+  `priority`, `locationId`. Pagination and filter validation follow the ticket
+  read contract. Sorts: `createdAt`, `updatedAt`, `ticketNumber`, each asc/desc;
+  default `createdAt,desc`, ties by `id ASC`. Status is limited to `ASSIGNED` and
+  `IN_PROGRESS`. Each summary has the existing ticket summary fields plus the
+  documented `currentAssignment` object. Only `endedAt: null` assignments for
+  the authenticated technician are returned, including the count.
+- Detail uses the existing proposed additive `currentAssignment` field. Omission
+  means unknown, `null` means no active assignment. Ticket visibility alone never
+  authorizes a write.
+- `POST /tickets/{id}/start` takes `{version}` and returns
+  `{id,status,version,currentAssignment}`. Only the active assignee can move
+  `ASSIGNED` to `IN_PROGRESS`; the assignment gains `acceptedAt`.
+- `GET /tickets/{id}/work-logs` returns an array ordered by `createdAt ASC, id
+  ASC`. A visible ticket can be read, including by a historical assignee. Items
+  are `{id,ticketId,technician:{id,fullName},logType,content,startedAt,endedAt,
+  minutesSpent,createdAt}`.
+- `POST /tickets/{id}/work-logs` takes `{version,logType,content,startedAt,
+  endedAt,minutesSpent}`. The active assignee can add a log only in `IN_PROGRESS`.
+  Allowed types: `DIAGNOSIS`, `PROGRESS`, `REPAIR`, `RESOLUTION`,
+  `NO_FAULT_FOUND`. Content is nonblank. `startedAt` is a valid offset-bearing
+  timestamp; `endedAt` and `minutesSpent` may be null. End must not precede
+  start; supplied minutes must be a positive integer. The response is 201 with
+  the log DTO plus `ticketVersion`, which increments on success in this mock.
+- `POST /tickets/{id}/attachments` is multipart with a `metadata` JSON string
+  `{attachmentType:"WORK_RESULT"}` and up to five `files` parts. Only the active
+  assignee in `IN_PROGRESS` can upload JPEG/PNG images of at most 5 MiB each.
+  The mock accepts or rejects the whole request and returns an array of metadata
+  matching ticket detail; it does not publish file URLs. Upload does not change
+  the ticket version in the mock.
+- `POST /tickets/{id}/resolve` takes `{version,resolutionOutcome,
+  resolutionSummary}` and returns `{id,status,version,currentAssignment}`.
+  Only the active assignee in `IN_PROGRESS` with at least one saved work log can
+  resolve. The summary is nonblank. MVP outcomes are `FIXED`, `TEMPORARY_FIX`,
+  `NO_FAULT_FOUND`, `UNRESOLVED`. Resolve ends the assignment and records history.
+
+Writes return RFC 9457 problems: 400 malformed/invalid input, 401 unauthenticated,
+403 non-Technician actor, 404 invisible ticket, 409 stale ticket version, and 422
+invalid state, lost active assignment, or missing resolve prerequisites. A conflict
+requires reload and fresh confirmation. Mock mutations are never persisted on the
+server. The backend must independently enforce authorization and all rules.
+
+For the browser demo, the first two authenticated Technician IDs encountered are
+bound to the two fixture technicians when their IDs differ. This is only an
+in-memory fixture adjustment; `/auth/me` still provides the real actor.

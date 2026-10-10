@@ -7,6 +7,7 @@ import {
   FiPackage,
   FiTag,
   FiSliders,
+  FiTool,
 } from 'react-icons/fi'
 import { useAuth } from '../../features/auth/context/useAuth'
 import { ROLE_CODES } from '../constants/roles'
@@ -41,6 +42,11 @@ export function AppLayout() {
               <Nav.Link as={NavLink} to="/tickets" eventKey="tickets">
                 <FiTag aria-hidden="true" /> Phiếu yêu cầu
               </Nav.Link>
+              {user?.roles.includes(ROLE_CODES.TECHNICIAN) && (
+                <Nav.Link as={NavLink} to="/my-work" eventKey="my-work">
+                  <FiTool aria-hidden="true" /> Công việc của tôi
+                </Nav.Link>
+              )}
               {user?.roles.includes(ROLE_CODES.ADMIN) && (
                 <Nav.Link as={NavLink} to="/categories" eventKey="categories">
                   <FiSliders aria-hidden="true" /> Categories

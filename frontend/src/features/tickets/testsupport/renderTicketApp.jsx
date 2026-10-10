@@ -11,6 +11,7 @@ import {
 import { AuthContext } from '../../auth/context/auth-context'
 import { TicketListPage } from '../pages/TicketListPage'
 import { TicketDetailPage } from '../pages/TicketDetailPage'
+import { MyWorkPage } from '../pages/MyWorkPage'
 
 export function NavigationProbe() {
   const location = useLocation()
@@ -40,6 +41,7 @@ export function renderTicketApp(
           <Routes>
             <Route path="/tickets" element={<TicketListPage />} />
             <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="/my-work" element={<MyWorkPage />} />
           </Routes>
         </MemoryRouter>
       </AuthContext.Provider>

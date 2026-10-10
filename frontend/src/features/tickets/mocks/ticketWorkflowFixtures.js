@@ -164,5 +164,18 @@ export function createWorkflowFixtures() {
       currentAssignment,
     }
   })
-  return { tickets, candidates, assignments }
+  const workLogs = [
+    {
+      id: 1,
+      ticketId: 15,
+      technician: { id: 21, fullName: 'Nguyễn An' },
+      logType: 'REPAIR',
+      content: 'Đã kiểm tra và sửa thiết bị.',
+      startedAt: '2026-10-09T08:00:00+07:00',
+      endedAt: '2026-10-09T08:20:00+07:00',
+      minutesSpent: 20,
+      createdAt: '2026-10-09T08:20:00+07:00',
+    },
+  ]
+  return { tickets, candidates, assignments, workLogs }
 }

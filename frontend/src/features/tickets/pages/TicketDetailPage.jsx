@@ -5,7 +5,9 @@ import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
 import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
 import { useAuth } from '../../auth/context/useAuth'
 import { TicketActionPanel } from '../components/TicketActionPanel'
+import { TechnicianWorkPanel } from '../components/TechnicianWorkPanel'
 import { canManageTickets } from '../constants/ticketWorkflow'
+import { isCurrentTechnician } from '../constants/technicianWork'
 import { ticketViewerKey } from '../hooks/ticketQueryOptions'
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner'
 import { TicketErrorState } from '../components/TicketErrorState'
@@ -27,11 +29,13 @@ export function TicketDetailPage() {
   const query = useTicket(ticketId)
   const ticket = query.data
   const listSearch = location.state?.listSearch
-  const back = `/tickets${typeof listSearch === 'string' && listSearch.startsWith('?') ? listSearch : ''}`
+  const backBase =
+    location.state?.listFrom === 'my-work' ? '/my-work' : '/tickets'
+  const back = `${backBase}${typeof listSearch === 'string' && listSearch.startsWith('?') ? listSearch : ''}`
   return (
     <Container className="page-container">
       <Link to={back} className="back-link">
-        ← Danh sách phiếu
+        ← {backBase === '/my-work' ? 'Công việc của tôi' : 'Danh sách phiếu'}
       </Link>
       <div className="page-heading">
         <div>
@@ -40,7 +44,8 @@ export function TicketDetailPage() {
         </div>
         <span className="read-only-label">
           <FiEye aria-hidden="true" />{' '}
-          {isTicketWorkflowMockEnabled() && canManageTickets(user)
+          {isTicketWorkflowMockEnabled() &&
+          (canManageTickets(user) || isCurrentTechnician(ticket, user))
             ? 'Mô phỏng workflow'
             : 'Chỉ đọc'}
         </span>
@@ -101,6 +106,7 @@ export function TicketDetailPage() {
               key={`${ticket.id}-${ticketViewerKey(user).join('-')}`}
               ticket={ticket}
             />
+            <TechnicianWorkPanel ticket={ticket} />
             <div className="ticket-detail-grid">
               <div>
                 <Card className="ticket-section mb-3">
