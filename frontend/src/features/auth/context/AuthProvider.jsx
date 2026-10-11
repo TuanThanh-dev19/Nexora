@@ -7,11 +7,13 @@ const TOKEN_KEY = 'nexora.session.token'
 
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient()
-  const clearTicketCache = useCallback(() => {
-    void queryClient.cancelQueries({ queryKey: ['tickets'] })
-    queryClient.removeQueries({ queryKey: ['tickets'] })
+  const clearPrivateCache = useCallback(() => {
+    void queryClient.cancelQueries()
+    queryClient.clear()
   }, [queryClient])
   const [session, setSession] = useState({ token: null, user: null })
+  const [sessionError, setSessionError] = useState(null)
+  const [restoreAttempt, setRestoreAttempt] = useState(0)
   /**
    * isChecking = true khi đang verify token lúc khởi động tab.
    * ProtectedRoute và RequireRole phải kiểm tra flag này để tránh
@@ -20,13 +22,18 @@ export function AuthProvider({ children }) {
   const [isChecking, setIsChecking] = useState(
     () => sessionStorage.getItem(TOKEN_KEY) !== null,
   )
+  const retrySession = useCallback(() => {
+    setSessionError(null)
+    setIsChecking(true)
+    setRestoreAttempt((value) => value + 1)
+  }, [])
 
   // ---------------------------------------------------------------------------
   // Restore session khi tab mở lại trong cùng phiên
   // ---------------------------------------------------------------------------
   useEffect(() => {
     let active = true
-    clearTicketCache()
+    clearPrivateCache()
     const token = sessionStorage.getItem(TOKEN_KEY)
 
     if (!token) {
@@ -41,8 +48,13 @@ export function AuthProvider({ children }) {
         if (active && sessionStorage.getItem(TOKEN_KEY) === token)
           setSession({ token, user })
       })
-      .catch(() => {
+      .catch((error) => {
         if (!active || sessionStorage.getItem(TOKEN_KEY) !== token) return
+        const status = error?.response?.status
+        if (status !== 401 && status !== 403) {
+          setSessionError(error)
+          return
+        }
         // Token hết hạn hoặc user bị disable → xóa session
         sessionStorage.removeItem(TOKEN_KEY)
         setSession({ token: null, user: null })
@@ -53,17 +65,18 @@ export function AuthProvider({ children }) {
     return () => {
       active = false
     }
-  }, [clearTicketCache])
+  }, [clearPrivateCache, restoreAttempt])
 
   // ---------------------------------------------------------------------------
   // Logout
   // ---------------------------------------------------------------------------
   const logout = useCallback(() => {
-    clearTicketCache()
+    clearPrivateCache()
     sessionStorage.removeItem(TOKEN_KEY)
     setSession({ token: null, user: null })
+    setSessionError(null)
     setIsChecking(false)
-  }, [clearTicketCache])
+  }, [clearPrivateCache])
 
   // ---------------------------------------------------------------------------
   // Login: gọi sau khi backend trả accessToken + user
@@ -72,12 +85,13 @@ export function AuthProvider({ children }) {
   // ---------------------------------------------------------------------------
   const login = useCallback(
     ({ accessToken, user }) => {
-      clearTicketCache()
+      clearPrivateCache()
       sessionStorage.setItem(TOKEN_KEY, accessToken)
       setSession({ token: accessToken, user })
+      setSessionError(null)
       setIsChecking(false)
     },
-    [clearTicketCache],
+    [clearPrivateCache],
   )
 
   // ---------------------------------------------------------------------------
@@ -94,10 +108,12 @@ export function AuthProvider({ children }) {
       accessToken: session.token,
       isAuthenticated: session.token !== null && session.user !== null,
       isChecking,
+      sessionError,
+      retrySession,
       login,
       logout,
     }),
-    [session, isChecking, login, logout],
+    [session, isChecking, sessionError, retrySession, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

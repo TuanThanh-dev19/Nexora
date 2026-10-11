@@ -50,6 +50,22 @@ describe('ProtectedRoute', () => {
     expect(screen.queryByTestId('login-page')).toBeNull()
   })
 
+  it('keeps context and offers retry when session restore fails transiently', () => {
+    renderWithAuth({
+      isAuthenticated: false,
+      isChecking: false,
+      sessionError: new Error('Network'),
+      retrySession: () => {},
+    })
+    expect(
+      screen.getByRole('heading', {
+        name: 'Chưa kiểm tra được phiên đăng nhập',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Thử lại' })).toBeInTheDocument()
+    expect(screen.queryByTestId('login-page')).not.toBeInTheDocument()
+  })
+
   it('preserves filters in the login return destination', () => {
     renderWithAuth(
       { isAuthenticated: false, isChecking: false },

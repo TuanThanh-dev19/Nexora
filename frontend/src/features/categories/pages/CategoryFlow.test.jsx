@@ -230,7 +230,9 @@ describe('category administration flow', () => {
     async (role) => {
       app('/categories', [role])
       expect(
-        await screen.findByRole('heading', { name: 'Access denied' }),
+        await screen.findByRole('heading', {
+          name: 'Bạn không có quyền truy cập trang này',
+        }),
       ).toBeInTheDocument()
       expect(
         screen.queryByRole('button', { name: 'New category' }),
