@@ -12,3 +12,6 @@ export function isAdminUserMockEnabled() {
   return import.meta.env.DEV && import.meta.env.VITE_ADMIN_USER_MOCK === 'true'
 }
 
+export function isDashboardMockEnabled() {
+  return import.meta.env.DEV && import.meta.env.VITE_DASHBOARD_MOCK === 'true'
+}

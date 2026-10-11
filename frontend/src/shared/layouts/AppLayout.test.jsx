@@ -67,3 +67,48 @@ it('hides private navigation until session checking completes', () => {
     screen.queryByRole('link', { name: 'Đăng nhập' }),
   ).not.toBeInTheDocument()
 })
+
+it('announces the mobile menu state and collapses after selecting a page', async () => {
+  render(
+    <AuthContext.Provider
+      value={{ user: { fullName: 'Requester', roles: ['REQUESTER'] } }}
+    >
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>
+    </AuthContext.Provider>,
+  )
+  const user = userEvent.setup()
+  const toggle = screen.getByRole('button', {
+    name: 'Mở hoặc đóng điều hướng',
+  })
+  expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  toggle.focus()
+  await user.keyboard('{Enter}')
+  expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await user.click(screen.getByRole('link', { name: 'Tổng quan' }))
+  expect(toggle).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('also collapses the anonymous menu when selecting login or the brand', async () => {
+  render(
+    <AuthContext.Provider value={{ user: null }}>
+      <MemoryRouter initialEntries={['/login']}>
+        <AppLayout />
+      </MemoryRouter>
+    </AuthContext.Provider>,
+  )
+  const user = userEvent.setup()
+  const toggle = screen.getByRole('button', {
+    name: 'Mở hoặc đóng điều hướng',
+  })
+  for (const link of [
+    screen.getByRole('link', { name: 'Đăng nhập' }),
+    screen.getByRole('link', { name: /Nexora Logo/ }),
+  ]) {
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await user.click(link)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  }
+})

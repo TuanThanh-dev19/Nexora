@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import {
@@ -16,6 +17,7 @@ import { SessionCheckingSpinner } from '../components/SessionCheckingSpinner'
 const NAV_ICONS = { grid: FiGrid, tag: FiTag, plus: FiPlus, tool: FiTool }
 
 export function AppLayout() {
+  const [expanded, setExpanded] = useState(false)
   const location = useLocation()
   const { user, logout, isChecking } = useAuth()
   const name = user?.fullName ?? user?.displayName ?? 'Tài khoản'
@@ -27,9 +29,20 @@ export function AppLayout() {
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>
-      <Navbar expand="xl" collapseOnSelect className="app-navbar">
+      <Navbar
+        expand="xl"
+        collapseOnSelect
+        className="app-navbar"
+        expanded={expanded}
+        onToggle={setExpanded}
+      >
         <Container>
-          <Navbar.Brand as={NavLink} to="/" className="brand">
+          <Navbar.Brand
+            as={NavLink}
+            to="/"
+            className="brand"
+            onClick={() => setExpanded(false)}
+          >
             <span className="brand-mark">
               <img src="/logo.jpg" alt="Nexora Logo" />
             </span>
@@ -39,7 +52,8 @@ export function AppLayout() {
           </Navbar.Brand>
           <Navbar.Toggle
             aria-controls="main-navigation"
-            aria-label="Mở hoặc đóng điều hướng"
+            label="Mở hoặc đóng điều hướng"
+            aria-expanded={expanded}
           />
           <Navbar.Collapse id="main-navigation">
             <Nav className="me-auto app-navigation" activeKey={null}>
@@ -99,7 +113,11 @@ export function AppLayout() {
                 </Button>
               </div>
             ) : (
-              <NavLink to="/login" className="btn btn-primary btn-sm">
+              <NavLink
+                to="/login"
+                className="btn btn-primary btn-sm"
+                onClick={() => setExpanded(false)}
+              >
                 <FiLogIn aria-hidden="true" /> Đăng nhập
               </NavLink>
             )}

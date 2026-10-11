@@ -199,7 +199,7 @@ export function CreateUserModal({ show, onHide, onSubmit, isPending = false, ser
           <Button
             variant="outline-secondary"
             disabled={isPending}
-            onClick={onHide}
+            onClick={handleClose}
           >
             Hủy
           </Button>

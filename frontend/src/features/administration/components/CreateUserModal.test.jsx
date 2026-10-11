@@ -3,6 +3,25 @@ import { describe, expect, it, vi } from 'vitest'
 import { CreateUserModal } from './CreateUserModal'
 
 describe('CreateUserModal', () => {
+  it('discards invalid draft state when Cancel closes the modal', async () => {
+    const onHide = vi.fn()
+    const props = { onHide, onSubmit: vi.fn() }
+    const { rerender } = render(<CreateUserModal show {...props} />)
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Requester' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo tài khoản' }))
+    await screen.findByText('Vui lòng chọn ít nhất một vai trò')
+    fireEvent.click(screen.getByRole('button', { name: 'Hủy' }))
+    expect(onHide).toHaveBeenCalledOnce()
+    rerender(<CreateUserModal show={false} {...props} />)
+    rerender(<CreateUserModal show {...props} />)
+    expect(screen.getByRole('checkbox', { name: 'Requester' })).toBeChecked()
+    expect(
+      screen.queryByText('Vui lòng chọn ít nhất một vai trò'),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Email không được để trống')).not.toBeInTheDocument()
+    expect(props.onSubmit).not.toHaveBeenCalled()
+  })
+
   it('renders required form fields and role checkboxes', () => {
     render(<CreateUserModal show={true} onHide={vi.fn()} onSubmit={vi.fn()} />)
 

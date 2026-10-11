@@ -18,6 +18,7 @@ import { CategoryVersionsPage } from '../features/categories/pages/CategoryVersi
 import { FormEditorPage } from '../features/categories/pages/FormEditorPage'
 import { UserListPage } from '../features/administration/pages/UserListPage'
 import { UserDetailPage } from '../features/administration/pages/UserDetailPage'
+import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
   {
@@ -26,6 +27,15 @@ export const appRoutes = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'login', element: <LoginPage /> },
+      ...(import.meta.env.DEV && isDashboardMockEnabled()
+        ? [
+            {
+              path: 'dev/dashboard',
+              lazy: () =>
+                import('../features/dashboard/pages/DashboardPreviewPage'),
+            },
+          ]
+        : []),
       {
         element: <ProtectedRoute />,
         children: [

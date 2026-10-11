@@ -22,7 +22,7 @@ export function MetricCard({
         </div>
         {state === 'loading' ? (
           <Placeholder as="div" animation="glow" className="display-6 mt-2">
-            <Placeholder xs={4} aria-label={`Loading ${label}`} />
+            <Placeholder xs={4} aria-label={`Đang tải ${label}`} />
           </Placeholder>
         ) : (
           <div className="metric-value mt-2">
