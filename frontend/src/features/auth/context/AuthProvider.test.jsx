@@ -35,8 +35,16 @@ function render(
 }
 
 function SessionProbe() {
-  const { user, accessToken, isAuthenticated, isChecking, logout, login } =
-    useAuth()
+  const {
+    user,
+    accessToken,
+    isAuthenticated,
+    isChecking,
+    sessionError,
+    retrySession,
+    logout,
+    login,
+  } = useAuth()
   return (
     <>
       <span data-testid="is-checking">{isChecking ? 'checking' : 'done'}</span>
@@ -46,6 +54,8 @@ function SessionProbe() {
       <span data-testid="token">{accessToken ?? 'none'}</span>
       <span data-testid="roles">{user?.roles?.join(',') ?? 'none'}</span>
       <button onClick={logout}>Logout</button>
+      <span data-testid="session-error">{sessionError ? 'error' : 'none'}</span>
+      <button onClick={retrySession}>Retry session</button>
       <button
         onClick={() =>
           login({ accessToken: 'second.token', user: { ...MOCK_USER, id: 2 } })
@@ -114,6 +124,30 @@ describe('AuthProvider', () => {
       expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
       expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
     })
+
+    it('preserves the token on network failure and restores on explicit retry', async () => {
+      sessionStorage.setItem(TOKEN_KEY, MOCK_TOKEN)
+      getCurrentUserApi
+        .mockRejectedValueOnce(new Error('Network unavailable'))
+        .mockResolvedValueOnce(MOCK_USER)
+      render(
+        <AuthProvider>
+          <SessionProbe />
+        </AuthProvider>,
+      )
+      await waitFor(() =>
+        expect(screen.getByTestId('session-error')).toHaveTextContent('error'),
+      )
+      expect(sessionStorage.getItem(TOKEN_KEY)).toBe(MOCK_TOKEN)
+      expect(screen.getByTestId('auth-state')).toHaveTextContent('anonymous')
+      fireEvent.click(screen.getByText('Retry session'))
+      await waitFor(() =>
+        expect(screen.getByTestId('auth-state')).toHaveTextContent(
+          'authenticated',
+        ),
+      )
+      expect(screen.getByTestId('session-error')).toHaveTextContent('none')
+    })
   })
 
   describe('Logout', () => {
@@ -136,6 +170,10 @@ describe('AuthProvider', () => {
         )
         client.setQueryData(['tickets', 1, 'REQUESTER', 'detail', '10'], {
           description: 'Private ticket',
+        })
+        client.setQueryData(['dashboard', 'summary'], { openTickets: 12 })
+        client.setQueryData(['admin', 'users'], {
+          email: 'private@example.test',
         })
         client.setQueryData(
           [
@@ -167,6 +205,8 @@ describe('AuthProvider', () => {
         await pending
         expect(aborted).toBe(true)
         expect(client.getQueriesData({ queryKey: ['tickets'] })).toEqual([])
+        expect(client.getQueriesData({ queryKey: ['dashboard'] })).toEqual([])
+        expect(client.getQueriesData({ queryKey: ['admin'] })).toEqual([])
       },
     )
 

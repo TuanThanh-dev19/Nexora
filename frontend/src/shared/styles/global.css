@@ -20,6 +20,41 @@
 body {
   margin: 0;
 }
+
+:focus-visible {
+  outline: 3px solid var(--nexa-brand);
+  outline-offset: 3px;
+}
+
+.account-details {
+  min-width: 0;
+}
+
+.account-details strong {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-details small {
+  overflow-wrap: anywhere;
+}
+
+.app-navigation .dropdown-item {
+  padding-block: 10px;
+}
+
+@media (max-width: 1199.98px) {
+  .app-navigation {
+    margin-block: 18px;
+  }
+  .account-menu {
+    padding-top: 16px;
+    padding-bottom: 8px;
+    border-top: 1px solid var(--nexa-border);
+  }
+}
 a {
   text-underline-offset: 4px;
 }

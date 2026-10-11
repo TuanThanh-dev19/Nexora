@@ -1,32 +1,48 @@
-import { Button, Container, Nav, Navbar } from 'react-bootstrap'
-import { NavLink, Outlet } from 'react-router'
+import { useState } from 'react'
+import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import {
   FiGrid,
   FiLogIn,
   FiLogOut,
-  FiPackage,
+  FiPlus,
   FiTag,
-  FiSliders,
   FiTool,
   FiUsers,
 } from 'react-icons/fi'
 import { useAuth } from '../../features/auth/context/useAuth'
-import { ROLE_CODES } from '../constants/roles'
+import { navigationForRoles } from '../constants/navigation'
+import { SessionCheckingSpinner } from '../components/SessionCheckingSpinner'
 
-const ASSET_MANAGEMENT_ROLES = [ROLE_CODES.MANAGER, ROLE_CODES.ADMIN]
+const NAV_ICONS = { grid: FiGrid, tag: FiTag, plus: FiPlus, tool: FiTool }
 
 export function AppLayout() {
-  const { user, logout } = useAuth()
+  const [expanded, setExpanded] = useState(false)
+  const location = useLocation()
+  const { user, logout, isChecking } = useAuth()
   const name = user?.fullName ?? user?.displayName ?? 'Tài khoản'
+  const links = user && !isChecking ? navigationForRoles(user.roles) : []
+  const management = links.filter((item) => item.group === 'management')
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>
-      <Navbar expand="lg" collapseOnSelect className="app-navbar">
+      <Navbar
+        expand="xl"
+        collapseOnSelect
+        className="app-navbar"
+        expanded={expanded}
+        onToggle={setExpanded}
+      >
         <Container>
-          <Navbar.Brand as={NavLink} to="/" className="brand">
+          <Navbar.Brand
+            as={NavLink}
+            to="/"
+            className="brand"
+            onClick={() => setExpanded(false)}
+          >
             <span className="brand-mark">
               <img src="/logo.jpg" alt="Nexora Logo" />
             </span>
@@ -34,46 +50,62 @@ export function AppLayout() {
               Nexora<small>CAMPUS CARE</small>
             </span>
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="main-navigation" />
+          <Navbar.Toggle
+            aria-controls="main-navigation"
+            label="Mở hoặc đóng điều hướng"
+            aria-expanded={expanded}
+          />
           <Navbar.Collapse id="main-navigation">
             <Nav className="me-auto app-navigation" activeKey={null}>
-              <Nav.Link as={NavLink} to="/dashboard" eventKey="dashboard">
-                <FiGrid aria-hidden="true" /> Tổng quan
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/tickets" eventKey="tickets">
-                <FiTag aria-hidden="true" /> Phiếu yêu cầu
-              </Nav.Link>
-              {user?.roles.includes(ROLE_CODES.TECHNICIAN) && (
-                <Nav.Link as={NavLink} to="/my-work" eventKey="my-work">
-                  <FiTool aria-hidden="true" /> Công việc của tôi
-                </Nav.Link>
-              )}
-              {user?.roles.includes(ROLE_CODES.ADMIN) && (
-                <Nav.Link as={NavLink} to="/categories" eventKey="categories">
-                  <FiSliders aria-hidden="true" /> Categories
-                </Nav.Link>
-              )}
-              {user?.roles.includes(ROLE_CODES.ADMIN) && (
-                <Nav.Link as={NavLink} to="/administration/users" eventKey="admin-users">
-                  <FiUsers aria-hidden="true" /> Quản lý người dùng
-                </Nav.Link>
-              )}
-              {user?.roles.some((role) =>
-                ASSET_MANAGEMENT_ROLES.includes(role),
-              ) && (
-                <Nav.Link as={NavLink} to="/assets" eventKey="assets">
-                  <FiPackage aria-hidden="true" /> Tài sản
-                </Nav.Link>
+              {links
+                .filter((item) => !item.group)
+                .map((item) => {
+                  const Icon = NAV_ICONS[item.icon]
+                  return (
+                    <Nav.Link
+                      as={NavLink}
+                      to={item.path}
+                      end={item.end && location.pathname === '/tickets/new'}
+                      eventKey={item.path}
+                      key={item.path}
+                    >
+                      <Icon aria-hidden="true" /> {item.label}
+                    </Nav.Link>
+                  )
+                })}
+              {management.length > 0 && (
+                <NavDropdown
+                  title={
+                    <>
+                      <FiUsers aria-hidden="true" /> Quản lý
+                    </>
+                  }
+                  id="management-navigation"
+                >
+                  {management.map((item) => (
+                    <NavDropdown.Item
+                      as={NavLink}
+                      to={item.path}
+                      end={item.end && location.pathname === '/technicians/me'}
+                      eventKey={item.path}
+                      key={item.path}
+                    >
+                      {item.label}
+                    </NavDropdown.Item>
+                  ))}
+                </NavDropdown>
               )}
             </Nav>
 
-            {user ? (
+            {isChecking ? (
+              <SessionCheckingSpinner />
+            ) : user ? (
               <div className="account-menu">
                 <span className="account-avatar" aria-hidden="true">
                   {name.trim().charAt(0).toUpperCase()}
                 </span>
                 <span className="account-details">
-                  <strong>{name}</strong>
+                  <strong title={name}>{name}</strong>
                   <small>{user.roles.join(' · ')}</small>
                 </span>
                 <Button variant="outline-secondary" size="sm" onClick={logout}>
@@ -81,7 +113,11 @@ export function AppLayout() {
                 </Button>
               </div>
             ) : (
-              <NavLink to="/login" className="btn btn-primary btn-sm">
+              <NavLink
+                to="/login"
+                className="btn btn-primary btn-sm"
+                onClick={() => setExpanded(false)}
+              >
                 <FiLogIn aria-hidden="true" /> Đăng nhập
               </NavLink>
             )}
