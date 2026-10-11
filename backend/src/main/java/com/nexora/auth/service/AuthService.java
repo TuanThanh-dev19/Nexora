@@ -62,7 +62,7 @@ public class AuthService {
         // 1. Normalize email: trim khoảng trắng + uppercase để match computed column DB
         String normalizedEmail = request.email().trim().toUpperCase();
 
-        // 2. Tìm user với roles eager-loaded trong 1 query (tránh N+1)
+        // 2. Tìm user với roles eager-loaded trong 1 query
         AppUser user = userRepository
                 .findByNormalizedEmailWithRoles(normalizedEmail)
                 .orElseThrow(() -> {

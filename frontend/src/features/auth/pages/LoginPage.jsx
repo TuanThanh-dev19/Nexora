@@ -14,14 +14,17 @@ export function LoginPage() {
 
   const handleLogin = async (values) => {
     setError(null)
+    const normalizedEmail = values.email ? values.email.trim() : ''
     try {
-      const data = await loginApi(values.email, values.password)
+      const data = await loginApi(normalizedEmail, values.password)
       login({ accessToken: data.accessToken, user: data.user })
       const redirect = location.state?.from ?? '/dashboard'
       navigate(redirect, { replace: true })
     } catch (err) {
       if (err?.response?.status === 401) {
         setError('Email hoặc mật khẩu không đúng.')
+      } else if (err?.response?.status === 400) {
+        setError('Thông tin đăng nhập không hợp lệ.')
       } else {
         setError('Lỗi kết nối. Vui lòng thử lại sau.')
       }

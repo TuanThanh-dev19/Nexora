@@ -7,3 +7,8 @@ export function isTicketWorkflowMockEnabled() {
     import.meta.env.DEV && import.meta.env.VITE_TICKET_WORKFLOW_MOCK === 'true'
   )
 }
+
+export function isAdminUserMockEnabled() {
+  return import.meta.env.DEV && import.meta.env.VITE_ADMIN_USER_MOCK === 'true'
+}
+

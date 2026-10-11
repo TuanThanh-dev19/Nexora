@@ -6,6 +6,7 @@ import { TicketListPage } from '../features/tickets/pages/TicketListPage'
 import { TicketDetailPage } from '../features/tickets/pages/TicketDetailPage'
 import { MyWorkPage } from '../features/tickets/pages/MyWorkPage'
 import { PlaceholderPage } from '../shared/components/PlaceholderPage'
+import { ForbiddenPage } from '../shared/components/ForbiddenPage'
 import { ROLE_CODES } from '../shared/constants/roles'
 import { AppLayout } from '../shared/layouts/AppLayout'
 import { ProtectedRoute } from './routes/ProtectedRoute'
@@ -13,6 +14,8 @@ import { RequireRole } from './routes/RequireRole'
 import { CategoryListPage } from '../features/categories/pages/CategoryListPage'
 import { CategoryVersionsPage } from '../features/categories/pages/CategoryVersionsPage'
 import { FormEditorPage } from '../features/categories/pages/FormEditorPage'
+import { UserListPage } from '../features/administration/pages/UserListPage'
+import { UserDetailPage } from '../features/administration/pages/UserDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -60,12 +63,15 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'administration',
-                element: (
-                  <PlaceholderPage
-                    title="Administration"
-                    description="Users, roles, permissions, and audit logs belong here."
-                  />
-                ),
+                element: <Navigate to="/administration/users" replace />,
+              },
+              {
+                path: 'administration/users',
+                element: <UserListPage />,
+              },
+              {
+                path: 'administration/users/:userId',
+                element: <UserDetailPage />,
               },
             ],
           },
@@ -73,14 +79,10 @@ export const router = createBrowserRouter([
       },
       {
         path: 'unauthorized',
-        element: (
-          <PlaceholderPage
-            title="403 — Unauthorized"
-            description="Your current role cannot access this page."
-          />
-        ),
+        element: <ForbiddenPage />,
       },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ])
+

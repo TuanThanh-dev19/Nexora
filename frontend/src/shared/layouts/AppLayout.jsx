@@ -8,6 +8,7 @@ import {
   FiTag,
   FiSliders,
   FiTool,
+  FiUsers,
 } from 'react-icons/fi'
 import { useAuth } from '../../features/auth/context/useAuth'
 import { ROLE_CODES } from '../constants/roles'
@@ -52,6 +53,11 @@ export function AppLayout() {
                   <FiSliders aria-hidden="true" /> Categories
                 </Nav.Link>
               )}
+              {user?.roles.includes(ROLE_CODES.ADMIN) && (
+                <Nav.Link as={NavLink} to="/administration/users" eventKey="admin-users">
+                  <FiUsers aria-hidden="true" /> Quản lý người dùng
+                </Nav.Link>
+              )}
               {user?.roles.some((role) =>
                 ASSET_MANAGEMENT_ROLES.includes(role),
               ) && (
@@ -60,6 +66,7 @@ export function AppLayout() {
                 </Nav.Link>
               )}
             </Nav>
+
             {user ? (
               <div className="account-menu">
                 <span className="account-avatar" aria-hidden="true">

@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Form } from 'react-bootstrap'
+import { Button, Form, InputGroup } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
-import { FiArrowRight } from 'react-icons/fi'
+import { FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi'
 import { loginSchema } from '../schemas/authSchema'
 
 export function LoginForm({ onSubmit }) {
+  const [showPassword, setShowPassword] = useState(false)
   const {
     register,
     handleSubmit,
@@ -25,6 +27,7 @@ export function LoginForm({ onSubmit }) {
           type="email"
           autoComplete="username"
           placeholder="Email của bạn"
+          disabled={isSubmitting}
           isInvalid={Boolean(errors.email)}
           {...register('email')}
         />
@@ -35,16 +38,29 @@ export function LoginForm({ onSubmit }) {
 
       <Form.Group className="mb-3" controlId="login-password">
         <Form.Label>Mật khẩu</Form.Label>
-        <Form.Control
-          type="password"
-          autoComplete="current-password"
-          placeholder="Nhập mật khẩu"
-          isInvalid={Boolean(errors.password)}
-          {...register('password')}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors.password?.message}
-        </Form.Control.Feedback>
+        <InputGroup hasValidation>
+          <Form.Control
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            placeholder="Nhập mật khẩu"
+            disabled={isSubmitting}
+            isInvalid={Boolean(errors.password)}
+            {...register('password')}
+          />
+          <Button
+            variant="outline-secondary"
+            type="button"
+            disabled={isSubmitting}
+            id="btn-toggle-password"
+            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}
+          </Button>
+          <Form.Control.Feedback type="invalid">
+            {errors.password?.message}
+          </Form.Control.Feedback>
+        </InputGroup>
       </Form.Group>
 
       <Button
@@ -59,3 +75,4 @@ export function LoginForm({ onSubmit }) {
     </Form>
   )
 }
+

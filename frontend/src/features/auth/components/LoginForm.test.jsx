@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { LoginForm } from './LoginForm'
 
@@ -16,8 +16,23 @@ describe('LoginForm', () => {
     expect(screen.getByRole('button', { name: 'Đăng nhập' })).toBeInTheDocument()
   })
 
-  // Lưu ý: react-hook-form isSubmitting state khó test trực tiếp qua props
-  // Nếu muốn test trạng thái disable, cần render form và click submit rồi đợi,
-  // nhưng vì ở đây ta chỉ dùng LoginForm tĩnh, ta có thể tạm bỏ qua việc test 
-  // isSubmitting cụ thể trừ khi pass nó vào như một prop bên ngoài.
+  it('toggles password visibility when clicking toggle button', async () => {
+    render(<LoginForm onSubmit={vi.fn()} />)
+    const passwordInput = screen.getByLabelText('Mật khẩu')
+    const toggleButton = screen.getByRole('button', { name: 'Hiện mật khẩu' })
+
+    expect(passwordInput).toHaveAttribute('type', 'password')
+    expect(toggleButton).toBeInTheDocument()
+
+    // Toggle on
+    fireEvent.click(toggleButton)
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'Ẩn mật khẩu' })).toBeInTheDocument()
+
+    // Toggle off
+    fireEvent.click(screen.getByRole('button', { name: 'Ẩn mật khẩu' }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+    expect(screen.getByRole('button', { name: 'Hiện mật khẩu' })).toBeInTheDocument()
+  })
 })
+
