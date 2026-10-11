@@ -13,7 +13,9 @@ function parseDashboardSummary(payload) {
   )
   const hasGeneratedAt =
     typeof payload?.generatedAt === 'string' &&
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(payload.generatedAt) &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      payload.generatedAt,
+    ) &&
     !Number.isNaN(Date.parse(payload.generatedAt))
 
   if (!hasValidMetrics || !hasGeneratedAt) {
