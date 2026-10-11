@@ -10,28 +10,29 @@ import { ROLE_CODES } from '../../../shared/constants/roles'
 import { useAuth } from '../../auth/context/useAuth'
 import { MetricCard } from '../components/MetricCard'
 import { useDashboardSummary } from '../hooks/useDashboardSummary'
+import { formatDashboardTime } from '../utils/formatDashboardTime'
 
 const METRICS = [
   {
-    label: 'Open tickets',
+    label: 'Phiếu đang mở',
     field: 'openTickets',
     icon: FiInbox,
     accent: 'teal',
   },
   {
-    label: 'In progress',
+    label: 'Đang xử lý',
     field: 'inProgressTickets',
     icon: FiActivity,
     accent: 'blue',
   },
   {
-    label: 'SLA at risk',
+    label: 'Có nguy cơ trễ SLA',
     field: 'slaAtRiskTickets',
     icon: FiClock,
     accent: 'amber',
   },
   {
-    label: 'Resolved this week',
+    label: 'Đã giải quyết tuần này',
     field: 'resolvedThisWeek',
     icon: FiCheckCircle,
     accent: 'green',
@@ -40,12 +41,12 @@ const METRICS = [
 
 function getScopeDescription(roles = []) {
   if (roles.includes(ROLE_CODES.ADMIN) || roles.includes(ROLE_CODES.MANAGER)) {
-    return 'Activity across all tickets.'
+    return 'Tổng quan toàn bộ phiếu yêu cầu.'
   }
   if (roles.includes(ROLE_CODES.TECHNICIAN)) {
-    return 'Tickets currently or previously assigned to you.'
+    return 'Phiếu được phân công cho bạn hiện tại hoặc trong lịch sử.'
   }
-  return 'Tickets you submitted.'
+  return 'Phiếu yêu cầu do chính bạn gửi.'
 }
 
 export function DashboardPage() {
@@ -57,14 +58,16 @@ export function DashboardPage() {
       ? 'error'
       : 'success'
   const isEmpty =
-    summary.data && METRICS.every(({ field }) => summary.data[field] === 0)
+    state === 'success' &&
+    summary.data &&
+    METRICS.every(({ field }) => summary.data[field] === 0)
 
   return (
     <Container className="page-container">
       <div className="page-heading">
         <div>
           <p className="eyebrow">KHÔNG GIAN LÀM VIỆC</p>
-          <h1 className="h2 mb-1">Dashboard</h1>
+          <h1 className="h2 mb-1">Tổng quan</h1>
           <p className="text-secondary mb-0">
             {getScopeDescription(user?.roles)}
           </p>
@@ -77,13 +80,17 @@ export function DashboardPage() {
       {summary.isError && (
         <Alert variant="danger" role="alert">
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <span>Dashboard metrics are unavailable right now.</span>
+            <span>
+              Chưa tải được số liệu tổng quan. API dữ liệu thật đang chờ triển
+              khai; không hiển thị số liệu giả.
+            </span>
             <Button
               variant="outline-danger"
               size="sm"
               onClick={summary.refetch}
+              disabled={summary.isFetching}
             >
-              Try again
+              {summary.isFetching ? 'Đang tải lại…' : 'Thử lại'}
             </Button>
           </div>
         </Alert>
@@ -91,7 +98,7 @@ export function DashboardPage() {
 
       <Row className="g-3">
         {METRICS.map(({ label, field, icon, accent }) => (
-          <Col xs={6} xl={3} key={field}>
+          <Col xs={12} sm={6} lg={3} key={field}>
             <MetricCard
               label={label}
               value={summary.data?.[field] ?? 0}
@@ -109,13 +116,14 @@ export function DashboardPage() {
           className="dashboard-empty-state mt-4"
           role="status"
         >
-          No ticket activity is available for this dashboard yet.
+          Chưa có hoạt động phiếu yêu cầu trong phạm vi của bạn.
         </Alert>
       )}
 
-      {summary.data?.generatedAt && (
+      {state === 'success' && summary.data?.generatedAt && (
         <p className="small text-secondary mt-3 mb-0">
-          Generated {new Date(summary.data.generatedAt).toLocaleString()}
+          Cập nhật: {formatDashboardTime(summary.data.generatedAt)}{' '}
+          (Asia/Bangkok)
         </p>
       )}
     </Container>
