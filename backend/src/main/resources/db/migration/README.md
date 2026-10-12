@@ -17,7 +17,7 @@ Rules for the team:
 - Write T-SQL for SQL Server (`IDENTITY`, `BIT`, `NVARCHAR`, `DATETIMEOFFSET`).
 - Do not use PostgreSQL-only syntax such as `JSONB`, `SERIAL`, `ILIKE`, `RETURNING`, or `ON CONFLICT`.
 - Never edit a migration after it has been merged or applied by another teammate. Add the next version instead.
-- Flyway owns application tables. The Docker init script only creates the empty `campusfix` database.
+- Flyway owns application tables. The Docker init script only creates the empty `nexora` database.
 - Every schema pull request must be verified against a fresh SQL Server database, not only H2.
 - Coordinate the next migration number in the team board before creating a file.
 

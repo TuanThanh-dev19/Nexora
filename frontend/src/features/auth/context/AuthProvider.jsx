@@ -1,40 +1,103 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { getCurrentUserApi } from '../api/authApi'
 import { AuthContext } from './auth-context'
 
-const SESSION_KEY = 'campusfix.demo-user'
-
-function readDemoUser() {
-  const stored = sessionStorage.getItem(SESSION_KEY)
-  return stored ? JSON.parse(stored) : null
-}
+const TOKEN_KEY = 'nexora.session.token'
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readDemoUser)
+  const queryClient = useQueryClient()
+  const clearTicketCache = useCallback(() => {
+    void queryClient.cancelQueries({ queryKey: ['tickets'] })
+    queryClient.removeQueries({ queryKey: ['tickets'] })
+  }, [queryClient])
+  const [session, setSession] = useState({ token: null, user: null })
+  /**
+   * isChecking = true khi đang verify token lúc khởi động tab.
+   * ProtectedRoute và RequireRole phải kiểm tra flag này để tránh
+   * nháy sai màn hình login trước khi session restore hoàn tất.
+   */
+  const [isChecking, setIsChecking] = useState(
+    () => sessionStorage.getItem(TOKEN_KEY) !== null,
+  )
 
-  const logout = useCallback(() => {
-    sessionStorage.removeItem(SESSION_KEY)
-    setUser(null)
-  }, [])
-
-  const loginDemo = useCallback(({ email, role }) => {
-    const demoUser = {
-      id: 'demo-user',
-      email,
-      displayName: email.split('@')[0] || 'CampusFix User',
-      roles: [role],
-    }
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(demoUser))
-    setUser(demoUser)
-  }, [])
-
+  // ---------------------------------------------------------------------------
+  // Restore session khi tab mở lại trong cùng phiên
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    window.addEventListener('campusfix:unauthorized', logout)
-    return () => window.removeEventListener('campusfix:unauthorized', logout)
+    let active = true
+    clearTicketCache()
+    const token = sessionStorage.getItem(TOKEN_KEY)
+
+    if (!token) {
+      // Không có token — xác nhận ngay là chưa đăng nhập
+      return
+    }
+
+    // Token tồn tại → gọi /auth/me để verify và lấy user mới nhất từ DB
+    // httpClient tự gắn Authorization: Bearer từ sessionStorage
+    getCurrentUserApi()
+      .then((user) => {
+        if (active && sessionStorage.getItem(TOKEN_KEY) === token)
+          setSession({ token, user })
+      })
+      .catch(() => {
+        if (!active || sessionStorage.getItem(TOKEN_KEY) !== token) return
+        // Token hết hạn hoặc user bị disable → xóa session
+        sessionStorage.removeItem(TOKEN_KEY)
+        setSession({ token: null, user: null })
+      })
+      .finally(() => {
+        if (active) setIsChecking(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [clearTicketCache])
+
+  // ---------------------------------------------------------------------------
+  // Logout
+  // ---------------------------------------------------------------------------
+  const logout = useCallback(() => {
+    clearTicketCache()
+    sessionStorage.removeItem(TOKEN_KEY)
+    setSession({ token: null, user: null })
+    setIsChecking(false)
+  }, [clearTicketCache])
+
+  // ---------------------------------------------------------------------------
+  // Login: gọi sau khi backend trả accessToken + user
+  // Không lưu user vào sessionStorage — user luôn được fetch từ /auth/me
+  // khi restore session, đảm bảo roles là mới nhất từ DB.
+  // ---------------------------------------------------------------------------
+  const login = useCallback(
+    ({ accessToken, user }) => {
+      clearTicketCache()
+      sessionStorage.setItem(TOKEN_KEY, accessToken)
+      setSession({ token: accessToken, user })
+      setIsChecking(false)
+    },
+    [clearTicketCache],
+  )
+
+  // ---------------------------------------------------------------------------
+  // Lắng nghe sự kiện 401 global từ httpClient interceptor
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    window.addEventListener('nexora:unauthorized', logout)
+    return () => window.removeEventListener('nexora:unauthorized', logout)
   }, [logout])
 
   const value = useMemo(
-    () => ({ user, isAuthenticated: user !== null, loginDemo, logout }),
-    [user, loginDemo, logout],
+    () => ({
+      user: session.user,
+      accessToken: session.token,
+      isAuthenticated: session.token !== null && session.user !== null,
+      isChecking,
+      login,
+      logout,
+    }),
+    [session, isChecking, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,6 +1,15 @@
-export const ASSET_STATUSES = [
-  'ACTIVE',
-  'UNDER_MAINTENANCE',
-  'OUT_OF_SERVICE',
-  'RETIRED',
-]
+export const ASSET_STATUS_CODES = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  UNDER_MAINTENANCE: 'UNDER_MAINTENANCE',
+  OUT_OF_SERVICE: 'OUT_OF_SERVICE',
+  RETIRED: 'RETIRED',
+})
+
+export const ASSET_STATUSES = Object.freeze(Object.values(ASSET_STATUS_CODES))
+
+export const ASSET_STATUS_LABELS = Object.freeze({
+  [ASSET_STATUS_CODES.ACTIVE]: 'Active',
+  [ASSET_STATUS_CODES.UNDER_MAINTENANCE]: 'Under maintenance',
+  [ASSET_STATUS_CODES.OUT_OF_SERVICE]: 'Out of service',
+  [ASSET_STATUS_CODES.RETIRED]: 'Retired',
+})

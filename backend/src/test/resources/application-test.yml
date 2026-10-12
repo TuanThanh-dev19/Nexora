@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:campusfix;MODE=MSSQLServer;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=FALSE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    url: jdbc:h2:mem:nexora;MODE=MSSQLServer;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=FALSE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -9,3 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/nexora_test
+      auto-index-creation: false

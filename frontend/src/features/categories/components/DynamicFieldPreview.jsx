@@ -1,4 +1,5 @@
 import { Badge, ListGroup } from 'react-bootstrap'
+import { DYNAMIC_FIELD_TYPE_LABELS } from '../constants/dynamicFieldTypes'
 
 export function DynamicFieldPreview({ field }) {
   return (
@@ -8,7 +9,9 @@ export function DynamicFieldPreview({ field }) {
         {field.required && <span className="text-danger ms-1">*</span>}
       </span>
       <Badge bg="light" text="dark">
-        {field.type}
+        {DYNAMIC_FIELD_TYPE_LABELS[field.fieldType ?? field.type] ??
+          field.fieldType ??
+          field.type}
       </Badge>
     </ListGroup.Item>
   )

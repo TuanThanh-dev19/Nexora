@@ -1,25 +1,25 @@
-# CampusFix
+# Nexora
 
-CampusFix is a campus incident reporting, maintenance workflow, and equipment tracking platform. The repository is a modular monolith containing one Spring Boot REST API and one React single-page application.
+Nexora is a campus incident reporting, maintenance workflow, and equipment tracking platform. The repository is a modular monolith containing one Spring Boot REST API and one React single-page application.
 
 ## Technology
 
-- Backend: Java 21, Spring Boot 4.1, Maven, Spring Security, JPA, Bean Validation, Flyway.
-- Database: Microsoft SQL Server 2022 Developer.
+- Backend: Java 21, Spring Boot 3.5, Maven, Spring Security, JPA, Spring Data MongoDB, Bean Validation, Flyway.
+- Databases: Microsoft SQL Server 2022 Developer for relational data and MongoDB 8 for document data.
 - Frontend: ReactJS 19, JavaScript/JSX, Vite, React Router, Axios, TanStack Query, React Bootstrap.
-- Tests: JUnit/Spring Test, SQL Server Testcontainers, Vitest/React Testing Library.
-- Local infrastructure: Docker Compose with a persistent SQL Server volume.
+- Tests: JUnit/Spring Test, SQL Server and MongoDB Testcontainers, Vitest/React Testing Library.
+- Local infrastructure: Docker Compose with separate persistent SQL Server and MongoDB volumes.
 
 ## Repository layout
 
 ```text
-campusfix/
+nexora/
 ├── backend/          Spring Boot REST API and Flyway migrations
 ├── frontend/         React SPA
 ├── docs/             Architecture and team documentation
-├── infrastructure/   SQL Server initialization support
+├── infrastructure/   Database initialization and verification support
 ├── .github/          CI and pull-request template
-├── compose.yaml      Local SQL Server 2022
+├── compose.yaml      Local SQL Server 2022 and MongoDB 8
 └── .env.example      Local environment template
 ```
 
@@ -41,8 +41,9 @@ docker compose ps -a
 Expected result:
 
 - `sqlserver` becomes `healthy`.
-- `sqlserver-init` becomes `Exited (0)` after creating the `campusfix` database. This is normal.
-- Spring Boot then runs Flyway to create tables, constraints, indexes, and reference data.
+- `mongodb` becomes `healthy`.
+- `sqlserver-init` becomes `Exited (0)` after creating the `nexora` database. This is normal.
+- Spring Boot runs Flyway through V8 and creates the MongoDB collections and indexes.
 
 Start the backend:
 
@@ -64,7 +65,47 @@ npm run dev
 - Actuator health: http://localhost:8080/actuator/health
 - Swagger UI: http://localhost:8080/swagger-ui.html
 
-The root `.env` file is read by Docker Compose, but it is not automatically loaded by a Spring Boot process started directly on Windows. Defaults already match `.env.example`. If a teammate changes the port or password, they must also configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the terminal or IDE run configuration.
+The root `.env` file is read by both Docker Compose and Spring Boot when the
+backend is started from either the repository root or `backend/`. Environment
+variables and IDE run-configuration values still override the file.
+
+`FILE_STORAGE_ROOT` accepts a relative or absolute filesystem path, including
+directories outside Tomcat's web root. With the backend started from `backend/`,
+the default `../.data/uploads` points to the repository's `.data/uploads` folder.
+
+### First local/demo Admin
+
+Team members starting without an Admin can follow
+[the local account and token guide](docs/LOCAL_ACCOUNTS_GUIDE.md) for first
+bootstrap, Swagger/Postman tokens, additional test accounts, and local password reset.
+
+From `backend/`, enable the first Admin bootstrap explicitly:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = 'local'
+$env:ADMIN_BOOTSTRAP_ENABLED = 'true'
+$env:ADMIN_BOOTSTRAP_EMAIL = 'admin@example.test'
+$env:ADMIN_BOOTSTRAP_PASSWORD = '<choose a local password>'
+.\mvnw.cmd spring-boot:run
+```
+
+Use your own local email and a password of at least 8 characters and at most
+72 UTF-8 bytes. The startup runner BCrypt-hashes the password and creates an
+`ACTIVE` user with the `ADMIN` role in one transaction. It runs only in `local`
+or `demo` with the enable flag set; ordinary startup creates no account.
+If any Admin already exists, it skips creation without changing credentials.
+An existing non-Admin email causes an error instead of granting that user access.
+Credentials are never printed by the bootstrap; keep real values out of Git.
+
+After the startup log confirms creation, log in using `/api/v1/auth/login` or
+the frontend login page. This bootstrap creates the initial account. Until the
+Admin management API is implemented, use the linked guide's SQL procedure to
+prepare additional local test accounts.
+After stopping the backend, clear the one-time settings:
+
+```powershell
+Remove-Item Env:ADMIN_BOOTSTRAP_ENABLED, Env:ADMIN_BOOTSTRAP_EMAIL, Env:ADMIN_BOOTSTRAP_PASSWORD
+```
 
 ## Database connection
 
@@ -75,15 +116,26 @@ Server: localhost,1433
 Authentication: SQL Server Authentication
 Login: sa
 Password: value of MSSQL_SA_PASSWORD in .env
-Database: campusfix
+Database: nexora
 Trust server certificate: enabled for local development only
 ```
 
 Local JDBC URL:
 
 ```text
-jdbc:sqlserver://localhost:1433;databaseName=campusfix;encrypt=true;trustServerCertificate=true
+jdbc:sqlserver://localhost:1433;databaseName=nexora;encrypt=true;trustServerCertificate=true
 ```
+
+Local MongoDB connection (use the values from `.env`):
+
+```text
+mongodb://<MONGO_USERNAME>:<MONGO_PASSWORD>@localhost:<MONGO_PORT>/nexora?authSource=admin
+```
+
+SQL Server remains authoritative for users, tickets, categories, locations,
+assets, assignments, and other relational data. MongoDB is authoritative for
+`audit_events`, `ticket_comments`, and `notifications`; it stores SQL IDs as
+plain `Long` references and does not use `DBRef`.
 
 See [docs/SQLSERVER_DOCKER_GUIDE.md](docs/SQLSERVER_DOCKER_GUIDE.md) for the complete team setup, daily commands, migrations, troubleshooting, and safe reset procedure.
 
@@ -106,7 +158,42 @@ cd backend
 $env:RUN_SQLSERVER_IT='true'
 .\mvnw.cmd -Dtest=SqlServerMigrationIntegrationTest test
 Remove-Item Env:RUN_SQLSERVER_IT
+
+$env:RUN_MONGODB_IT='true'
+.\mvnw.cmd -Dtest=MongoPersistenceIntegrationTest test
+Remove-Item Env:RUN_MONGODB_IT
 ```
+
+## Upgrading an existing database with legacy document rows
+
+Do not remove or reset the existing SQL Server volume. First inspect the source counts:
+
+```powershell
+docker compose exec -T sqlserver /bin/bash -c '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -d nexora -Q "SELECT (SELECT COUNT(*) FROM dbo.audit_logs) auditLogs, (SELECT COUNT(*) FROM dbo.ticket_comments) ticketComments, (SELECT COUNT(*) FROM dbo.notifications) notifications"'
+```
+
+If all three counts are zero, start the upgraded backend normally; V8 records
+the empty-state decision by safely dropping the three tables. If any count is
+non-zero, run the one-time backfill before V8:
+
+```powershell
+cd backend
+$env:MONGO_BACKFILL_ENABLED='true'
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.flyway.target=7"
+```
+
+Wait for the `MongoDB backfill verified` log (it prints all three before/after
+counts), then stop the process with `Ctrl+C`, clear the temporary setting, and
+start normally so Flyway can apply V8:
+
+```powershell
+Remove-Item Env:MONGO_BACKFILL_ENABLED
+.\mvnw.cmd spring-boot:run
+```
+
+The backfill uses a unique `legacySqlId`, so rerunning it updates the same
+documents instead of duplicating them. V8 compares the verified counts with
+the current SQL counts and refuses to drop anything if they differ.
 
 ## Development rules
 
@@ -122,10 +209,13 @@ Remove-Item Env:RUN_SQLSERVER_IT
 
 Further documentation:
 
+- [Hướng dẫn cài đặt và chạy dự án](HUONG_DAN_CHAY_DU_AN.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Shared API contracts](docs/API_CONVENTIONS.md)
+- [Testing and local demo data](docs/TESTING.md)
 - [SBA301 project structure](docs/PROJECT_STRUCTURE_SBA301.md)
 - [GitHub setup](docs/GITHUB_SETUP.md)
 - [SQL Server and Docker team guide](docs/SQLSERVER_DOCKER_GUIDE.md)
 - [ERD to SQL Server schema mapping](docs/DATABASE_SCHEMA.md)
 
-> Version note: this starter uses Spring Boot 4.1 and ReactJS with JavaScript/JSX. The frontend has no TypeScript compilation step. If the lecturer provides a mandatory Spring Boot 3 starter, follow that rubric while keeping the same feature boundaries and workflow rules.
+> Version note: this project is pinned to Spring Boot 3.5.16 and Java 21. The frontend uses ReactJS with JavaScript/JSX and has no TypeScript compilation step.

@@ -1,6 +1,6 @@
-# CampusFix frontend
+# Nexora frontend
 
-ReactJS + JavaScript/JSX single-page application for CampusFix.
+ReactJS + JavaScript/JSX single-page application for Nexora.
 
 ```bash
 npm install
