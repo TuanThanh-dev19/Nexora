@@ -1,4 +1,4 @@
-import { Badge, Card, Col, Container, Row, Stack } from 'react-bootstrap'
+import { Alert, Badge, Card, Col, Container, Row, Stack } from 'react-bootstrap'
 import { Link, useLocation, useParams } from 'react-router'
 import { FiEye } from 'react-icons/fi'
 import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
@@ -34,6 +34,11 @@ export function TicketDetailPage() {
   const back = `${backBase}${typeof listSearch === 'string' && listSearch.startsWith('?') ? listSearch : ''}`
   return (
     <Container className="page-container">
+      {location.state?.createdTicketNumber && (
+        <Alert variant="success" role="status">
+          Đã tạo phiếu {location.state.createdTicketNumber}.
+        </Alert>
+      )}
       <Link to={back} className="back-link">
         ← {backBase === '/my-work' ? 'Công việc của tôi' : 'Danh sách phiếu'}
       </Link>

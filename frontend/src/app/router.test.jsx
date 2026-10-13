@@ -39,7 +39,6 @@ function open(path, roles) {
   )
 }
 it.each([
-  ['/tickets/new', ['REQUESTER'], 'Tạo phiếu yêu cầu'],
   ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
   ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
   ['/assets', ['MANAGER'], 'Tài sản'],
@@ -64,6 +63,10 @@ it.each([
   open(path, path === '/tickets/new' ? ['ADMIN'] : ['REQUESTER'])
   expect(screen.getByText('403 — Từ chối truy cập')).toBeInTheDocument()
   expect(screen.getByTestId('location')).toHaveTextContent(path)
+})
+it.each(['TECHNICIAN', 'MANAGER'])('denies Create Ticket to %s', (role) => {
+  open('/tickets/new', [role])
+  expect(screen.getByText('403 — Từ chối truy cập')).toBeInTheDocument()
 })
 it('preserves unknown route context on a real 404 page', () => {
   open('/missing-screen?source=test', ['ADMIN'])

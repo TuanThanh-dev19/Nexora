@@ -3,6 +3,7 @@ import { LoginPage } from '../features/auth/pages/LoginPage'
 import { DashboardPage } from '../features/dashboard/pages/DashboardPage'
 import { HomePage } from '../features/home/pages/HomePage'
 import { TicketListPage } from '../features/tickets/pages/TicketListPage'
+import { CreateTicketPage } from '../features/tickets/pages/CreateTicketPage'
 import { TicketDetailPage } from '../features/tickets/pages/TicketDetailPage'
 import { MyWorkPage } from '../features/tickets/pages/MyWorkPage'
 import { PendingFeaturePage } from '../shared/components/PendingFeaturePage'
@@ -27,6 +28,15 @@ export const appRoutes = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'login', element: <LoginPage /> },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'dev/create-ticket/:step',
+              lazy: () =>
+                import('../features/tickets/pages/CreateTicketPreviewPage'),
+            },
+          ]
+        : []),
       ...(import.meta.env.DEV && isDashboardMockEnabled()
         ? [
             {
@@ -47,9 +57,7 @@ export const appRoutes = [
             children: [
               {
                 path: 'tickets/new',
-                element: (
-                  <PendingFeaturePage title="Tạo phiếu yêu cầu" issue={57} />
-                ),
+                element: <CreateTicketPage />,
               },
             ],
           },
