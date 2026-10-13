@@ -12,7 +12,7 @@ HTTP 400 field errors, 401/403, missing references, 409, 413/415 and network fai
 
 ## Development preview
 
-Run the frontend dev server and open `/dev/create-ticket/new`. This route is excluded from production. It has its own QueryClient and injected in-memory fixture API; it does not intercept or mutate real API calls. Its scenario selector covers success, 400, 401, 403, 404, 409, 413, 415 and network failures. Mock success opens a fixture detail with the same returned ticket number and an explicit notice that nothing was persisted.
+Run the frontend dev server and open `/dev/create-ticket/new`. This route is excluded from production. It has its own QueryClient and injected in-memory fixture API; it does not intercept or mutate real API calls. Its scenario selector covers success, 400, 401, 403, 404, 409, 413, 415 and network failures. Mock success opens a fixture detail with the same returned ticket number, submitted values, references and evidence mappings, and an explicit notice that nothing was persisted. Each mock submission has a distinct ID and snapshot. Reloading or opening a detail outside its in-memory preview session displays a missing-fixture notice rather than an empty create form.
 
 The real create endpoint remains a backend dependency. A failed request never displays a saved-ticket success message. Server-side creation, submission validation and durable image storage are outside this UI change.
 
@@ -21,4 +21,5 @@ The real create endpoint remains a backend dependency. A failed request never di
 - Contract tests cover all nine field types, active ordering, zero/false, dates, select constraints, evidence rules, conflict reconciliation and omission of server-owned fields.
 - MSW tests inspect actual multipart content, authentication, reference requests and Problem Details status preservation.
 - Page tests cover pending/double submit, success navigation, backend field errors, dependent resets, conflict reload and thumbnail cleanup. Existing route tests verify unauthorized roles cannot access `/tickets/new`.
+- Preview integration tests cover the complete submit-to-detail flow, zero/false and option labels, linked evidence, new empty forms, missing fixtures and error styling. Fixture tests verify distinct submissions and absence of stored mock results after failures.
 - Visual QA exercises desktop (1280px), tablet (768px) and mobile (390px) submission using the isolated preview.

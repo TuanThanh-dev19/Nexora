@@ -63,10 +63,15 @@ export const createFormFixture = {
 }
 
 // Used only by the development preview route; never intercepts runtime requests.
-export function createTicketPreviewApi() {
+export function createTicketPreviewApi({ delay = 600 } = {}) {
   let scenario = 'success'
   let revision = 1
+  let nextId = 9001
+  const tickets = new Map()
   return {
+    getTicket(id) {
+      return tickets.get(Number(id))
+    },
     setScenario(value) {
       scenario = value
     },
@@ -102,7 +107,7 @@ export function createTicketPreviewApi() {
       }
     },
     async submit(payload) {
-      await new Promise((resolve) => setTimeout(resolve, 600))
+      await new Promise((resolve) => setTimeout(resolve, delay))
       if (!payload.get('ticket')) throw new Error('Missing ticket part')
       if (scenario !== 'success') {
         if (scenario === '409') revision++
@@ -119,12 +124,32 @@ export function createTicketPreviewApi() {
           }
         throw error
       }
-      return {
-        id: 9001,
-        ticketNumber: 'MOCK-2026-009001',
+      const part = payload.get('ticket')
+      const json =
+        typeof part.text === 'function'
+          ? await part.text()
+          : await new Promise((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result)
+              reader.onerror = () => reject(reader.error)
+              reader.readAsText(part)
+            })
+      const submission = JSON.parse(json)
+      const id = nextId++
+      const result = {
+        id,
+        ticketNumber: `MOCK-2026-${String(id).padStart(6, '0')}`,
         status: 'SUBMITTED',
         version: 0,
       }
+      tickets.set(id, {
+        ...submission,
+        ...result,
+        formVersionNumber: submission.formVersionId - 500,
+        fields: structuredClone(createFormFixture.fields),
+        files: payload.getAll('files'),
+      })
+      return result
     },
   }
 }

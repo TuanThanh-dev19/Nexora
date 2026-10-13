@@ -36,6 +36,7 @@ export function CreateTicketPage({
   const [photos, setPhotos] = useState([])
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
+  const [messageVariant, setMessageVariant] = useState('danger')
   const [conflict, setConflict] = useState(false)
   const [pending, setPending] = useState(false)
   const [confirmation, setConfirmation] = useState(null)
@@ -44,6 +45,9 @@ export function CreateTicketPage({
   const summary = useRef(null)
   const navigate = useNavigate()
   const client = useQueryClient()
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
   const dirty = !!(
     input.title ||
     input.description ||
@@ -139,10 +143,12 @@ export function CreateTicketPage({
       if (!keepAsset) setAsset(null)
       setErrors({})
       setConflict(false)
+      setMessageVariant('info')
       setMessage(
         'Đã tải biểu mẫu mới. Kiểm tra lại dữ liệu và ảnh trước khi gửi.',
       )
     } catch {
+      setMessageVariant('danger')
       setMessage('Không tải được biểu mẫu mới. Dữ liệu đang nhập được giữ lại.')
     } finally {
       setPending(false)
@@ -165,10 +171,12 @@ export function CreateTicketPage({
       saved.current = true
       await client.invalidateQueries({ queryKey: ['tickets'] })
       await client.invalidateQueries({ queryKey: ['dashboard'] })
-      navigate(`${detailBase}/${result.id}`, {
+      await navigate(`${detailBase}/${result.id}`, {
         state: { createdTicketNumber: result.ticketNumber },
       })
+      window.scrollTo({ top: 0, behavior: 'instant' })
     } catch (error) {
+      setMessageVariant('danger')
       const status = error.response?.status
       setErrors(error.response?.data?.fieldErrors ?? {})
       setConflict(status === 409)
@@ -212,7 +220,9 @@ export function CreateTicketPage({
       </div>
       {(message || Object.keys(errors).length > 0) && (
         <Alert
-          variant={Object.keys(errors).length || conflict ? 'danger' : 'info'}
+          variant={
+            Object.keys(errors).length || conflict ? 'danger' : messageVariant
+          }
           role="alert"
           tabIndex={-1}
           ref={summary}

@@ -6,7 +6,7 @@ import {
   MAX_FILE_BYTES,
 } from '../utils/createTicketContract'
 
-function Thumbnail({ file }) {
+export function EvidenceThumbnail({ file }) {
   const [url, setUrl] = useState('')
   useEffect(() => {
     const next = URL.createObjectURL(file)
@@ -104,7 +104,7 @@ export function EvidencePicker({
             className="border rounded p-2"
             style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}
           >
-            <Thumbnail file={p.file} />
+            <EvidenceThumbnail file={p.file} />
             <div>{p.file.name}</div>
             <small>{(p.file.size / 1024).toFixed(1)} KiB</small>
             <Button

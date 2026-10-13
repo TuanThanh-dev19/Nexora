@@ -1,18 +1,19 @@
 import { useState } from 'react'
 import { Alert, Container, Form } from 'react-bootstrap'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Link, useLocation } from 'react-router'
+import { useParams } from 'react-router'
 import { CreateTicketPage } from './CreateTicketPage'
 import { createTicketPreviewApi } from '../mocks/createTicketFixture'
+import { CreateTicketPreviewDetail } from '../components/CreateTicketPreviewDetail'
 
-export function Component() {
+export function Component({ previewApi }) {
   const [client] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   )
   const [scenario, setScenario] = useState('success')
-  const [api] = useState(() => createTicketPreviewApi())
-  const location = useLocation()
-  const created = location.state?.createdTicketNumber
+  const [api] = useState(() => previewApi ?? createTicketPreviewApi())
+  const { step } = useParams()
+  const isNew = step === 'new'
   return (
     <QueryClientProvider client={client}>
       <Container className="pt-3">
@@ -45,20 +46,15 @@ export function Component() {
             <option key={x}>{x}</option>
           ))}
         </Form.Select>
-        {created ? (
-          <Alert variant="success">
-            <h1>Phiếu mô phỏng {created}</h1>
-            <p>Trạng thái: SUBMITTED. Dữ liệu chưa được lưu vào máy chủ.</p>
-            <Link to="/dev/create-ticket/new">Tạo phiếu mô phỏng khác</Link>
-          </Alert>
-        ) : null}
       </Container>
-      {!created && (
+      {isNew ? (
         <CreateTicketPage
           api={api}
           detailBase="/dev/create-ticket"
           backPath="/"
         />
+      ) : (
+        <CreateTicketPreviewDetail ticket={api.getTicket(step)} />
       )}
     </QueryClientProvider>
   )

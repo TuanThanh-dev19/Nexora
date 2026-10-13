@@ -7,6 +7,7 @@ import { CreateTicketPage } from './CreateTicketPage'
 import { createFormFixture } from '../mocks/createTicketFixture'
 
 beforeEach(() => {
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
   URL.createObjectURL = vi.fn(() => 'blob:photo')
   URL.revokeObjectURL = vi.fn()
 })
