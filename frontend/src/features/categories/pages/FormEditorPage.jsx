@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router'
 import {
@@ -27,9 +27,16 @@ import {
   validateDraft,
 } from '../schemas/formValidation'
 import { FieldErrors, QueryState } from '../components/CategoryStates'
-import { errorMessage } from '../api/categoryError'
+import {
+  errorMessage,
+  fieldErrorLabel,
+  localizeFieldErrors,
+} from '../api/categoryError'
 import { FieldEditor } from '../components/FieldEditor'
 import { FormPreview } from '../components/FormPreview'
+import { UnsavedChangesGuard } from '../components/UnsavedChangesGuard'
+import { FORM_STATUS_LABELS } from '../constants/formStatuses'
+import { ASSET_POLICY_LABELS } from '../constants/categoryLabels'
 
 export function FormEditorPage() {
   const { formVersionId } = useParams()
@@ -37,12 +44,23 @@ export function FormEditorPage() {
   const skills = useSkills()
   const slas = useSlas()
   const [notice, setNotice] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
   return (
     <Container fluid="xl" className="page-container">
-      <QueryState query={query}>
+      <QueryState query={{ ...query, isError: query.isError && !query.data }}>
+        {query.isError && query.data && (
+          <Alert variant="danger">
+            Không tải được bản mới. Dữ liệu đang chỉnh sửa được giữ nguyên.
+          </Alert>
+        )}
         {query.data && (
           <FormEditor
-            key={`${query.data.id}-${query.data.revision}`}
+            key={`${query.data.id}-${query.data.revision}-${reloadKey}`}
+            onReload={async () => {
+              const result = await query.refetch()
+              if (result.isError) throw result.error
+              setReloadKey((n) => n + 1)
+            }}
             form={query.data}
             skills={skills}
             slas={slas}
@@ -55,11 +73,20 @@ export function FormEditorPage() {
   )
 }
 
-export function FormEditor({ form, skills, slas, notice, setNotice }) {
+export function FormEditor({
+  form,
+  skills,
+  slas,
+  notice,
+  setNotice,
+  onReload,
+}) {
   const [draft, setDraft] = useState(() => editableForm(form))
   const [dirty, setDirty] = useState(false)
   const [errors, setErrors] = useState({})
   const [confirm, setConfirm] = useState(null)
+  const [showPreview, setShowPreview] = useState(false)
+  const [reloading, setReloading] = useState(false)
   const client = useQueryClient()
   const readOnly = form.status !== 'DRAFT'
   const publishingErrors = validateDraft(draft, {
@@ -78,10 +105,10 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
       setDirty(false)
       setNotice(
         {
-          save: 'Draft saved.',
+          save: 'Đã lưu bản nháp.',
           publish:
-            'Form published. The previous published version has been archived.',
-          archive: 'Form archived.',
+            'Đã phát hành biểu mẫu. Phiên bản đã phát hành trước đó được lưu trữ.',
+          archive: 'Đã lưu trữ biểu mẫu.',
         }[action],
       )
       client.setQueryData(categoryKeys.form(form.id), updated)
@@ -92,20 +119,12 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
     onError: (error) => {
       setConfirm(null)
       setErrors(
-        error.response?.data?.fieldErrors ?? { form: errorMessage(error) },
+        localizeFieldErrors(
+          error.response?.data?.fieldErrors ?? { form: errorMessage(error) },
+        ),
       )
     },
   })
-  useEffect(() => {
-    const guard = (event) => {
-      if (dirty) {
-        event.preventDefault()
-        event.returnValue = ''
-      }
-    }
-    window.addEventListener('beforeunload', guard)
-    return () => window.removeEventListener('beforeunload', guard)
-  }, [dirty])
   const edit = (next) => {
     setDraft(next)
     setDirty(true)
@@ -121,6 +140,7 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
   }
   const publishBlocked =
     dirty ||
+    mutation.error?.response?.status === 409 ||
     skills.isPending ||
     slas.isPending ||
     skills.isError ||
@@ -129,28 +149,23 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
 
   return (
     <>
-      <Link
-        to={`/categories/${form.category.id}/forms`}
-        onClick={(event) => {
-          if (dirty && !window.confirm('Discard unsaved changes?'))
-            event.preventDefault()
-        }}
-      >
-        ← Form versions
+      <UnsavedChangesGuard dirty={dirty} />
+      <Link to={`/categories/${form.category.id}/forms`}>
+        ← Phiên bản biểu mẫu
       </Link>
-      <div className="d-flex flex-wrap align-items-center gap-3 my-4">
+      <div className="page-heading">
         <h1 className="mb-0">
-          {form.category.name} · Version {form.versionNumber}
+          {form.category.name} · Phiên bản {form.versionNumber}
         </h1>
         <Badge
           bg={readOnly ? 'secondary' : 'warning'}
           text={readOnly ? undefined : 'dark'}
         >
-          {form.status}
+          {FORM_STATUS_LABELS[form.status] ?? form.status}
         </Badge>
         {dirty && (
           <Badge bg="info" text="dark">
-            Unsaved changes
+            Thay đổi chưa lưu
           </Badge>
         )}
       </div>
@@ -161,40 +176,40 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
       )}
       {readOnly && (
         <Alert variant="info">
-          This form is read only. Create a new draft from the form versions page
-          to make changes.
+          Biểu mẫu này chỉ đọc. Tạo bản nháp mới từ trang phiên bản để chỉnh
+          sửa.
         </Alert>
       )}
+      <Button
+        className="mb-3 d-lg-none"
+        variant="outline-primary"
+        onClick={() => setShowPreview((v) => !v)}
+        aria-expanded={showPreview}
+        aria-controls="category-preview"
+      >
+        {showPreview ? 'Trở lại chỉnh sửa' : 'Xem trước'}
+      </Button>
       <FieldErrors errors={errors} />
       {mutation.error?.response?.status === 409 && (
         <Alert variant="warning">
-          Your version is stale. Copy any unsaved changes before reloading.{' '}
+          Phiên bản đang mở đã cũ. Sao chép thay đổi cần giữ trước khi tải bản
+          mới.{' '}
           <Button
             variant="outline-dark"
             size="sm"
-            onClick={() => {
-              if (
-                !dirty ||
-                window.confirm(
-                  'Discard unsaved changes and load the latest version?',
-                )
-              )
-                client.invalidateQueries({
-                  queryKey: categoryKeys.form(form.id),
-                })
-            }}
+            onClick={() => setConfirm('reload')}
           >
-            Reload latest
+            Tải bản mới nhất
           </Button>
         </Alert>
       )}
       <Row className="g-4">
-        <Col lg={8}>
+        <Col lg={8} className={showPreview ? 'd-none d-lg-block' : undefined}>
           <Form onSubmit={save}>
-            <fieldset disabled={mutation.isPending}>
+            <fieldset disabled={mutation.isPending || reloading}>
               <Card className="mb-4">
                 <Card.Header>
-                  <strong>Form settings</strong>
+                  <strong>Cấu hình biểu mẫu</strong>
                 </Card.Header>
                 <Card.Body>
                   <fieldset disabled={readOnly}>
@@ -202,18 +217,19 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                       <Col md={6}>
                         <Form.Check
                           id="requires-equipment"
-                          label="Requires equipment"
+                          label="Bắt buộc tài sản"
                           checked={draft.requiresEquipment}
                           onChange={(e) =>
                             update('requiresEquipment', e.target.checked)
                           }
                         />
                         <Form.Text>
-                          Category asset policy: {form.category.assetPolicy}
+                          Chính sách tài sản của danh mục:{' '}
+                          {ASSET_POLICY_LABELS[form.category.assetPolicy]}
                         </Form.Text>
                       </Col>
                       <Form.Group as={Col} md={6} controlId="min-attachments">
-                        <Form.Label>Minimum attachments</Form.Label>
+                        <Form.Label>Số ảnh tối thiểu</Form.Label>
                         <Form.Control
                           type="number"
                           min={0}
@@ -229,7 +245,7 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                         </Form.Control.Feedback>
                       </Form.Group>
                       <Form.Group as={Col} md={6} controlId="default-skill">
-                        <Form.Label>Default skill</Form.Label>
+                        <Form.Label>Kỹ năng mặc định</Form.Label>
                         <QueryState query={skills}>
                           <Form.Select
                             value={draft.defaultSkillId}
@@ -238,13 +254,13 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                             }
                             isInvalid={!!errors.defaultSkillId}
                           >
-                            <option value="">Choose a skill</option>
+                            <option value="">Chọn kỹ năng</option>
                             {form.defaultSkill &&
                               !skills.data?.some(
                                 (s) => s.id === form.defaultSkill.id,
                               ) && (
                                 <option value={form.defaultSkill.id}>
-                                  {form.defaultSkill.name} (inactive)
+                                  {form.defaultSkill.name} (ngừng hoạt động)
                                 </option>
                               )}
                             {skills.data?.map((skill) => (
@@ -259,7 +275,7 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                         </Form.Control.Feedback>
                       </Form.Group>
                       <Form.Group as={Col} md={6} controlId="default-sla">
-                        <Form.Label>Default SLA policy</Form.Label>
+                        <Form.Label>Chính sách SLA mặc định</Form.Label>
                         <QueryState query={slas}>
                           <Form.Select
                             value={draft.defaultSlaPolicyId}
@@ -268,18 +284,19 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                             }
                             isInvalid={!!errors.defaultSlaPolicyId}
                           >
-                            <option value="">Choose an SLA policy</option>
+                            <option value="">Chọn chính sách SLA</option>
                             {form.defaultSlaPolicy &&
                               !slas.data?.some(
                                 (s) => s.id === form.defaultSlaPolicy.id,
                               ) && (
                                 <option value={form.defaultSlaPolicy.id}>
-                                  {form.defaultSlaPolicy.policyName} (inactive)
+                                  {form.defaultSlaPolicy.policyName} (ngừng hoạt
+                                  động)
                                 </option>
                               )}
                             {slas.data?.map((sla) => (
                               <option key={sla.id} value={sla.id}>
-                                {sla.policyName} · {sla.resolutionMinutes} min
+                                {sla.policyName} · {sla.resolutionMinutes} phút
                               </option>
                             ))}
                           </Form.Select>
@@ -292,10 +309,10 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                   </fieldset>
                 </Card.Body>
               </Card>
-              <h2 className="h4">Fields</h2>
+              <h2 className="h4">Các trường</h2>
               {draft.fields.length === 0 && (
                 <Alert variant="light">
-                  No fields yet. Add a field to start designing the form.
+                  Chưa có trường. Thêm trường để bắt đầu thiết kế biểu mẫu.
                 </Alert>
               )}
               {draft.fields.map((field, index) => (
@@ -332,36 +349,41 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                       update('fields', [...draft.fields, newField()])
                     }
                   >
-                    Add field
+                    Thêm trường
                   </Button>
                   <div className="d-flex flex-wrap gap-2 my-4">
-                    <Button type="submit" disabled={!dirty}>
-                      {mutation.isPending ? 'Saving…' : 'Save draft'}
+                    <Button
+                      type="submit"
+                      disabled={
+                        !dirty || mutation.error?.response?.status === 409
+                      }
+                    >
+                      {mutation.isPending ? 'Đang lưu…' : 'Lưu bản nháp'}
                     </Button>
                     <Button
                       variant="success"
                       disabled={publishBlocked}
                       onClick={() => setConfirm('publish')}
                     >
-                      Publish form
+                      Phát hành biểu mẫu
                     </Button>
                   </div>
                   {dirty && (
                     <p className="text-secondary">
-                      Save your changes before publishing.
+                      Lưu thay đổi trước khi phát hành.
                     </p>
                   )}
                   {Object.keys(publishingErrors).length > 0 && (
                     <details className="mb-4">
                       <summary>
-                        Before publishing (
-                        {Object.keys(publishingErrors).length} items)
+                        Trước khi phát hành (
+                        {Object.keys(publishingErrors).length} mục)
                       </summary>
                       <ul>
                         {Object.entries(publishingErrors).map(
                           ([path, message]) => (
                             <li key={path}>
-                              {path}: {message}
+                              {fieldErrorLabel(path)}: {message}
                             </li>
                           ),
                         )}
@@ -375,51 +397,74 @@ export function FormEditor({ form, skills, slas, notice, setNotice }) {
                   variant="outline-danger"
                   onClick={() => setConfirm('archive')}
                 >
-                  Archive form
+                  Lưu trữ biểu mẫu
                 </Button>
               )}
             </fieldset>
           </Form>
         </Col>
-        <Col lg={4}>
+        <Col lg={4} className={showPreview ? 'd-block' : 'd-none d-lg-block'}>
           <FormPreview fields={draft.fields} />
         </Col>
       </Row>
       <Modal
         show={!!confirm}
-        onHide={() => !mutation.isPending && setConfirm(null)}
+        onHide={() => !mutation.isPending && !reloading && setConfirm(null)}
         backdrop="static"
       >
-        <Modal.Header closeButton={!mutation.isPending}>
+        <Modal.Header closeButton={!mutation.isPending && !reloading}>
           <Modal.Title>
-            {confirm === 'publish'
-              ? 'Publish this form?'
-              : 'Archive this form?'}
+            {confirm === 'reload'
+              ? 'Tải phiên bản mới nhất?'
+              : confirm === 'publish'
+                ? 'Phát hành biểu mẫu này?'
+                : 'Lưu trữ biểu mẫu này?'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {confirm === 'publish'
-            ? 'This form will become available for new tickets. Its content will become read only, and the previous published version will be archived.'
-            : 'This form will no longer be available for new tickets. Existing ticket references will be preserved.'}
+          {confirm === 'reload'
+            ? 'Thay đổi chưa lưu sẽ bị bỏ sau khi tải bản mới thành công. Sao chép nội dung cần giữ trước khi tiếp tục.'
+            : confirm === 'publish'
+              ? 'Biểu mẫu sẽ được dùng cho phiếu mới và trở thành chỉ đọc. Phiên bản đã phát hành trước đó sẽ được lưu trữ.'
+              : 'Biểu mẫu sẽ không còn được dùng cho phiếu mới. Các phiếu đã tham chiếu vẫn được giữ nguyên.'}
         </Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || reloading}
             onClick={() => setConfirm(null)}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant={confirm === 'publish' ? 'success' : 'danger'}
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate(confirm)}
+            disabled={mutation.isPending || reloading}
+            onClick={async () => {
+              if (confirm !== 'reload') {
+                mutation.mutate(confirm)
+                return
+              }
+              setReloading(true)
+              try {
+                await onReload()
+                setConfirm(null)
+              } catch {
+                setErrors({
+                  form: 'Không tải được bản mới. Thay đổi chưa lưu được giữ nguyên.',
+                })
+                setConfirm(null)
+              } finally {
+                setReloading(false)
+              }
+            }}
           >
-            {mutation.isPending
-              ? 'Processing…'
-              : confirm === 'publish'
-                ? 'Confirm publish'
-                : 'Confirm archive'}
+            {mutation.isPending || reloading
+              ? 'Đang xử lý…'
+              : confirm === 'reload'
+                ? 'Bỏ thay đổi và tải bản mới'
+                : confirm === 'publish'
+                  ? 'Xác nhận phát hành'
+                  : 'Xác nhận lưu trữ'}
           </Button>
         </Modal.Footer>
       </Modal>

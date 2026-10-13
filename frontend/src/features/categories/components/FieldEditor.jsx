@@ -44,14 +44,14 @@ export function FieldEditor({
     <Card className="mb-3">
       <Card.Header className="d-flex flex-wrap justify-content-between align-items-center gap-2">
         <strong>
-          Field {index + 1}: {field.label || 'Untitled field'}
+          Trường {index + 1}: {field.label || 'Trường chưa đặt tên'}
         </strong>
         {!readOnly && (
           <div className="d-flex gap-2">
             <Button
               size="sm"
               variant="outline-secondary"
-              aria-label={`Move field ${index + 1} up`}
+              aria-label={`Đưa trường ${index + 1} lên`}
               disabled={index === 0}
               onClick={() => onMove(-1)}
             >
@@ -60,7 +60,7 @@ export function FieldEditor({
             <Button
               size="sm"
               variant="outline-secondary"
-              aria-label={`Move field ${index + 1} down`}
+              aria-label={`Đưa trường ${index + 1} xuống`}
               disabled={index === count - 1}
               onClick={() => onMove(1)}
             >
@@ -69,10 +69,10 @@ export function FieldEditor({
             <Button
               size="sm"
               variant="outline-danger"
-              aria-label={`Remove field ${index + 1}`}
+              aria-label={`Xóa trường ${index + 1}`}
               onClick={onRemove}
             >
-              Remove
+              Xóa
             </Button>
           </div>
         )}
@@ -80,10 +80,10 @@ export function FieldEditor({
       <Card.Body>
         <fieldset disabled={readOnly}>
           <Row className="g-3">
-            {input('fieldKey', 'Field key', { maxLength: 80 })}
-            {input('label', 'Label', { maxLength: 150 })}
+            {input('fieldKey', 'Mã trường', { maxLength: 80 })}
+            {input('label', 'Nhãn', { maxLength: 150 })}
             <Form.Group as={Col} md={6} controlId={`${field.uiId}-type`}>
-              <Form.Label>Field type</Form.Label>
+              <Form.Label>Kiểu trường</Form.Label>
               <Form.Select
                 value={field.fieldType}
                 onChange={(e) =>
@@ -100,21 +100,21 @@ export function FieldEditor({
             <Col md={6} className="d-flex align-items-end gap-4 pb-2">
               <Form.Check
                 id={`${field.uiId}-required`}
-                label="Required"
+                label="Bắt buộc"
                 checked={field.required}
                 onChange={(e) => update('required', e.target.checked)}
               />
               <Form.Check
                 id={`${field.uiId}-active`}
-                label="Active field"
+                label="Trường đang hoạt động"
                 checked={field.active}
                 onChange={(e) => update('active', e.target.checked)}
               />
             </Col>
-            {input('helpText', 'Help text', { maxLength: 500 })}
-            {input('placeholder', 'Placeholder', { maxLength: 250 })}
+            {input('helpText', 'Hướng dẫn', { maxLength: 500 })}
+            {input('placeholder', 'Gợi ý nhập', { maxLength: 250 })}
             <Form.Group as={Col} xs={12} controlId={`${field.uiId}-rules`}>
-              <Form.Label>Validation rules (JSON)</Form.Label>
+              <Form.Label>Quy tắc kiểm tra (JSON)</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
@@ -127,8 +127,8 @@ export function FieldEditor({
                 {errorFor('validationRules')}
               </Form.Control.Feedback>
               <Form.Text>
-                Text: minLength, maxLength, pattern. Number: min, max, step.
-                Date/time: min, max. Multi-select: minItems, maxItems. Image:
+                Văn bản: minLength, maxLength, pattern. Số: min, max, step.
+                Ngày/giờ: min, max. Chọn nhiều: minItems, maxItems. Ảnh:
                 minFiles, maxFiles, maxSizeBytes, allowedTypes.
               </Form.Text>
             </Form.Group>
@@ -136,17 +136,18 @@ export function FieldEditor({
           {(isSelect(field.fieldType) || field.options.length > 0) && (
             <section
               className="mt-4"
-              aria-label={`Options for field ${index + 1}`}
+              aria-label={`Lựa chọn cho trường ${index + 1}`}
             >
-              <h3 className="h6">Options</h3>
+              <h3 className="h6">Các lựa chọn</h3>
               {!isSelect(field.fieldType) && (
                 <p className="text-danger">
-                  Remove the existing options before saving this field type.
+                  Xóa các lựa chọn hiện có trước khi lưu kiểu trường này.
                 </p>
               )}
               {field.options.length === 0 && (
                 <p className="text-secondary">
-                  No options yet. Add an active option before publishing.
+                  Chưa có lựa chọn. Thêm ít nhất một lựa chọn đang hoạt động
+                  trước khi phát hành.
                 </p>
               )}
               {field.options.map((option, j) => {
@@ -165,7 +166,7 @@ export function FieldEditor({
                       md={4}
                       controlId={`${option.uiId}-value`}
                     >
-                      <Form.Label>Option {j + 1} value</Form.Label>
+                      <Form.Label>Giá trị lựa chọn {j + 1}</Form.Label>
                       <Form.Control
                         value={option.optionValue}
                         maxLength={100}
@@ -183,7 +184,7 @@ export function FieldEditor({
                       md={4}
                       controlId={`${option.uiId}-label`}
                     >
-                      <Form.Label>Option {j + 1} label</Form.Label>
+                      <Form.Label>Nhãn lựa chọn {j + 1}</Form.Label>
                       <Form.Control
                         value={option.optionLabel}
                         maxLength={150}
@@ -200,7 +201,7 @@ export function FieldEditor({
                       <div className="d-flex flex-wrap align-items-center gap-2">
                         <Form.Check
                           id={`${option.uiId}-active`}
-                          label={`Active option ${j + 1}`}
+                          label={`Lựa chọn hoạt động ${j + 1}`}
                           checked={option.active}
                           onChange={(e) =>
                             setOption('active', e.target.checked)
@@ -211,7 +212,7 @@ export function FieldEditor({
                             <Button
                               size="sm"
                               variant="outline-secondary"
-                              aria-label={`Move option ${j + 1} up`}
+                              aria-label={`Đưa lựa chọn ${j + 1} lên`}
                               disabled={j === 0}
                               onClick={() =>
                                 update(
@@ -225,7 +226,7 @@ export function FieldEditor({
                             <Button
                               size="sm"
                               variant="outline-secondary"
-                              aria-label={`Move option ${j + 1} down`}
+                              aria-label={`Đưa lựa chọn ${j + 1} xuống`}
                               disabled={j === field.options.length - 1}
                               onClick={() =>
                                 update('options', moveItem(field.options, j, 1))
@@ -236,7 +237,7 @@ export function FieldEditor({
                             <Button
                               size="sm"
                               variant="outline-danger"
-                              aria-label={`Remove option ${j + 1}`}
+                              aria-label={`Xóa lựa chọn ${j + 1}`}
                               onClick={() =>
                                 update(
                                   'options',
@@ -244,7 +245,7 @@ export function FieldEditor({
                                 )
                               }
                             >
-                              Remove
+                              Xóa
                             </Button>
                           </>
                         )}
@@ -265,7 +266,7 @@ export function FieldEditor({
                     update('options', [...field.options, newOption()])
                   }
                 >
-                  Add option
+                  Thêm lựa chọn
                 </Button>
               )}
             </section>

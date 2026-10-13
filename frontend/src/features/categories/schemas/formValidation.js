@@ -18,7 +18,7 @@ export function parseRules(text) {
     ) {
       const key = JSON.parse(token)
       if (stack.at(-1).has(key))
-        throw new Error(`Duplicate validation rule: ${key}.`)
+        throw new Error(`Quy tắc kiểm tra bị trùng: ${key}.`)
       stack.at(-1).add(key)
     }
   })
@@ -48,20 +48,32 @@ export const editableForm = (form) => ({
   minAttachments: form.minAttachments,
   defaultSkillId: form.defaultSkillId ?? '',
   defaultSlaPolicyId: form.defaultSlaPolicyId ?? '',
-  fields: form.fields.map((field) => ({
-    ...field,
-    uiId: crypto.randomUUID(),
-    rulesText: JSON.stringify(field.validationRules, null, 2),
-    options: field.options.map((option) => ({
-      ...option,
+  fields: [...form.fields]
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+        (a.id ?? 0) - (b.id ?? 0),
+    )
+    .map((field) => ({
+      ...field,
       uiId: crypto.randomUUID(),
+      rulesText: JSON.stringify(field.validationRules, null, 2),
+      options: [...field.options]
+        .sort(
+          (a, b) =>
+            (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+            (a.id ?? 0) - (b.id ?? 0),
+        )
+        .map((option) => ({
+          ...option,
+          uiId: crypto.randomUUID(),
+        })),
     })),
-  })),
 })
 
 export function validateRules(type, rules) {
   if (!rules || Array.isArray(rules) || typeof rules !== 'object')
-    return 'Validation rules must be a JSON object.'
+    return 'Quy tắc kiểm tra phải là một đối tượng JSON.'
   const allowed =
     {
       TEXT: ['minLength', 'maxLength', 'pattern'],
@@ -73,13 +85,13 @@ export function validateRules(type, rules) {
       IMAGE: ['minFiles', 'maxFiles', 'maxSizeBytes', 'allowedTypes'],
     }[type] ?? []
   for (const [key, value] of Object.entries(rules)) {
-    if (!allowed.includes(key)) return `${key} is not supported for ${type}.`
+    if (!allowed.includes(key)) return `${key} không được hỗ trợ cho ${type}.`
     if (key === 'pattern') {
       try {
         if (typeof value !== 'string' || value.length > 500) throw new Error()
         new RegExp(value)
       } catch {
-        return 'Use a valid regular expression (at most 500 characters).'
+        return 'Nhập biểu thức chính quy hợp lệ (tối đa 500 ký tự).'
       }
     } else if (key === 'allowedTypes') {
       if (
@@ -90,7 +102,7 @@ export function validateRules(type, rules) {
             !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(v),
         )
       )
-        return 'Choose supported image MIME types.'
+        return 'Chọn định dạng MIME ảnh được hỗ trợ.'
     } else if (type === 'DATE' || type === 'DATETIME') {
       const datePattern =
         type === 'DATE'
@@ -104,21 +116,21 @@ export function validateRules(type, rules) {
           .toISOString()
           .slice(0, 10) !== value.slice(0, 10)
       )
-        return `Use an ISO ${type} value.`
+        return `Nhập giá trị ${type} theo định dạng ISO.`
     } else if (type === 'NUMBER') {
       if (
         typeof value !== 'number' ||
         !Number.isFinite(value) ||
         (key === 'step' && value <= 0)
       )
-        return 'Use a finite number; step must be positive.'
+        return 'Nhập số hữu hạn; bước số phải lớn hơn 0.'
     } else if (
       !Number.isInteger(value) ||
       value < 0 ||
       value > 2147483647 ||
       (['maxFiles', 'maxSizeBytes'].includes(key) && value === 0)
     )
-      return 'Use a non-negative integer (file limits must be positive).'
+      return 'Nhập số nguyên không âm (giới hạn tệp phải lớn hơn 0).'
   }
   for (const [min, max] of [
     ['minLength', 'maxLength'],
@@ -133,7 +145,7 @@ export function validateRules(type, rules) {
         ? Date.parse(rules[min]) > Date.parse(rules[max])
         : rules[min] > rules[max])
     )
-      return 'Maximum must be greater than or equal to minimum.'
+      return 'Giá trị tối đa phải lớn hơn hoặc bằng tối thiểu.'
   }
   return null
 }
@@ -146,84 +158,84 @@ export function validateDraft(draft, context = {}) {
     Number(draft.minAttachments) < 0 ||
     Number(draft.minAttachments) > 2147483647
   )
-    errors.minAttachments =
-      'Minimum attachments must be a non-negative integer.'
+    errors.minAttachments = 'Số ảnh tối thiểu phải là số nguyên không âm.'
   const keys = new Set()
   if (draft.fields.length > 100)
-    errors.fields = 'A form may contain at most 100 fields.'
+    errors.fields = 'Biểu mẫu có tối đa 100 trường.'
   draft.fields.forEach((field, i) => {
     const p = `fields[${i}]`
     if (!/^[A-Za-z][A-Za-z0-9_]{0,79}$/.test(field.fieldKey))
       errors[`${p}.fieldKey`] =
-        'Use a key beginning with a letter, followed by letters, numbers or underscores (max 80).'
+        'Mã bắt đầu bằng chữ cái, chỉ gồm chữ, số hoặc gạch dưới (tối đa 80 ký tự).'
     const key = field.fieldKey.toLowerCase()
     if (keys.has(key))
-      errors[`${p}.fieldKey`] = 'Field keys must be unique (case insensitive).'
+      errors[`${p}.fieldKey`] =
+        'Mã trường không được trùng (không phân biệt hoa thường).'
     keys.add(key)
     if (!field.label.trim() || field.label.length > 150)
-      errors[`${p}.label`] = 'Enter a label (max 150 characters).'
+      errors[`${p}.label`] = 'Nhập nhãn (tối đa 150 ký tự).'
     if (!DYNAMIC_FIELD_TYPES.includes(field.fieldType))
-      errors[`${p}.fieldType`] = 'Choose a supported field type.'
+      errors[`${p}.fieldType`] = 'Chọn kiểu trường được hỗ trợ.'
     if ((field.helpText?.length ?? 0) > 500)
-      errors[`${p}.helpText`] = 'Help text is limited to 500 characters.'
+      errors[`${p}.helpText`] = 'Hướng dẫn có tối đa 500 ký tự.'
     if ((field.placeholder?.length ?? 0) > 250)
-      errors[`${p}.placeholder`] = 'Placeholder is limited to 250 characters.'
+      errors[`${p}.placeholder`] = 'Gợi ý nhập có tối đa 250 ký tự.'
     try {
       const error = validateRules(field.fieldType, parseRules(field.rulesText))
       if (error) errors[`${p}.validationRules`] = error
     } catch (error) {
       errors[`${p}.validationRules`] = error.message.startsWith(
-        'Duplicate validation rule:',
+        'Quy tắc kiểm tra bị trùng:',
       )
         ? error.message
-        : 'Enter valid JSON. Rules are never silently removed.'
+        : 'Nhập JSON hợp lệ. Quy tắc lỗi không bị tự động xóa.'
     }
     if (!isSelect(field.fieldType) && field.options.length)
-      errors[`${p}.options`] = 'Only select fields may have options.'
+      errors[`${p}.options`] =
+        'Chỉ trường chọn một/chọn nhiều được có lựa chọn.'
     if (field.options.length > 200)
-      errors[`${p}.options`] = 'A field may contain at most 200 options.'
+      errors[`${p}.options`] = 'Một trường có tối đa 200 lựa chọn.'
     if (
       context.publishing &&
       isSelect(field.fieldType) &&
       !field.options.some((o) => o.active)
     )
-      errors[`${p}.options`] = 'Select fields need at least one active option.'
+      errors[`${p}.options`] = 'Trường chọn cần ít nhất một lựa chọn hoạt động.'
     const values = new Set()
     field.options.forEach((option, j) => {
       const op = `${p}.options[${j}]`
       if (!/^[A-Za-z0-9_.-]{1,100}$/.test(option.optionValue))
         errors[`${op}.optionValue`] =
-          'Enter an option value using letters, numbers, dots, dashes or underscores (max 100).'
+          'Giá trị lựa chọn chỉ gồm chữ, số, dấu chấm, gạch ngang hoặc gạch dưới (tối đa 100 ký tự).'
       if (values.has(option.optionValue.toLowerCase()))
         errors[`${op}.optionValue`] =
-          'Option values must be unique (case insensitive).'
+          'Giá trị lựa chọn không được trùng (không phân biệt hoa thường).'
       values.add(option.optionValue.toLowerCase())
       if (!option.optionLabel.trim() || option.optionLabel.length > 150)
-        errors[`${op}.optionLabel`] =
-          'Enter an option label (max 150 characters).'
+        errors[`${op}.optionLabel`] = 'Nhập nhãn lựa chọn (tối đa 150 ký tự).'
     })
   })
   if (context.publishing) {
     if (!context.category?.active)
-      errors['category.active'] = 'Activate the category before publishing.'
+      errors['category.active'] = 'Kích hoạt danh mục trước khi phát hành.'
     if (
       draft.requiresEquipment &&
       context.category?.assetPolicy === 'FORBIDDEN'
     )
       errors.requiresEquipment =
-        'Equipment cannot be required when assets are forbidden.'
+        'Không thể bắt buộc tài sản khi danh mục cấm tài sản.'
     if (
       !context.skills?.some(
         (s) => s.id === Number(draft.defaultSkillId) && s.active,
       )
     )
-      errors.defaultSkillId = 'Choose an active default skill.'
+      errors.defaultSkillId = 'Chọn kỹ năng mặc định đang hoạt động.'
     if (
       !context.slas?.some(
         (s) => s.id === Number(draft.defaultSlaPolicyId) && s.active,
       )
     )
-      errors.defaultSlaPolicyId = 'Choose an active SLA policy.'
+      errors.defaultSlaPolicyId = 'Chọn chính sách SLA đang hoạt động.'
   }
   return errors
 }

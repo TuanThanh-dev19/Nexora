@@ -9,6 +9,7 @@ import {
 } from '../hooks/useCategories'
 import { QueryState } from '../components/CategoryStates'
 import { errorMessage } from '../api/categoryError'
+import { FORM_STATUS_LABELS } from '../constants/formStatuses'
 
 export function CategoryVersionsPage() {
   const { categoryId } = useParams()
@@ -28,16 +29,16 @@ export function CategoryVersionsPage() {
   })
   return (
     <Container className="page-container">
-      <Link to="/categories">← Categories</Link>
-      <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 my-4">
+      <Link to="/categories">← Danh mục</Link>
+      <div className="page-heading">
         <div>
-          <h1>{category?.name ?? 'Category'} form versions</h1>
+          <h1>{category?.name ?? 'Danh mục'} — phiên bản biểu mẫu</h1>
           <p className="text-secondary">
-            Published and archived form content is read only.
+            Nội dung biểu mẫu đã phát hành hoặc lưu trữ chỉ được xem.
           </p>
         </div>
         <Button disabled={mutation.isPending} onClick={() => mutation.mutate()}>
-          {mutation.isPending ? 'Creating…' : 'Create draft'}
+          {mutation.isPending ? 'Đang tạo…' : 'Tạo bản nháp'}
         </Button>
       </div>
       {mutation.isError && (
@@ -48,23 +49,23 @@ export function CategoryVersionsPage() {
       <QueryState query={query}>
         {query.data?.length === 0 ? (
           <Alert variant="light">
-            No form versions yet. Create the first draft.
+            Chưa có phiên bản biểu mẫu. Hãy tạo bản nháp đầu tiên.
           </Alert>
         ) : (
           <Table responsive className="align-middle">
             <thead>
               <tr>
-                <th>Version</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Published</th>
-                <th>Action</th>
+                <th>Phiên bản</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th>Ngày phát hành</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {query.data?.map((form) => (
                 <tr key={form.id}>
-                  <td>Version {form.versionNumber}</td>
+                  <td>Phiên bản {form.versionNumber}</td>
                   <td>
                     <Badge
                       bg={
@@ -76,13 +77,13 @@ export function CategoryVersionsPage() {
                       }
                       text={form.status === 'DRAFT' ? 'dark' : undefined}
                     >
-                      {form.status}
+                      {FORM_STATUS_LABELS[form.status] ?? form.status}
                     </Badge>
                   </td>
-                  <td>{new Date(form.createdAt).toLocaleString('en-GB')}</td>
+                  <td>{new Date(form.createdAt).toLocaleString('vi-VN')}</td>
                   <td>
                     {form.publishedAt
-                      ? new Date(form.publishedAt).toLocaleString('en-GB')
+                      ? new Date(form.publishedAt).toLocaleString('vi-VN')
                       : '—'}
                   </td>
                   <td>
@@ -92,7 +93,9 @@ export function CategoryVersionsPage() {
                       size="sm"
                       variant="outline-primary"
                     >
-                      {form.status === 'DRAFT' ? 'Edit draft' : 'View form'}
+                      {form.status === 'DRAFT'
+                        ? 'Sửa bản nháp'
+                        : 'Xem biểu mẫu'}
                     </Button>
                   </td>
                 </tr>
