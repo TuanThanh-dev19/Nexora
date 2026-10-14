@@ -1,12 +1,12 @@
 import { Alert, Button, Spinner } from 'react-bootstrap'
 
-import { errorMessage } from '../api/categoryError'
+import { errorMessage, fieldErrorLabel } from '../api/categoryError'
 export function QueryState({ query, children }) {
   if (query.isPending)
     return (
       <p role="status">
         <Spinner as="span" size="sm" className="me-2" />
-        Loading…
+        Đang tải…
       </p>
     )
   if (query.isError)
@@ -18,7 +18,7 @@ export function QueryState({ query, children }) {
           size="sm"
           onClick={() => query.refetch()}
         >
-          Retry
+          Thử lại
         </Button>
       </Alert>
     )
@@ -30,11 +30,11 @@ export function FieldErrors({ errors }) {
   if (!entries.length) return null
   return (
     <Alert variant="danger" role="alert">
-      <strong>Please correct the following:</strong>
+      <strong>Vui lòng sửa các lỗi sau:</strong>
       <ul className="mb-0">
         {entries.map(([field, message]) => (
           <li key={field}>
-            <strong>{field}</strong>: {message}
+            <strong>{fieldErrorLabel(field)}</strong>: {message}
           </li>
         ))}
       </ul>

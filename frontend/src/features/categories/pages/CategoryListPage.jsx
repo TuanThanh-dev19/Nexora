@@ -15,7 +15,10 @@ import {
 import { categoryApi } from '../api/categoryApi'
 import { categoryKeys, useCategories } from '../hooks/useCategories'
 import { FieldErrors, QueryState } from '../components/CategoryStates'
-import { errorMessage } from '../api/categoryError'
+import { errorMessage, localizeFieldErrors } from '../api/categoryError'
+import { ASSET_POLICY_LABELS } from '../constants/categoryLabels'
+import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
+import { UnsavedChangesGuard } from '../components/UnsavedChangesGuard'
 
 const emptyCategory = () => ({
   code: '',
@@ -31,41 +34,57 @@ export function CategoryListPage() {
   const query = useCategories()
   const client = useQueryClient()
   const [editing, setEditing] = useState(null)
+  const [original, setOriginal] = useState(null)
+  const [discard, setDiscard] = useState(false)
+  const dirty =
+    !!editing && JSON.stringify(editing) !== JSON.stringify(original)
+  const close = () => {
+    if (mutation.isPending) return
+    if (dirty) setDiscard(true)
+    else setEditing(null)
+  }
   const [notice, setNotice] = useState('')
   const [errors, setErrors] = useState({})
   const mutation = useMutation({
-    mutationFn: (value) =>
-      value.id
-        ? categoryApi.update(value.id, value)
-        : categoryApi.create(value),
+    mutationFn: (value) => {
+      const { id, ...payload } = value
+      return id ? categoryApi.update(id, payload) : categoryApi.create(payload)
+    },
     onSuccess: async () => {
       setEditing(null)
-      setNotice('Category saved.')
+      setNotice('Đã lưu danh mục.')
       await client.invalidateQueries({ queryKey: categoryKeys.all })
     },
     onError: (error) =>
       setErrors(
-        error.response?.data?.fieldErrors ?? { category: errorMessage(error) },
+        localizeFieldErrors(
+          error.response?.data?.fieldErrors ?? {
+            category: errorMessage(error),
+          },
+        ),
       ),
   })
   const open = (category) => {
     setErrors({})
     mutation.reset()
     setEditing(category)
+    setOriginal(category)
+    setDiscard(false)
   }
   const update = (key, value) =>
     setEditing((current) => ({ ...current, [key]: value }))
 
   return (
     <Container className="page-container">
-      <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+      <UnsavedChangesGuard dirty={dirty} />
+      <div className="page-heading">
         <div>
-          <h1>Categories</h1>
+          <h1>Danh mục</h1>
           <p className="text-secondary">
-            Manage incident categories and their versioned forms.
+            Quản lý danh mục sự cố và các phiên bản biểu mẫu.
           </p>
         </div>
-        <Button onClick={() => open(emptyCategory())}>New category</Button>
+        <Button onClick={() => open(emptyCategory())}>Tạo danh mục</Button>
       </div>
       {notice && (
         <Alert variant="success" dismissible onClose={() => setNotice('')}>
@@ -75,17 +94,17 @@ export function CategoryListPage() {
       <QueryState query={query}>
         {query.data?.length === 0 ? (
           <Alert variant="light">
-            No categories yet. Create a category to design its first form.
+            Chưa có danh mục. Tạo danh mục để thiết kế biểu mẫu đầu tiên.
           </Alert>
         ) : (
           <Table responsive hover className="align-middle">
             <thead>
               <tr>
-                <th>Category</th>
-                <th>Code</th>
-                <th>Asset policy</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Danh mục</th>
+                <th>Mã</th>
+                <th>Chính sách tài sản</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -100,10 +119,10 @@ export function CategoryListPage() {
                   <td>
                     <code>{category.code}</code>
                   </td>
-                  <td>{category.assetPolicy}</td>
+                  <td>{ASSET_POLICY_LABELS[category.assetPolicy]}</td>
                   <td>
                     <Badge bg={category.active ? 'success' : 'secondary'}>
-                      {category.active ? 'Active' : 'Inactive'}
+                      {category.active ? 'Hoạt động' : 'Ngừng hoạt động'}
                     </Badge>
                   </td>
                   <td>
@@ -114,15 +133,15 @@ export function CategoryListPage() {
                         size="sm"
                         variant="outline-primary"
                       >
-                        Form versions
+                        Phiên bản biểu mẫu
                       </Button>
                       <Button
                         size="sm"
                         variant="outline-secondary"
-                        aria-label={`Edit ${category.name}`}
+                        aria-label={`Sửa ${category.name}`}
                         onClick={() => open({ ...category })}
                       >
-                        Edit
+                        Sửa
                       </Button>
                     </div>
                   </td>
@@ -132,95 +151,150 @@ export function CategoryListPage() {
           </Table>
         )}
       </QueryState>
-      <Modal
-        show={!!editing}
-        onHide={() => !mutation.isPending && setEditing(null)}
-        backdrop="static"
-        size="lg"
-      >
+      <Modal show={!!editing} onHide={close} backdrop="static" size="lg">
         <Modal.Header closeButton={!mutation.isPending}>
           <Modal.Title>
-            {editing?.id ? 'Edit category' : 'New category'}
+            {editing?.id ? 'Sửa danh mục' : 'Tạo danh mục'}
           </Modal.Title>
         </Modal.Header>
         {editing && (
           <Form
+            noValidate
             onSubmit={(event) => {
               event.preventDefault()
-              setErrors({})
-              mutation.mutate(editing)
+              const validation = {}
+              if (!/^[A-Za-z0-9_-]{1,50}$/.test(editing.code))
+                validation.code =
+                  'Mã gồm chữ, số, gạch ngang hoặc gạch dưới; tối đa 50 ký tự.'
+              if (!editing.name.trim() || editing.name.length > 150)
+                validation.name = 'Nhập tên danh mục (tối đa 150 ký tự).'
+              if ((editing.description?.length ?? 0) > 1000)
+                validation.description = 'Mô tả có tối đa 1000 ký tự.'
+              setErrors(validation)
+              if (Object.keys(validation).length) return
+              mutation.mutate(
+                Object.fromEntries(
+                  ['id', ...Object.keys(emptyCategory())]
+                    .filter((key) => editing[key] !== undefined)
+                    .map((key) => [key, editing[key]]),
+                ),
+              )
             }}
           >
             <Modal.Body>
+              {discard && (
+                <Alert variant="warning" role="alert">
+                  Bỏ thay đổi danh mục chưa lưu?{' '}
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => setDiscard(false)}
+                  >
+                    Tiếp tục chỉnh sửa
+                  </Button>{' '}
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      setEditing(null)
+                      setDiscard(false)
+                    }}
+                  >
+                    Bỏ thay đổi
+                  </Button>
+                </Alert>
+              )}
               <FieldErrors errors={errors} />
               <fieldset disabled={mutation.isPending}>
                 <Row className="g-3">
                   <Form.Group as={Col} md={6} controlId="category-code">
-                    <Form.Label>Code</Form.Label>
+                    <Form.Label>Mã</Form.Label>
                     <Form.Control
                       required
                       pattern="[A-Za-z0-9_-]+"
                       maxLength={50}
                       readOnly={!!editing.id}
+                      isInvalid={!!errors.code}
                       value={editing.code}
                       onChange={(e) => update('code', e.target.value)}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.code}
+                    </Form.Control.Feedback>
                     <Form.Text>
-                      Stable identifier; cannot change after creation.
+                      Mã định danh cố định, không thể thay đổi sau khi tạo.
                     </Form.Text>
                   </Form.Group>
                   <Form.Group as={Col} md={6} controlId="category-name">
-                    <Form.Label>Name</Form.Label>
+                    <Form.Label>Tên</Form.Label>
                     <Form.Control
                       required
                       maxLength={150}
+                      isInvalid={!!errors.name}
                       value={editing.name}
                       onChange={(e) => update('name', e.target.value)}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.name}
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group as={Col} xs={12} controlId="category-description">
-                    <Form.Label>Description</Form.Label>
+                    <Form.Label>Mô tả</Form.Label>
                     <Form.Control
                       as="textarea"
                       maxLength={1000}
+                      isInvalid={!!errors.description}
                       value={editing.description ?? ''}
                       onChange={(e) => update('description', e.target.value)}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.description}
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group as={Col} md={6} controlId="category-policy">
-                    <Form.Label>Asset policy</Form.Label>
+                    <Form.Label>Chính sách tài sản</Form.Label>
                     <Form.Select
+                      isInvalid={!!errors.assetPolicy}
                       value={editing.assetPolicy}
                       onChange={(e) => update('assetPolicy', e.target.value)}
                     >
                       {['OPTIONAL', 'REQUIRED', 'FORBIDDEN'].map((policy) => (
-                        <option key={policy}>{policy}</option>
+                        <option key={policy} value={policy}>
+                          {ASSET_POLICY_LABELS[policy]}
+                        </option>
                       ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.assetPolicy}
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group as={Col} md={6} controlId="category-priority">
-                    <Form.Label>Default priority</Form.Label>
+                    <Form.Label>Mức ưu tiên mặc định</Form.Label>
                     <Form.Select
+                      isInvalid={!!errors.defaultPriority}
                       value={editing.defaultPriority}
                       onChange={(e) =>
                         update('defaultPriority', e.target.value)
                       }
                     >
                       {['LOW', 'NORMAL', 'HIGH', 'URGENT'].map((priority) => (
-                        <option key={priority}>{priority}</option>
+                        <option key={priority} value={priority}>
+                          {PRIORITY_LABELS[priority]}
+                        </option>
                       ))}
                     </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.defaultPriority}
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <Col xs={12}>
                     <Form.Check
                       id="category-active"
-                      label="Active category"
+                      label="Danh mục đang hoạt động"
                       checked={editing.active}
                       onChange={(e) => update('active', e.target.checked)}
                     />
                     <Form.Check
                       id="category-location"
-                      label="Location required"
+                      label="Bắt buộc địa điểm"
                       checked={editing.locationRequired}
                       onChange={(e) =>
                         update('locationRequired', e.target.checked)
@@ -234,12 +308,12 @@ export function CategoryListPage() {
               <Button
                 variant="secondary"
                 disabled={mutation.isPending}
-                onClick={() => setEditing(null)}
+                onClick={close}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? 'Saving…' : 'Save category'}
+                {mutation.isPending ? 'Đang lưu…' : 'Lưu danh mục'}
               </Button>
             </Modal.Footer>
           </Form>

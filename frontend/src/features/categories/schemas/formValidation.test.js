@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   draftPayload,
+  editableForm,
   newField,
   parseRules,
   validateDraft,
@@ -8,11 +9,40 @@ import {
 } from './formValidation'
 
 describe('dynamic form validation', () => {
+  it('restores server ordering without mutating fields, options or rules', () => {
+    const form = {
+      revision: 7,
+      fields: [
+        {
+          id: 2,
+          displayOrder: 2,
+          validationRules: { maxLength: 25 },
+          options: [],
+        },
+        {
+          id: 1,
+          displayOrder: 1,
+          validationRules: {},
+          options: [
+            { id: 2, displayOrder: 2 },
+            { id: 1, displayOrder: 1 },
+          ],
+        },
+      ],
+    }
+    const copy = structuredClone(form)
+    const result = editableForm(form)
+    expect(result.fields.map((f) => f.id)).toEqual([1, 2])
+    expect(result.fields[0].options.map((o) => o.id)).toEqual([1, 2])
+    expect(result.revision).toBe(7)
+    expect(JSON.parse(result.fields[1].rulesText)).toEqual({ maxLength: 25 })
+    expect(form).toEqual(copy)
+  })
   it('rejects duplicate JSON keys including escaped names before serialization', () => {
     expect(() => parseRules('{"maxLength":3,"maxLength":9}')).toThrow(
-      /Duplicate/,
+      /bị trùng/,
     )
-    expect(() => parseRules('{"min":1,"\\u006din":2}')).toThrow(/Duplicate/)
+    expect(() => parseRules('{"min":1,"\\u006din":2}')).toThrow(/bị trùng/)
     expect(parseRules('{"pattern":"[a-z]+"}')).toEqual({ pattern: '[a-z]+' })
   })
   it.each([
@@ -73,9 +103,9 @@ describe('dynamic form validation', () => {
       },
     )
     expect(errors).toHaveProperty('minAttachments')
-    expect(errors['fields[1].fieldKey']).toMatch(/unique/)
-    expect(errors['fields[0].options']).toMatch(/active option/)
-    expect(errors.requiresEquipment).toMatch(/forbidden/)
+    expect(errors['fields[1].fieldKey']).toMatch(/không được trùng/)
+    expect(errors['fields[0].options']).toMatch(/lựa chọn hoạt động/)
+    expect(errors.requiresEquipment).toMatch(/cấm tài sản/)
     expect(errors.defaultSkillId).toBeTruthy()
     expect(errors.defaultSlaPolicyId).toBeTruthy()
   })

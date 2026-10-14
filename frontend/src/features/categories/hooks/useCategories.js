@@ -17,6 +17,9 @@ export const useCategoryForm = (id) =>
   useQuery({
     queryKey: categoryKeys.form(id),
     queryFn: () => categoryApi.form(id),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 export const useSkills = () =>
   useQuery({ queryKey: ['active-skills'], queryFn: categoryApi.skills })

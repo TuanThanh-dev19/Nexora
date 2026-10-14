@@ -33,29 +33,31 @@ describe('FieldEditor', () => {
   it('adds, reorders and removes options and fields', async () => {
     const user = userEvent.setup()
     render(<EditorHarness />)
-    await user.click(screen.getByRole('button', { name: 'Add option' }))
-    await user.type(screen.getByLabelText('Option 1 value'), 'a')
-    await user.type(screen.getByLabelText('Option 1 label'), 'Alpha')
-    await user.click(screen.getByRole('button', { name: 'Add option' }))
-    await user.type(screen.getByLabelText('Option 2 value'), 'b')
-    await user.type(screen.getByLabelText('Option 2 label'), 'Beta')
-    await user.click(screen.getByRole('button', { name: 'Move option 2 up' }))
-    expect(screen.getByLabelText('Option 1 value')).toHaveValue('b')
-    await user.click(screen.getByRole('button', { name: 'Remove option 2' }))
-    expect(screen.queryByLabelText('Option 2 value')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Move field 1 down' }))
-    expect(screen.getByText('Field 1: Second')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Remove field 1' }))
-    expect(screen.queryByText('Field 1: Second')).not.toBeInTheDocument()
-    expect(screen.getByText('Field 1: First')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Thêm lựa chọn' }))
+    await user.type(screen.getByLabelText('Giá trị lựa chọn 1'), 'a')
+    await user.type(screen.getByLabelText('Nhãn lựa chọn 1'), 'Alpha')
+    await user.click(screen.getByRole('button', { name: 'Thêm lựa chọn' }))
+    await user.type(screen.getByLabelText('Giá trị lựa chọn 2'), 'b')
+    await user.type(screen.getByLabelText('Nhãn lựa chọn 2'), 'Beta')
+    await user.click(screen.getByRole('button', { name: 'Đưa lựa chọn 2 lên' }))
+    expect(screen.getByLabelText('Giá trị lựa chọn 1')).toHaveValue('b')
+    await user.click(screen.getByRole('button', { name: 'Xóa lựa chọn 2' }))
+    expect(
+      screen.queryByLabelText('Giá trị lựa chọn 2'),
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Đưa trường 1 xuống' }))
+    expect(screen.getByText('Trường 1: Second')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Xóa trường 1' }))
+    expect(screen.queryByText('Trường 1: Second')).not.toBeInTheDocument()
+    expect(screen.getByText('Trường 1: First')).toBeInTheDocument()
   })
 
   it('offers options only for select fields and renders backend rule errors inline', async () => {
     const user = userEvent.setup()
     render(<EditorHarness />)
-    await user.selectOptions(screen.getAllByLabelText('Field type')[0], 'TEXT')
+    await user.selectOptions(screen.getAllByLabelText('Kiểu trường')[0], 'TEXT')
     expect(
-      screen.queryByRole('button', { name: 'Add option' }),
+      screen.queryByRole('button', { name: 'Thêm lựa chọn' }),
     ).not.toBeInTheDocument()
     const field = { ...newField(), label: 'Locked', fieldKey: 'locked' }
     const { container } = render(
@@ -70,13 +72,13 @@ describe('FieldEditor', () => {
       />,
     )
     expect(
-      within(container).getByLabelText('Validation rules (JSON)'),
+      within(container).getByLabelText('Quy tắc kiểm tra (JSON)'),
     ).toBeDisabled()
     expect(
       within(container).getByText('Unsupported maximum.'),
     ).toBeInTheDocument()
     expect(
-      within(container).queryByRole('button', { name: 'Remove field 1' }),
+      within(container).queryByRole('button', { name: 'Xóa trường 1' }),
     ).not.toBeInTheDocument()
   })
 })
