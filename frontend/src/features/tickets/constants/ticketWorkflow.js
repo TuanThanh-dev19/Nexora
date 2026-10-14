@@ -48,6 +48,19 @@ export const TICKET_WORKFLOW_ACTIONS = {
     historyAction: 'UNASSIGN',
     requiresReason: true,
   },
+  close: {
+    label: 'Đóng phiếu',
+    statuses: [STATUS.RESOLVED],
+    targetStatus: STATUS.CLOSED,
+    historyAction: 'CLOSE',
+  },
+  reopen: {
+    label: 'Mở lại phiếu',
+    statuses: [STATUS.RESOLVED],
+    targetStatus: STATUS.REOPENED,
+    historyAction: 'REOPEN',
+    requiresReason: true,
+  },
 }
 
 export const ELIGIBILITY_REASON_LABELS = {
@@ -76,14 +89,37 @@ export function canManageTickets(user) {
   )
 }
 
-export function availableTicketActions(status, user) {
-  if (!canManageTickets(user)) return []
-  return Object.keys(TICKET_WORKFLOW_ACTIONS).filter((action) =>
-    TICKET_WORKFLOW_ACTIONS[action].statuses.includes(status),
+export function isTicketOwner(ticket, user) {
+  return (
+    user?.id != null &&
+    (user.status == null || user.status === 'ACTIVE') &&
+    user.roles?.includes(ROLE_CODES.REQUESTER) === true &&
+    String(ticket?.reporter?.id) === String(user.id)
   )
 }
 
-export function workflowHistoryAction(action, status) {
+export function availableTicketActions(ticket, user) {
+  const manager = canManageTickets(user)
+  const owner = isTicketOwner(ticket, user)
+  return Object.keys(TICKET_WORKFLOW_ACTIONS).filter((action) => {
+    if (!TICKET_WORKFLOW_ACTIONS[action].statuses.includes(ticket?.status))
+      return false
+    if (manager) return true
+    if (!owner) return false
+    if (action === 'cancel')
+      return [STATUS.SUBMITTED, STATUS.UNDER_REVIEW].includes(ticket.status)
+    return ['close', 'reopen'].includes(action)
+  })
+}
+
+export function workflowRequiresReason(action, ticket, user) {
+  return action === 'close'
+    ? !isTicketOwner(ticket, user)
+    : Boolean(TICKET_WORKFLOW_ACTIONS[action]?.requiresReason)
+}
+
+export function workflowHistoryAction(action, status, ticket, user) {
+  if (action === 'close' && !isTicketOwner(ticket, user)) return 'FORCE_CLOSE'
   if (action !== 'cancel') return TICKET_WORKFLOW_ACTIONS[action].historyAction
   return [STATUS.SUBMITTED, STATUS.UNDER_REVIEW].includes(status)
     ? 'CANCEL_BEFORE_ASSIGNMENT'

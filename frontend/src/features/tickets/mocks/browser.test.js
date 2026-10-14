@@ -39,6 +39,7 @@ describe('browser mock bootstrap', () => {
       expect(window.ticketWorkflowMock).toEqual({
         reset: expect.any(Function),
         failNextAction: expect.any(Function),
+        failNextSubresource: expect.any(Function),
       })
       await ticketApi.review(10, { version: 0 })
       const detail = await ticketApi.getById(10)

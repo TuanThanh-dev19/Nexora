@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { httpClient } from '../../../shared/api/httpClient'
 import { ticketApi } from './ticketApi'
 vi.mock('../../../shared/api/httpClient', () => ({
-  httpClient: { get: vi.fn(), post: vi.fn() },
+  httpClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() },
 }))
 
 describe('ticketApi', () => {
@@ -41,7 +41,16 @@ describe('ticketApi', () => {
     expect(await ticketApi.getById('12', signal)).toBe(data)
     expect(httpClient.get).toHaveBeenCalledWith('/tickets/12', { signal })
   })
-  it.each(['review', 'reject', 'cancel', 'assign', 'reassign', 'unassign'])(
+  it.each([
+    'review',
+    'reject',
+    'cancel',
+    'assign',
+    'reassign',
+    'unassign',
+    'close',
+    'reopen',
+  ])(
     'sends the expected version to the explicit %s endpoint',
     async (action) => {
       const payload = {
@@ -74,5 +83,58 @@ describe('ticketApi', () => {
     const error = { response: { status: 404 } }
     httpClient.post.mockRejectedValueOnce(error)
     await expect(ticketApi.review('12', { version: 0 })).rejects.toBe(error)
+  })
+  it('requests authenticated image content as a blob with cancellation', async () => {
+    const data = new Uint8Array([137, 80, 78, 71]).buffer
+    const signal = new AbortController().signal
+    httpClient.get.mockResolvedValueOnce({
+      data,
+      headers: { 'content-type': 'image/png' },
+    })
+    expect(
+      await ticketApi.attachmentContent(10, 'opaque/id', signal),
+    ).toMatchObject({ type: 'image/png', size: 4 })
+    expect(httpClient.get).toHaveBeenLastCalledWith(
+      '/tickets/10/attachments/opaque%2Fid/content',
+      { responseType: 'arraybuffer', signal },
+    )
+    httpClient.get.mockResolvedValueOnce({
+      data,
+      headers: { 'content-type': 'text/html' },
+    })
+    await expect(ticketApi.attachmentContent(10, 1)).rejects.toThrow(
+      'Nội dung ảnh không hợp lệ',
+    )
+  })
+  it('uses independent comments and feedback contracts without ticket versions', async () => {
+    const signal = new AbortController().signal
+    httpClient.get.mockResolvedValueOnce({ data: { content: [] } })
+    await ticketApi.comments(10, { page: 0, size: 20 }, signal)
+    expect(httpClient.get).toHaveBeenLastCalledWith('/tickets/10/comments', {
+      params: { page: 0, size: 20 },
+      signal,
+    })
+    httpClient.post.mockResolvedValueOnce({ data: { id: 'comment' } })
+    await ticketApi.addComment(10, { content: 'Hello', visibility: 'PUBLIC' })
+    expect(httpClient.post).toHaveBeenLastCalledWith('/tickets/10/comments', {
+      content: 'Hello',
+      visibility: 'PUBLIC',
+    })
+    httpClient.put.mockResolvedValueOnce({ data: { id: 'comment' } })
+    await ticketApi.updateComment(10, 'opaque/id', { content: 'Changed' })
+    expect(httpClient.put).toHaveBeenLastCalledWith(
+      '/tickets/10/comments/opaque%2Fid',
+      { content: 'Changed' },
+    )
+    httpClient.get.mockResolvedValueOnce({ data: null })
+    expect(await ticketApi.feedback(10, signal)).toBeNull()
+    expect(httpClient.get).toHaveBeenLastCalledWith('/tickets/10/feedback', {
+      signal,
+    })
+    httpClient.post.mockResolvedValueOnce({ data: { rating: 5 } })
+    await ticketApi.addFeedback(10, { rating: 5 })
+    expect(httpClient.post).toHaveBeenLastCalledWith('/tickets/10/feedback', {
+      rating: 5,
+    })
   })
 })

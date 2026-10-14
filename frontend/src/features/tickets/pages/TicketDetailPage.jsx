@@ -6,8 +6,8 @@ import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
 import { useAuth } from '../../auth/context/useAuth'
 import { TicketActionPanel } from '../components/TicketActionPanel'
 import { TechnicianWorkPanel } from '../components/TechnicianWorkPanel'
-import { canManageTickets } from '../constants/ticketWorkflow'
-import { isCurrentTechnician } from '../constants/technicianWork'
+import { TicketComments } from '../components/TicketComments'
+import { TicketFeedback } from '../components/TicketFeedback'
 import { ticketViewerKey } from '../hooks/ticketQueryOptions'
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner'
 import { TicketErrorState } from '../components/TicketErrorState'
@@ -49,10 +49,7 @@ export function TicketDetailPage() {
         </div>
         <span className="read-only-label">
           <FiEye aria-hidden="true" />{' '}
-          {isTicketWorkflowMockEnabled() &&
-          (canManageTickets(user) || isCurrentTechnician(ticket, user))
-            ? 'Mô phỏng workflow'
-            : 'Chỉ đọc'}
+          {isTicketWorkflowMockEnabled() ? 'Mô phỏng workflow' : 'Chỉ đọc'}
         </span>
       </div>
       {!isPositiveId(ticketId) ? (
@@ -135,7 +132,19 @@ export function TicketDetailPage() {
                 <TicketStatusHistory history={ticket.statusHistory} />
               </div>
             </div>
-            <TicketAttachments attachments={ticket.attachments} />
+            <TicketAttachments
+              key={`attachments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+              ticketId={ticket.id}
+              attachments={ticket.attachments}
+            />
+            <TicketComments
+              key={`comments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+              ticket={ticket}
+            />
+            <TicketFeedback
+              key={`feedback-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+              ticket={ticket}
+            />
           </>
         )
       )}

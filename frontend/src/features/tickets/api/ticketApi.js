@@ -2,6 +2,93 @@ import { httpClient } from '../../../shared/api/httpClient'
 import { env } from '../../../shared/config/env'
 
 export const ticketApi = {
+  async attachmentContent(ticketId, attachmentId, signal) {
+    try {
+      const response = await httpClient.get(
+        `/tickets/${encodeURIComponent(ticketId)}/attachments/${encodeURIComponent(attachmentId)}/content`,
+        // MSW's XHR interceptor decodes blob responses as text. Preserve bytes
+        // with arraybuffer, then construct the Blob used by the image UI.
+        { responseType: 'arraybuffer', signal },
+      )
+      const type = response.headers['content-type']?.split(';')[0].trim()
+      if (
+        !['image/jpeg', 'image/png'].includes(type) ||
+        !response.data.byteLength
+      )
+        throw new Error('Nội dung ảnh không hợp lệ.')
+      return new Blob([response.data], { type })
+    } catch (error) {
+      // Decode binary problem responses locally; shared 401 handling still runs.
+      const body = error.response?.data
+      if (
+        (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) &&
+        error.response.headers['content-type']?.includes('json')
+      ) {
+        try {
+          error.response.data = JSON.parse(new TextDecoder().decode(body))
+        } catch {
+          /* Preserve status for malformed problems. */
+        }
+      }
+      throw error
+    }
+  },
+  async close(ticketId, payload) {
+    return (
+      await httpClient.post(
+        `/tickets/${encodeURIComponent(ticketId)}/close`,
+        payload,
+      )
+    ).data
+  },
+  async reopen(ticketId, payload) {
+    return (
+      await httpClient.post(
+        `/tickets/${encodeURIComponent(ticketId)}/reopen`,
+        payload,
+      )
+    ).data
+  },
+  async comments(ticketId, params, signal) {
+    return (
+      await httpClient.get(
+        `/tickets/${encodeURIComponent(ticketId)}/comments`,
+        { params, signal },
+      )
+    ).data
+  },
+  async addComment(ticketId, payload) {
+    return (
+      await httpClient.post(
+        `/tickets/${encodeURIComponent(ticketId)}/comments`,
+        payload,
+      )
+    ).data
+  },
+  async updateComment(ticketId, commentId, payload) {
+    return (
+      await httpClient.put(
+        `/tickets/${encodeURIComponent(ticketId)}/comments/${encodeURIComponent(commentId)}`,
+        payload,
+      )
+    ).data
+  },
+  async feedback(ticketId, signal) {
+    return (
+      await httpClient.get(
+        `/tickets/${encodeURIComponent(ticketId)}/feedback`,
+        { signal },
+      )
+    ).data
+  },
+  async addFeedback(ticketId, payload) {
+    return (
+      await httpClient.post(
+        `/tickets/${encodeURIComponent(ticketId)}/feedback`,
+        payload,
+      )
+    ).data
+  },
   async search(requestSearch, signal) {
     const params = new URLSearchParams(requestSearch)
     const response = await httpClient.get('/tickets', { params, signal })

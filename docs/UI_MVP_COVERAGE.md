@@ -9,6 +9,9 @@ MVP until those dependencies have been integrated and checked.
 
 ## Coverage snapshot (11 October 2026)
 
+The Ticket Detail collaboration row was updated on 14 October 2026 for #60;
+other rows retain the earlier audit context.
+
 REAL below describes the client/API implementation available in source, not proof
 that its full database journey was exercised in this audit. MOCK means in-memory,
 development/test data; PENDING means missing feature implementation/integration.
@@ -25,7 +28,7 @@ development/test data; PENDING means missing feature implementation/integration.
 | Create Ticket + dynamic fields + evidence photos | PENDING UI #57; create/attachment API future | REQUESTER-only `/tickets/new` pending entry; no production mock submission |
 | Manager review/assignment | MOCK only with `VITE_TICKET_WORKFLOW_MOCK=true` in DEV; runtime mutation unavailable | #58 UI exists; real workflow/eligibility backend acceptance separate |
 | Technician My Work/log/resolve | MOCK workflow preview; real writes pending | #59 UI exists; TECHNICIAN-only `/my-work`; real concurrency/persistence not proven |
-| Attachment content / comments / feedback | Partial MOCK workflow upload; remainder PENDING #60/backend | Do not claim real image download/comments/feedback coverage |
+| Attachment content / comments / feedback | #60 UI and DEV/test mocks implemented: authorized binary preview/download, Requester actions, comments/edit-own, immutable feedback | Real subresource APIs/persistence remain pending; frontend tests verify role/state, failure isolation and object URL lifecycle |
 | Dashboard | Verified #61 UI/preview from PR #67 integrated into this branch | Four Vietnamese metrics, role scope, Bangkok time, loading/zero/success/error/retry and 4/2/1 layout checked; real summary still 404/pending, never fake success |
 | Navigation and guards | Real four-role/mixed-role browser QA, direct paths, active links, preserved 403/404 and private cache reset | Navigation remains a role union. Existing admin/users API separately returned 200 only for Admin and 403 for the other test roles |
 | Responsive / keyboard / photos | Chrome/Playwright visual QA at 1440/768/390; menu label/expanded state and keyboard fixes | Available shell, Users table/modal, Dashboard and local result-image preview checked; Create Ticket photo form still requires #57/#60 |

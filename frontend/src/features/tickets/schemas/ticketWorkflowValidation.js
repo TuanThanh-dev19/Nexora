@@ -21,16 +21,28 @@ export function candidateEligibility(candidate) {
   return { blocked, requiresOverride: !blocked && reasons.length > 0 }
 }
 
-export function validateWorkflowPayload(action, payload, candidate) {
+export function validateWorkflowPayload(
+  action,
+  payload,
+  candidate,
+  requiresReason = TICKET_WORKFLOW_ACTIONS[action]?.requiresReason,
+) {
   const errors = {}
   if (!Number.isSafeInteger(payload.version) || payload.version < 0)
     errors.version = 'Phiên bản phiếu không hợp lệ. Vui lòng tải lại.'
-  if (TICKET_WORKFLOW_ACTIONS[action]?.requiresReason) {
+  if (requiresReason) {
     if (typeof payload.reason !== 'string' || !payload.reason.trim())
       errors.reason = 'Vui lòng nhập lý do.'
     else if (payload.reason.length > REASON_MAX_LENGTH)
       errors.reason = `Lý do tối đa ${REASON_MAX_LENGTH} ký tự.`
   }
+  if (
+    action === 'close' &&
+    payload.reason != null &&
+    (typeof payload.reason !== 'string' ||
+      payload.reason.length > REASON_MAX_LENGTH)
+  )
+    errors.reason = `Lý do tối đa ${REASON_MAX_LENGTH} ký tự.`
   if (['assign', 'reassign'].includes(action)) {
     if (
       !candidate ||

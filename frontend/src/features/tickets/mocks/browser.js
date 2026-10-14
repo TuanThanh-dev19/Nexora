@@ -9,6 +9,7 @@ export async function startTicketWorkflowMock(additionalHandlers = []) {
     baseUrl,
     actionDelay: 300,
     adaptTechnicianIds: true,
+    adaptReporterId: true,
     // Keep real authentication. This identity is used only for demo visibility/history.
     getActor: async (request) => {
       const authRequest = new Request(
@@ -30,5 +31,6 @@ export async function startTicketWorkflowMock(additionalHandlers = []) {
   window.ticketWorkflowMock = {
     reset: mock.reset,
     failNextAction: mock.failNextAction,
+    failNextSubresource: mock.failNextSubresource,
   }
 }

@@ -1,4 +1,7 @@
-import { Card, ListGroup, Table } from 'react-bootstrap'
+import { useState } from 'react'
+import { Button, Card, ListGroup } from 'react-bootstrap'
+import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { TicketAttachmentPreview } from './TicketAttachmentPreview'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { TICKET_STATUS_LABELS } from '../constants/ticketStatuses'
 import {
@@ -198,50 +201,57 @@ export function TicketStatusHistory({ history }) {
   )
 }
 
-export function TicketAttachments({ attachments }) {
+export function TicketAttachments({ ticketId, attachments }) {
+  const [selected, setSelected] = useState(null)
+  const available = isTicketWorkflowMockEnabled() && Boolean(ticketId)
   return (
-    <Card className="ticket-section">
+    <Card className="ticket-section mb-3">
       <Card.Body>
         <h2 className="h5">Tệp đính kèm</h2>
         <p className="text-secondary small">
-          Thông tin tệp. Chức năng tải xuống chưa được hỗ trợ.
+          {available
+            ? 'Bản mô phỏng: mở ảnh để xem trước hoặc tải xuống.'
+            : 'Thông tin tệp. Chức năng xem và tải xuống chưa khả dụng.'}
         </p>
         {attachments.length === 0 ? (
           <EmptyState message="Chưa có tệp đính kèm." />
         ) : (
-          <Table responsive className="attachment-table">
-            <thead>
-              <tr>
-                {[
-                  'Tên tệp',
-                  'Mục đích',
-                  'Loại nội dung',
-                  'Dung lượng',
-                  'Người tải lên',
-                  'Thời gian',
-                ].map((label) => (
-                  <th key={label}>{label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {attachments.map((attachment) => (
-                <tr key={attachment.id}>
-                  <td className="text-break">{attachment.originalName}</td>
-                  <td>
+          <div className="row g-3">
+            {attachments.map((attachment) => (
+              <div key={attachment.id} className="col-12 col-md-6 col-lg-4">
+                <div className="border rounded p-3 h-100">
+                  <h3 className="h6 text-break">{attachment.originalName}</h3>
+                  <p className="small mb-1">
                     {ATTACHMENT_TYPE_LABELS[attachment.attachmentType] ??
-                      attachment.attachmentType}
-                  </td>
-                  <td>{attachment.contentType}</td>
-                  <td>{attachment.sizeBytes} byte</td>
-                  <td>{attachment.uploadedBy?.fullName ?? '—'}</td>
-                  <td>{formatTicketTime(attachment.createdAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+                      attachment.attachmentType}{' '}
+                    · {attachment.contentType} · {attachment.sizeBytes} byte
+                  </p>
+                  <p className="small text-secondary">
+                    {attachment.uploadedBy?.fullName ?? '—'} ·{' '}
+                    {formatTicketTime(attachment.createdAt)}
+                  </p>
+                  <Button
+                    variant="outline-primary"
+                    disabled={!available}
+                    aria-label={`Xem ảnh ${attachment.originalName}`}
+                    onClick={() => setSelected(attachment)}
+                  >
+                    Xem ảnh
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </Card.Body>
+      {available && selected && (
+        <TicketAttachmentPreview
+          key={selected.id}
+          ticketId={ticketId}
+          attachment={selected}
+          onHide={() => setSelected(null)}
+        />
+      )}
     </Card>
   )
 }
