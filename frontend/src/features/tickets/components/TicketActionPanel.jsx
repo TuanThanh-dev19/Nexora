@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/context/useAuth'
 import {
   availableTicketActions,
   canManageTickets,
+  isTicketOwner,
   TICKET_WORKFLOW_ACTIONS,
 } from '../constants/ticketWorkflow'
 import { useTicketWorkflow } from '../hooks/useTicketWorkflow'
@@ -16,8 +17,8 @@ export function TicketActionPanel({ ticket }) {
   const { enabled, mutation, refresh } = useTicketWorkflow()
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState('')
-  if (!canManageTickets(user)) return null
-  const actions = availableTicketActions(ticket.status, user)
+  if (!canManageTickets(user) && !isTicketOwner(ticket, user)) return null
+  const actions = availableTicketActions(ticket, user)
   const open = (action) => {
     mutation.reset()
     setNotice('')
@@ -29,6 +30,7 @@ export function TicketActionPanel({ ticket }) {
       await mutation.mutateAsync({
         action: dialog.action,
         ticketId: dialog.ticket.id,
+        ticket: dialog.ticket,
         payload,
       })
       setNotice(
@@ -95,7 +97,7 @@ export function TicketActionPanel({ ticket }) {
         </Stack>
         {!actions.length && (
           <p className="text-secondary mb-0">
-            Không có thao tác review hoặc phân công cho trạng thái này.
+            Không có thao tác xử lý cho trạng thái này.
           </p>
         )}
       </Card.Body>

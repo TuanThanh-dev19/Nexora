@@ -164,18 +164,110 @@ export function createWorkflowFixtures() {
       currentAssignment,
     }
   })
-  const workLogs = [
+  const workLogs = tickets
+    .filter((ticket) =>
+      ticket.statusHistory.some(
+        (entry) => entry.transitionAction === 'RESOLVE',
+      ),
+    )
+    .map((ticket, index) => {
+      const startedAt = ticket.statusHistory.find(
+        (entry) => entry.transitionAction === 'START_WORK',
+      ).changedAt
+      const endedAt = ticket.statusHistory.find(
+        (entry) => entry.transitionAction === 'RESOLVE',
+      ).changedAt
+      return {
+        id: index + 1,
+        ticketId: ticket.id,
+        technician: { id: 21, fullName: 'Nguyễn An' },
+        logType: 'REPAIR',
+        content: 'Đã kiểm tra và sửa thiết bị.',
+        startedAt,
+        endedAt,
+        minutesSpent: 1,
+        createdAt: endedAt,
+      }
+    })
+  // A valid 2x2 PNG keeps binary previews deterministic and needs no external URL.
+  const bytes = Array.from(
+    atob(
+      'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGPQrjgKRAwQCgAlBgWh+ReZTwAAAABJRU5ErkJggg==',
+    ),
+    (char) => char.charCodeAt(0),
+  )
+  const attachmentContents = {}
+  for (const ticket of tickets) {
+    ticket.resolvedAt =
+      ticket.status === 'REOPENED'
+        ? null
+        : (ticket.statusHistory.find(
+            (entry) => entry.transitionAction === 'RESOLVE',
+          )?.changedAt ?? null)
+    ticket.closedAt =
+      ticket.statusHistory.find((entry) => entry.transitionAction === 'CLOSE')
+        ?.changedAt ?? null
+    if (![10, 15, 17].includes(ticket.id)) continue
+    const attachment = {
+      id: ticket.id * 100,
+      fieldDefinitionId: null,
+      attachmentType: 'REPORT_EVIDENCE',
+      originalName: 'minh-chứng.png',
+      contentType: 'image/png',
+      sizeBytes: bytes.length,
+      uploadedBy: ticket.reporter,
+      createdAt: ticket.createdAt,
+    }
+    ticket.attachments.push(attachment)
+    attachmentContents[`${ticket.id}:${attachment.id}`] = {
+      bytes,
+      contentType: 'image/png',
+    }
+  }
+  const comments = [
     {
-      id: 1,
-      ticketId: 15,
-      technician: { id: 21, fullName: 'Nguyễn An' },
-      logType: 'REPAIR',
-      content: 'Đã kiểm tra và sửa thiết bị.',
-      startedAt: '2026-10-09T08:00:00+07:00',
-      endedAt: '2026-10-09T08:20:00+07:00',
-      minutesSpent: 20,
-      createdAt: '2026-10-09T08:20:00+07:00',
+      id: 'comment-public',
+      ticketId: 10,
+      author: tickets[0].reporter,
+      content: 'Xin kiểm tra thiết bị giúp tôi.',
+      visibility: 'PUBLIC',
+      createdAt: tickets[0].createdAt,
+      editedAt: null,
+    },
+    {
+      id: 'comment-internal',
+      ticketId: 10,
+      author: { id: 5, fullName: WORKFLOW_MOCK_MANAGER.fullName },
+      content: 'Ghi chú nội bộ cho nhóm xử lý.',
+      visibility: 'INTERNAL',
+      createdAt: tickets[0].createdAt,
+      editedAt: null,
     },
   ]
-  return { tickets, candidates, assignments, workLogs }
+  const feedback = [
+    {
+      id: 'feedback-existing',
+      ticketId: 17,
+      rating: 4,
+      comment: 'Thiết bị hoạt động tốt sau khi sửa.',
+      createdAt: tickets.find((ticket) => ticket.id === 17).closedAt,
+    },
+  ]
+  // Keep policy duration private to the mock, outside the real detail DTO.
+  const slaMinutes = Object.fromEntries(
+    tickets.map((ticket) => [
+      ticket.id,
+      (Date.parse(ticket.slaDueAt) - Date.parse(ticket.createdAt)) / 60000,
+    ]),
+  )
+  return {
+    tickets,
+    candidates,
+    assignments,
+    workLogs,
+    comments,
+    feedback,
+    attachmentContents,
+    slaMinutes,
+  }
 }

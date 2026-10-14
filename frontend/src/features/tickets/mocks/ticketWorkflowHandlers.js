@@ -4,9 +4,22 @@ import { TICKET_STATUSES } from '../constants/ticketStatuses'
 import { WORK_IMAGE_LIMIT, WORK_IMAGE_TYPES } from '../constants/technicianWork'
 import {
   canManageTickets,
+  availableTicketActions,
+  isTicketOwner,
+  workflowRequiresReason,
   TICKET_WORKFLOW_ACTIONS,
   workflowHistoryAction,
 } from '../constants/ticketWorkflow'
+import {
+  canReadInternalComments,
+  canCreateComment,
+  canEditComment,
+  canSubmitFeedback,
+} from '../constants/ticketCollaboration'
+import {
+  validateComment,
+  validateFeedback,
+} from '../schemas/ticketCollaborationValidation'
 import {
   candidateEligibility,
   validateWorkflowPayload,
@@ -82,10 +95,41 @@ export function createTicketWorkflowMock({
   getActor = () => WORKFLOW_MOCK_MANAGER,
   actionDelay = 0,
   adaptTechnicianIds = false,
+  adaptReporterId = false,
 } = {}) {
   let store = createWorkflowFixtures()
   let scenario = null
   const adaptedIds = new Set()
+  let reporterBound = false
+  const subresourceFailures = new Map()
+  const adaptReporter = (actor) => {
+    if (!adaptReporterId || reporterBound || !actor.roles.includes('REQUESTER'))
+      return
+    reporterBound = true
+    const reporter = { id: actor.id, fullName: actor.fullName }
+    // Bind the first Requester to demo ownership; leave ticket 18 owned by another reporter.
+    for (const ticket of store.tickets) {
+      if (ticket.id === 18) {
+        ticket.reporter = {
+          id: String(actor.id) === '4' ? 94 : 4,
+          fullName: 'Người báo khác',
+        }
+        ticket.statusHistory[0].changedBy = ticket.reporter
+        continue
+      }
+      ticket.reporter = reporter
+      ticket.statusHistory.forEach((entry) => {
+        if (['SUBMIT', 'CLOSE'].includes(entry.transitionAction))
+          entry.changedBy = reporter
+      })
+      ticket.attachments.forEach((attachment) => {
+        if (attachment.uploadedBy.id === 4) attachment.uploadedBy = reporter
+      })
+    }
+    store.comments.forEach((comment) => {
+      if (comment.author.id === 4) comment.author = reporter
+    })
+  }
   const adaptTechnician = (actor) => {
     if (!adaptTechnicianIds || !actor.roles.includes('TECHNICIAN')) return
     if (
@@ -170,6 +214,7 @@ export function createTicketWorkflowMock({
         error: problem(403, 'access-denied', 'Không có quyền xem phiếu.'),
       }
     adaptTechnician(actor)
+    adaptReporter(actor)
     return { actor }
   }
   const ticketEndpoint = `${baseUrl.replace(/\/$/, '')}/tickets`
@@ -272,7 +317,232 @@ export function createTicketWorkflowMock({
       }
     return { body }
   }
+  const subresourceAccess = async (request, ticketId, resource) => {
+    if (actionDelay) await delay(actionDelay)
+    const auth = await authenticate(request)
+    if (auth.error) return auth
+    const ticket = workTicket(ticketId)
+    if (!ticket || !visible(ticket, auth.actor))
+      return {
+        error: problem(404, 'resource-not-found', 'Không thể truy cập phiếu.'),
+      }
+    if (subresourceFailures.has(resource)) {
+      const status = subresourceFailures.get(resource)
+      subresourceFailures.delete(resource)
+      if (status === 'invalid-image')
+        return {
+          error: new HttpResponse('Invalid PNG content', {
+            headers: { 'Content-Type': 'image/png' },
+          }),
+        }
+      return {
+        error:
+          status === 'network'
+            ? HttpResponse.error()
+            : problem(
+                status,
+                'subresource-failure',
+                'Lỗi mô phỏng của dữ liệu bổ sung.',
+                status === 400
+                  ? {
+                      [resource === 'feedback' ? 'rating' : 'content']:
+                        'Dữ liệu không hợp lệ.',
+                    }
+                  : undefined,
+              ),
+      }
+    }
+    return { ticket, actor: auth.actor }
+  }
   const handlers = [
+    http.get(
+      `${ticketEndpoint}/:ticketId/attachments/:attachmentId/content`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'attachments',
+        )
+        if (access.error) return access.error
+        const attachment = access.ticket.attachments.find(
+          (item) => String(item.id) === params.attachmentId,
+        )
+        const content =
+          store.attachmentContents[`${params.ticketId}:${params.attachmentId}`]
+        if (!attachment || !content)
+          return problem(404, 'resource-not-found', 'Tệp không còn khả dụng.')
+        return new HttpResponse(new Uint8Array(content.bytes), {
+          headers: {
+            'Content-Type': content.contentType,
+            'Content-Length': String(content.bytes.length),
+            'Content-Disposition': `attachment; filename="image"; filename*=UTF-8''${encodeURIComponent(attachment.originalName)}`,
+          },
+        })
+      },
+    ),
+    http.get(
+      `${ticketEndpoint}/:ticketId/comments`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'comments',
+        )
+        if (access.error) return access.error
+        const query = queryParameters(request, ['page', 'size'])
+        if (query.error) return query.error
+        const comments = store.comments
+          .filter(
+            (comment) =>
+              comment.ticketId === access.ticket.id &&
+              (comment.visibility === 'PUBLIC' ||
+                canReadInternalComments(access.actor)),
+          )
+          .sort(
+            (a, b) =>
+              Date.parse(a.createdAt) - Date.parse(b.createdAt) ||
+              a.id.localeCompare(b.id),
+          )
+          .map(({ ticketId: _ticketId, ...comment }) => comment)
+        return pageResponse(comments, query.page, query.size)
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/comments`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'comments',
+        )
+        if (access.error) return access.error
+        const parsed = await parseBody(request, ['content', 'visibility'])
+        if (parsed.error) return parsed.error
+        const errors = validateComment(parsed.body)
+        if (Object.keys(errors).length)
+          return problem(
+            400,
+            'validation-failed',
+            'Bình luận không hợp lệ.',
+            errors,
+          )
+        if (
+          !canCreateComment(access.ticket, access.actor, parsed.body.visibility)
+        )
+          return problem(403, 'access-denied', 'Không có quyền thêm bình luận.')
+        const comment = {
+          id: crypto.randomUUID(),
+          author: { id: access.actor.id, fullName: access.actor.fullName },
+          content: parsed.body.content.trim(),
+          visibility: parsed.body.visibility,
+          createdAt: changedAt(access.ticket),
+          editedAt: null,
+        }
+        store.comments.push({ ...comment, ticketId: access.ticket.id })
+        return HttpResponse.json(comment, { status: 201 })
+      },
+    ),
+    http.put(
+      `${ticketEndpoint}/:ticketId/comments/:commentId`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'comments',
+        )
+        if (access.error) return access.error
+        const comment = store.comments.find(
+          (item) =>
+            item.ticketId === access.ticket.id && item.id === params.commentId,
+        )
+        if (
+          !comment ||
+          (comment.visibility === 'INTERNAL' &&
+            !canReadInternalComments(access.actor))
+        )
+          return problem(
+            404,
+            'resource-not-found',
+            'Không thể truy cập bình luận.',
+          )
+        if (!canEditComment(access.ticket, access.actor, comment))
+          return problem(403, 'access-denied', 'Không có quyền sửa bình luận.')
+        const parsed = await parseBody(request, ['content'])
+        if (parsed.error) return parsed.error
+        const errors = validateComment(parsed.body, true)
+        if (Object.keys(errors).length)
+          return problem(
+            400,
+            'validation-failed',
+            'Bình luận không hợp lệ.',
+            errors,
+          )
+        comment.content = parsed.body.content.trim()
+        comment.editedAt = new Date(
+          Math.max(
+            Date.now(),
+            Date.parse(comment.createdAt),
+            Date.parse(comment.editedAt ?? comment.createdAt),
+          ),
+        ).toISOString()
+        const { ticketId: _ticketId, ...result } = comment
+        return HttpResponse.json(result)
+      },
+    ),
+    http.get(
+      `${ticketEndpoint}/:ticketId/feedback`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'feedback',
+        )
+        if (access.error) return access.error
+        const feedback = store.feedback.find(
+          (item) => item.ticketId === access.ticket.id,
+        )
+        if (!feedback) return HttpResponse.json(null)
+        const { ticketId: _ticketId, ...result } = feedback
+        return HttpResponse.json(result)
+      },
+    ),
+    http.post(
+      `${ticketEndpoint}/:ticketId/feedback`,
+      async ({ request, params }) => {
+        const access = await subresourceAccess(
+          request,
+          params.ticketId,
+          'feedback',
+        )
+        if (access.error) return access.error
+        if (!canSubmitFeedback(access.ticket, access.actor))
+          return problem(
+            403,
+            'access-denied',
+            'Chỉ người báo có thể đánh giá phiếu đã đóng.',
+          )
+        const parsed = await parseBody(request, ['rating', 'comment'])
+        if (parsed.error) return parsed.error
+        const errors = validateFeedback(parsed.body)
+        if (Object.keys(errors).length)
+          return problem(
+            400,
+            'validation-failed',
+            'Đánh giá không hợp lệ.',
+            errors,
+          )
+        if (store.feedback.some((item) => item.ticketId === access.ticket.id))
+          return problem(409, 'feedback-exists', 'Phiếu đã có đánh giá.')
+        const feedback = {
+          id: crypto.randomUUID(),
+          rating: parsed.body.rating,
+          comment: parsed.body.comment?.trim() || null,
+          createdAt: changedAt(access.ticket),
+        }
+        store.feedback.push({ ...feedback, ticketId: access.ticket.id })
+        return HttpResponse.json(feedback, { status: 201 })
+      },
+    ),
     http.get(
       `${baseUrl.replace(/\/$/, '')}/technicians/me/assigned-tickets`,
       async ({ request }) => {
@@ -472,6 +742,12 @@ export function createTicketWorkflowMock({
           uploadedBy: { id: actor.id, fullName: actor.fullName },
           createdAt: at,
         }))
+        for (const [index, file] of files.entries()) {
+          store.attachmentContents[`${ticket.id}:${attachments[index].id}`] = {
+            bytes: Array.from(new Uint8Array(await file.arrayBuffer())),
+            contentType: file.type,
+          }
+        }
         ticket.attachments.push(...attachments)
         return HttpResponse.json(attachments, { status: 201 })
       },
@@ -507,6 +783,7 @@ export function createTicketWorkflowMock({
         ticket.currentAssignment.endedAt = at
         ticket.currentAssignment = null
         ticket.status = 'RESOLVED'
+        ticket.resolvedAt = at
         ticket.resolutionOutcome = parsed.body.resolutionOutcome
         ticket.resolutionSummary = parsed.body.resolutionSummary.trim()
         ticket.version += 1
@@ -648,17 +925,23 @@ export function createTicketWorkflowMock({
           if (actionDelay) await delay(actionDelay)
           const auth = await authenticate(request)
           if (auth.error) return auth.error
-          if (!canManageTickets(auth.actor))
-            return problem(403, 'access-denied', 'Không có quyền xử lý phiếu.')
           const ticket = store.tickets.find(
             (item) => String(item.id) === params.ticketId,
           )
-          if (!ticket)
+          if (!ticket || !visible(ticket, auth.actor))
             return problem(
               404,
               'resource-not-found',
               'Không thể truy cập phiếu.',
             )
+          if (
+            !canManageTickets(auth.actor) &&
+            !(
+              isTicketOwner(ticket, auth.actor) &&
+              ['cancel', 'close', 'reopen'].includes(action)
+            )
+          )
+            return problem(403, 'access-denied', 'Không có quyền xử lý phiếu.')
           let payload
           try {
             payload = await request.json()
@@ -675,7 +958,9 @@ export function createTicketWorkflowMock({
           const assignmentAction = ['assign', 'reassign'].includes(action)
           const fields = [
             'version',
-            ...(definition.requiresReason ? ['reason'] : []),
+            ...(definition.requiresReason || action === 'close'
+              ? ['reason']
+              : []),
             ...(assignmentAction ? ['technicianId', 'overrideReason'] : []),
           ]
           if (Object.keys(payload).some((key) => !fields.includes(key)))
@@ -690,7 +975,12 @@ export function createTicketWorkflowMock({
                   String(item.technicianId) === String(payload.technicianId),
               )
             : undefined
-          const errors = validateWorkflowPayload(action, payload, candidate)
+          const errors = validateWorkflowPayload(
+            action,
+            payload,
+            candidate,
+            workflowRequiresReason(action, ticket, auth.actor),
+          )
           const missingOverride =
             candidateEligibility(candidate).requiresOverride &&
             (typeof payload.overrideReason !== 'string' ||
@@ -716,16 +1006,19 @@ export function createTicketWorkflowMock({
             scenario = null
             if (failure === 409) {
               // Simulate a complete competing transition so reload sees consistent data.
+              const competingManager = canManageTickets(auth.actor)
+                ? auth.actor
+                : WORKFLOW_MOCK_MANAGER
               if (ticket.status === 'SUBMITTED')
-                applyAction(ticket, 'review', {}, auth.actor)
+                applyAction(ticket, 'review', {}, competingManager)
               else if (['UNDER_REVIEW', 'REOPENED'].includes(ticket.status))
                 applyAction(
                   ticket,
                   'assign',
                   { overrideReason: 'Phân công đồng thời trong demo' },
-                  auth.actor,
+                  competingManager,
                   candidates().find(
-                    (candidate) => candidate.technicianId === 21,
+                    (candidate) => !candidateEligibility(candidate).blocked,
                   ),
                 )
               else if (['ASSIGNED', 'IN_PROGRESS'].includes(ticket.status))
@@ -733,6 +1026,13 @@ export function createTicketWorkflowMock({
                   ticket,
                   'unassign',
                   { reason: 'Gỡ phân công đồng thời trong demo' },
+                  competingManager,
+                )
+              else if (ticket.status === 'RESOLVED')
+                applyAction(
+                  ticket,
+                  'close',
+                  { reason: 'Đóng đồng thời trong demo' },
                   auth.actor,
                 )
               return problem(
@@ -751,7 +1051,7 @@ export function createTicketWorkflowMock({
               'Lỗi mô phỏng theo kịch bản.',
             )
           }
-          if (!definition.statuses.includes(ticket.status))
+          if (!availableTicketActions(ticket, auth.actor).includes(action))
             return problem(
               422,
               'business-rule-violation',
@@ -833,13 +1133,25 @@ export function createTicketWorkflowMock({
       ticket.currentAssignment = assignment
     }
     ticket.status = TICKET_WORKFLOW_ACTIONS[action].targetStatus
+    if (action === 'close') ticket.closedAt = changedAt
+    if (action === 'reopen') {
+      ticket.resolvedAt = null
+      ticket.slaDueAt = new Date(
+        Date.parse(changedAt) + store.slaMinutes[ticket.id] * 60000,
+      ).toISOString()
+    }
     ticket.version += 1
     ticket.updatedAt = changedAt
     ticket.statusHistory.push({
       id: Math.max(...ticket.statusHistory.map((entry) => entry.id)) + 1,
       fromStatus,
       toStatus: ticket.status,
-      transitionAction: workflowHistoryAction(action, fromStatus),
+      transitionAction: workflowHistoryAction(
+        action,
+        fromStatus,
+        ticket,
+        actor,
+      ),
       reason: payload.reason?.trim() ?? null,
       changedBy: { id: actor.id, fullName: actor.fullName },
       changedAt,
@@ -855,11 +1167,22 @@ export function createTicketWorkflowMock({
       store = createWorkflowFixtures()
       scenario = null
       adaptedIds.clear()
+      reporterBound = false
+      subresourceFailures.clear()
     },
     failNextAction(status) {
       if (![400, 403, 404, 409].includes(status))
         throw new Error('Unsupported mock scenario')
       scenario = status
+    },
+    failNextSubresource(resource, status) {
+      if (
+        !['comments', 'feedback', 'attachments'].includes(resource) ||
+        (![400, 401, 403, 404, 409, 503, 'network'].includes(status) &&
+          !(resource === 'attachments' && status === 'invalid-image'))
+      )
+        throw new Error('Unsupported subresource scenario')
+      subresourceFailures.set(resource, status)
     },
   }
 }

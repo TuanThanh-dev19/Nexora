@@ -88,9 +88,14 @@ describe('ticket detail sections', () => {
     ]
     const { container } = render(<TicketAttachments attachments={files} />)
     expect(screen.getByText('<script>name</script>.png')).toBeInTheDocument()
-    expect(screen.getByText('image/png')).toBeInTheDocument()
-    expect(screen.getByText('512 byte')).toBeInTheDocument()
-    expect(screen.getByText('Kỹ thuật viên')).toBeInTheDocument()
+    expect(screen.getByText(/image\/png/)).toBeInTheDocument()
+    expect(screen.getByText(/512 byte/)).toBeInTheDocument()
+    expect(screen.getByText(/Kỹ thuật viên/)).toBeInTheDocument()
+    expect(
+      screen
+        .getAllByRole('button', { name: /Xem ảnh/ })
+        .every((button) => button.disabled),
+    ).toBe(true)
     expect(screen.queryByRole('link')).toBeNull()
     expect(container.querySelector('script')).toBeNull()
   })

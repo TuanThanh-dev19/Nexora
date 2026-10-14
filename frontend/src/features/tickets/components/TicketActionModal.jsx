@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
-import { TICKET_WORKFLOW_ACTIONS } from '../constants/ticketWorkflow'
+import {
+  TICKET_WORKFLOW_ACTIONS,
+  workflowRequiresReason,
+} from '../constants/ticketWorkflow'
+import { useAuth } from '../../auth/context/useAuth'
 import {
   REASON_MAX_LENGTH,
   validateWorkflowPayload,
@@ -87,17 +91,18 @@ export function TicketReasonField({
   onChange,
   error,
   maxLength = REASON_MAX_LENGTH,
+  required = true,
 }) {
   return (
     <Form.Group className="mb-3" controlId={id}>
       <Form.Label>
-        {label} <span aria-hidden="true">*</span>
+        {label} {required && <span aria-hidden="true">*</span>}
       </Form.Label>
       <Form.Control
         as="textarea"
         rows={3}
         value={value}
-        required
+        required={required}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         isInvalid={Boolean(error)}
@@ -105,7 +110,7 @@ export function TicketReasonField({
         aria-describedby={`${id}-help ${id}-error`}
       />
       <Form.Text id={`${id}-help`}>
-        Bắt buộc, tối đa {maxLength} ký tự.
+        {required ? 'Bắt buộc' : 'Không bắt buộc'}, tối đa {maxLength} ký tự.
       </Form.Text>
       <Form.Control.Feedback type="invalid" id={`${id}-error`}>
         {error}
@@ -122,9 +127,11 @@ export function TicketActionModal({
   onSubmit,
   onReload,
 }) {
+  const { user } = useAuth()
   const [reason, setReason] = useState('')
   const [errors, setErrors] = useState({})
   const definition = TICKET_WORKFLOW_ACTIONS[action]
+  const requiresReason = workflowRequiresReason(action, ticket, user)
   const fieldErrors = {
     ...mutation.error?.response?.data?.fieldErrors,
     ...errors,
@@ -133,8 +140,13 @@ export function TicketActionModal({
     event.preventDefault()
     if (mutation.isPending || mutation.error?.response?.status === 409) return
     const payload = { version: ticket.version }
-    if (definition.requiresReason) payload.reason = reason.trim()
-    const next = validateWorkflowPayload(action, payload)
+    if (requiresReason || reason.trim()) payload.reason = reason.trim()
+    const next = validateWorkflowPayload(
+      action,
+      payload,
+      undefined,
+      requiresReason,
+    )
     setErrors(next)
     if (!Object.keys(next).length) void onSubmit(payload)
   }
@@ -154,13 +166,14 @@ export function TicketActionModal({
           Kỹ thuật viên hiện tại: {ticket.currentAssignment.technician.fullName}
         </p>
       )}
-      <p>Xác nhận {definition.label.toLowerCase()} phiếu này?</p>
+      <p>Xác nhận {definition.label.toLowerCase()}?</p>
       {fieldErrors.version && (
         <Alert variant="danger">{fieldErrors.version}</Alert>
       )}
-      {definition.requiresReason && (
+      {(requiresReason || action === 'close') && (
         <TicketReasonField
           id="ticket-action-reason"
+          required={requiresReason}
           value={reason}
           error={fieldErrors.reason}
           onChange={(value) => {

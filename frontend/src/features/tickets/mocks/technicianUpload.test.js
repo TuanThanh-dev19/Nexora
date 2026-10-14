@@ -39,6 +39,9 @@ describe('work result multipart contract', () => {
     expect(
       mock.store.tickets.find((ticket) => ticket.id === 13).attachments,
     ).toHaveLength(1)
+    const image = await ticketApi.attachmentContent(13, result[0].id)
+    expect(image.type).toBe('image/png')
+    expect(await image.text()).toBe('image')
   })
 
   it('rejects an unsupported image without changing attachments', async () => {

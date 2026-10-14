@@ -23,7 +23,7 @@ describe('manager workflow presentation', () => {
     ['REOPENED', ['cancel', 'assign']],
     ['ASSIGNED', ['cancel', 'reassign', 'unassign']],
     ['IN_PROGRESS', ['cancel', 'reassign', 'unassign']],
-    ['RESOLVED', []],
+    ['RESOLVED', ['close', 'reopen']],
     ['CLOSED', []],
     ['REJECTED', []],
     ['CANCELLED', []],
@@ -32,26 +32,29 @@ describe('manager workflow presentation', () => {
     'exposes only the issue actions from %s for Manager/Admin',
     (status, actions) => {
       for (const roles of [['MANAGER'], ['ADMIN'], ['REQUESTER', 'MANAGER']])
-        expect(availableTicketActions(status, { roles })).toEqual(actions)
+        expect(availableTicketActions({ status }, { roles })).toEqual(actions)
     },
   )
   it.each([['REQUESTER'], ['TECHNICIAN'], ['REQUESTER', 'TECHNICIAN'], []])(
     'does not expose manager actions to %j',
     (...roles) => {
       for (const [status] of matrix)
-        expect(availableTicketActions(status, { roles })).toEqual([])
+        expect(availableTicketActions({ status }, { roles })).toEqual([])
     },
   )
   it('does not grant actions to inactive users or unknown states', () => {
     expect(
-      availableTicketActions('SUBMITTED', {
-        roles: ['ADMIN'],
-        status: 'DISABLED',
-      }),
+      availableTicketActions(
+        { status: 'SUBMITTED' },
+        {
+          roles: ['ADMIN'],
+          status: 'DISABLED',
+        },
+      ),
     ).toEqual([])
-    expect(availableTicketActions('UNKNOWN', { roles: ['MANAGER'] })).toEqual(
-      [],
-    )
+    expect(
+      availableTicketActions({ status: 'UNKNOWN' }, { roles: ['MANAGER'] }),
+    ).toEqual([])
   })
   it('distinguishes the two cancellation history actions', () => {
     expect(workflowHistoryAction('cancel', 'UNDER_REVIEW')).toBe(

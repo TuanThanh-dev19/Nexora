@@ -255,3 +255,66 @@ the mock flag is true. Production never starts/imports the browser mock module.
 Verify that the real detail/history remain readable and no future candidate/action
 request is made. Responsive table/modal styling uses existing React Bootstrap
 components; browser/mobile visual QA should also be performed with real login.
+
+## Ticket Detail collaboration UI/mock (#60)
+
+Manual regression steps for the fixed image retry, mixed-role assignment loss,
+and Requester 409 cases: [Vietnamese retest guide](TICKET_DETAIL_RETEST_GUIDE.md).
+
+Use the existing `VITE_TICKET_WORKFLOW_MOCK=true` development setup. Real auth
+remains unchanged. The first authenticated Requester binds to demo ticket ownership
+for tickets 10–17; ticket 18 remains another reporter's inaccessible ticket.
+The binding lasts until mock reset/page reload. Pure Requester responses exclude
+INTERNAL comments; users with multiple roles use their union of permissions.
+
+Demo ticket 10 has PUBLIC/INTERNAL comments and a valid PNG attachment. Tickets
+15 (RESOLVED) and 17 (CLOSED) also have image content; 17 starts with immutable
+feedback. Close 15 as its reporter to demonstrate a new keyboard-accessible rating
+and optional comment. Manager/Admin closing another reporter's ticket requires a
+reason; an eligible owner with additional roles closes normally.
+
+Preview opens a modal with a Download control. Image URLs belong to the modal and
+are revoked on close/unmount/replacement. The mock retains uploaded WORK_RESULT
+bytes for viewing later. No token is placed in an image/download URL.
+
+Per-section failures can be triggered before the next relevant request:
+
+```javascript
+window.ticketWorkflowMock.failNextSubresource("comments", 400);
+window.ticketWorkflowMock.failNextSubresource("feedback", 409);
+window.ticketWorkflowMock.failNextSubresource("attachments", 404);
+window.ticketWorkflowMock.failNextSubresource("attachments", "invalid-image");
+// Also accepts 401, 403, 503 and 'network'. A 401 intentionally expires the session.
+window.ticketWorkflowMock.reset();
+```
+
+With mocks disabled or DEV false, metadata/detail stay readable and collaboration
+queries/writes are unavailable. No failed request falls back to fictional success.
+
+Focused verification from `frontend`:
+
+```powershell
+npm run test -- src/features/tickets
+npm run lint
+npm run test
+npm run build
+```
+
+`ticketCollaborationValidation.test.js` covers ownership/state/mixed-role rules and
+input bounds. `ticketCollaborationHandlers.test.js` covers direct HTTP visibility,
+filtered pagination, author editing, action history/version/SLA, one-only feedback,
+exact binary bytes/headers and 401 behavior. `TicketCollaboration.test.jsx` covers
+rendered section states, submission/error/conflict flows, keyboard rating, URL
+cleanup including StrictMode/replacement, pending-read cancellation and production
+gates. Existing Manager, Technician, read, session and navigation suites remain
+regression checks. `technicianUpload.test.js` verifies uploaded bytes can be read
+back. Backend authorization/concurrency/persistence acceptance belongs to the
+future backend issues.
+
+Local browser QA on 14 October 2026 used a temporary harness around the actual
+TicketDetailPage and MSW worker with synthetic fixture identity. At 390 and 768
+pixels, image/action modals and collaboration sections stayed within the viewport.
+A PNG blob decoded successfully and the native browser download preserved its
+73 bytes and metadata filename. Reporter close refreshed status/history and enabled
+feedback; submission rendered the immutable record. This verifies frontend behavior
+with fixtures, not real authentication or future backend APIs.

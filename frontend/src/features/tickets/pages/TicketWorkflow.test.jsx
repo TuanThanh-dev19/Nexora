@@ -104,13 +104,18 @@ describe('manager ticket workflow UI', () => {
     'hides manager controls for roles %j',
     async (...roles) => {
       await mount(10, { id: 4, roles })
-      expect(
-        screen.queryByRole('heading', { name: 'Xử lý phiếu' }),
-      ).not.toBeInTheDocument()
+      if (roles.includes('REQUESTER'))
+        expect(
+          screen.getByRole('button', { name: 'Hủy phiếu', exact: true }),
+        ).toBeEnabled()
+      else
+        expect(
+          screen.queryByRole('heading', { name: 'Xử lý phiếu' }),
+        ).not.toBeInTheDocument()
       expect(
         screen.queryByRole('button', { name: 'Bắt đầu xem xét' }),
       ).not.toBeInTheDocument()
-      expect(screen.getByText('Chỉ đọc')).toBeInTheDocument()
+      expect(screen.getByText('Mô phỏng workflow')).toBeInTheDocument()
     },
   )
   it('reviews then assigns with exact version payloads and refreshes detail/list/history', async () => {

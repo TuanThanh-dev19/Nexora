@@ -280,3 +280,88 @@ server. The backend must independently enforce authorization and all rules.
 For the browser demo, the first two authenticated Technician IDs encountered are
 bound to the two fixture technicians when their IDs differ. This is only an
 in-memory fixture adjustment; `/auth/me` still provides the real actor.
+
+## Ticket Detail collaboration UI/mock (#60)
+
+This extends the existing UI/mock contracts. Attachment content, close/reopen,
+comments and feedback endpoints remain future backend work. Real list/detail reads
+keep their current DTO. `VITE_TICKET_WORKFLOW_MOCK=true` enables development/test
+scenarios only; production displays unavailable sections without simulated writes.
+
+### Close, reopen and Requester cancellation
+
+`POST /tickets/{id}/close` accepts `{version,reason?}` from RESOLVED and returns the
+existing action result. An owning REQUESTER closes normally (`CLOSE`), including
+when they also have Manager/Admin roles. Other Manager/Admin actors force-close
+(`FORCE_CLOSE`) with a nonblank reason. This owner-first rule resolves the shared
+endpoint for mixed roles and presents one Close control. Later backend integration
+must confirm and enforce this contract.
+
+`POST /tickets/{id}/reopen` accepts `{version,reason}` from RESOLVED for an owning
+Requester or Manager/Admin. It records REOPEN, clears resolved time and recalculates
+SLA from the stored form policy. CLOSED, REJECTED and CANCELLED stay terminal.
+Requester cancellation uses the existing `/cancel` endpoint, only for owned
+SUBMITTED/UNDER_REVIEW tickets. Manager/Admin cancellation states remain unchanged.
+Reasons use the existing 500-character limit; version zero remains valid.
+
+### Attachment content
+
+`GET /tickets/{id}/attachments/{attachmentId}/content` returns JPEG/PNG bytes with
+Content-Type, Content-Length and Content-Disposition. It uses ticket visibility,
+including historical Technician visibility. Missing content and inaccessible
+tickets return safe 404; authorization errors may return 403.
+
+The Axios Authorization client requests ArrayBuffer and constructs a Blob. This
+preserves binary bytes because the installed MSW XHR interceptor converts blob
+responses through text. The preview modal owns its object URL and releases it on
+close/unmount or blob replacement; closing cancels unfinished reads. Download
+uses that same blob URL and the metadata filename, never a JWT query parameter.
+Uploaded WORK_RESULT bytes remain in the mock store for subsequent content reads.
+
+### Comments
+
+`GET /tickets/{id}/comments?page=0&size=20` uses the shared pagination envelope,
+zero-based page and size 1–100 (default 20). Only page/size are accepted. Results
+sort by createdAt ascending, then opaque comment ID ascending. Visibility is
+applied before pagination and totals. The DTO is:
+
+```json
+{
+  "id": "opaque-comment-id",
+  "author": { "id": 4, "fullName": "Người báo" },
+  "content": "Nội dung bình luận",
+  "visibility": "PUBLIC",
+  "createdAt": "2026-10-09T08:00:00Z",
+  "editedAt": null
+}
+```
+
+`POST /tickets/{id}/comments` accepts `{content,visibility}` and returns 201 DTO.
+`PUT /tickets/{id}/comments/{commentId}` accepts `{content}` and returns 200 DTO;
+visibility cannot be changed during editing. Content is trimmed and has 1–2000
+characters, matching existing persistence validation (`content` maps to `body`).
+This provisional contract has no comment version field and never uses ticket
+version for comment editing. Comment writes do not increment ticket version.
+
+DEC-006/027 apply: PUBLIC is readable within ticket visibility; INTERNAL requires
+Technician/Manager/Admin capability. Requester-only responses contain no INTERNAL
+records or counts. Nonterminal creation requires ownership for Requester or current
+assignment for Technician; Manager/Admin may create on any nonterminal visible
+ticket. Authors may edit their own visible comments while nonterminal, including
+historical Technicians. No delete endpoint or comment attachment is included.
+
+### Feedback
+
+`GET /tickets/{id}/feedback` returns 200 DTO or JSON null when absent. Failure is
+never treated as absence. `POST /tickets/{id}/feedback` accepts `{rating,comment?}`
+and returns 201 `{id,rating,comment,createdAt}`. Rating is an integer 1–5; optional
+comment is trimmed and limited to 1000 characters, matching the SQL schema.
+Only the owning reporter with REQUESTER capability may submit on CLOSED; one
+record per ticket, immutable. A duplicate submission returns 409 `feedback-exists`
+and the UI reloads the existing record. No feedback update/delete API is included.
+
+All subresource reads apply ticket visibility first. Errors follow the shared
+problem contract: validation 400, session 401, permissions 403, safe missing 404,
+conflict 409 and business rules 422. Each section owns its loading/error/retry state;
+401 still invokes shared session cleanup. Query caches include viewer ID/roles.
+Mock tests demonstrate presentation/contracts, not backend security or persistence.
