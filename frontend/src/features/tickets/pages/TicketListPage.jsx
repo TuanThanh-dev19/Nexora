@@ -22,8 +22,10 @@ import {
   useTicketSearchParams,
 } from '../hooks/useTicketSearchParams'
 import { formatTicketTime } from '../utils/ticketFormatting'
+import { useAuth } from '../../auth/context/useAuth'
 
 export function TicketListPage() {
+  const { user } = useAuth()
   const { params, requestSearch, update, reset } = useTicketSearchParams()
   const query = useTickets(requestSearch)
   const location = useLocation()
@@ -38,6 +40,11 @@ export function TicketListPage() {
             Danh sách phiếu trong phạm vi bạn được phép xem.
           </p>
         </div>
+        {user?.roles?.includes('REQUESTER') && (
+          <Button as={Link} to="/tickets/new">
+            Tạo phiếu
+          </Button>
+        )}
         <span className="page-heading-icon">
           <FiClipboard aria-hidden="true" />
         </span>
