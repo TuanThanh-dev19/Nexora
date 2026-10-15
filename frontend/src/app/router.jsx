@@ -21,6 +21,9 @@ import { UserListPage } from '../features/administration/pages/UserListPage'
 import { UserDetailPage } from '../features/administration/pages/UserDetailPage'
 import { LocationManagementPage } from '../features/locations/pages/LocationManagementPage'
 import { EquipmentTypeManagementPage } from '../features/equipmentTypes/pages/EquipmentTypeManagementPage'
+import { AssetListPage } from '../features/assets/pages/AssetListPage'
+import { CreateAssetPage } from '../features/assets/pages/CreateAssetPage'
+import { AssetDetailPage } from '../features/assets/pages/AssetDetailPage'
 import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
@@ -85,7 +88,15 @@ export const appRoutes = [
             children: [
               {
                 path: 'assets',
-                element: <PendingFeaturePage title="Tài sản" issue={55} />,
+                element: <AssetListPage />,
+              },
+              {
+                path: 'assets/new',
+                element: <CreateAssetPage />,
+              },
+              {
+                path: 'assets/:assetId',
+                element: <AssetDetailPage />,
               },
               {
                 path: 'technicians',
