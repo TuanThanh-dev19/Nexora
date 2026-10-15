@@ -52,9 +52,7 @@ function open(path, roles) {
 
 it.each([
   ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
-  ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
-  ['/assets', ['MANAGER'], 'Tài sản'],
-])(
+  ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],])(
   'reserves the correct guarded integration entry %s without claiming a finished UI',
   (path, roles, title) => {
     open(path, roles)
@@ -65,6 +63,8 @@ it.each([
 )
 
 it.each([
+  ['/assets', ['MANAGER'], 'Danh sách tài sản'],
+  ['/assets/new', ['MANAGER'], 'Thêm tài sản mới'],
   ['/administration/locations', ['ADMIN'], 'Quản lý địa điểm'],
   ['/administration/equipment-types', ['ADMIN'], 'Loại thiết bị'],
 ])('renders full management UI for %s', (path, roles, title) => {
@@ -77,6 +77,7 @@ it.each([
   '/tickets/new',
   '/technicians',
   '/assets',
+  '/assets/new',
   '/administration/locations',
   '/administration/equipment-types',
 ])('denies unsupported roles in place for %s', (path) => {
