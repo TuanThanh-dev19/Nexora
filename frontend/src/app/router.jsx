@@ -19,6 +19,8 @@ import { CategoryVersionsPage } from '../features/categories/pages/CategoryVersi
 import { FormEditorPage } from '../features/categories/pages/FormEditorPage'
 import { UserListPage } from '../features/administration/pages/UserListPage'
 import { UserDetailPage } from '../features/administration/pages/UserDetailPage'
+import { LocationManagementPage } from '../features/locations/pages/LocationManagementPage'
+import { EquipmentTypeManagementPage } from '../features/equipmentTypes/pages/EquipmentTypeManagementPage'
 import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
@@ -104,13 +106,11 @@ export const appRoutes = [
             children: [
               {
                 path: 'administration/locations',
-                element: <PendingFeaturePage title="Địa điểm" issue={54} />,
+                element: <LocationManagementPage />,
               },
               {
                 path: 'administration/equipment-types',
-                element: (
-                  <PendingFeaturePage title="Loại thiết bị" issue={54} />
-                ),
+                element: <EquipmentTypeManagementPage />,
               },
               { path: 'categories', element: <CategoryListPage /> },
               {

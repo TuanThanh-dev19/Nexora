@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthContext } from '../features/auth/context/auth-context'
 import { appRoutes } from './router'
 
@@ -13,7 +14,14 @@ function LocationProbe() {
     </span>
   )
 }
+
 function open(path, roles) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  })
+
   const routes = appRoutes.map((route) => ({
     ...route,
     element: (
@@ -23,27 +31,29 @@ function open(path, roles) {
       </>
     ),
   }))
+
   render(
-    <AuthContext.Provider
-      value={{
-        user: { fullName: 'Test', roles },
-        isAuthenticated: true,
-        isChecking: false,
-        logout: vi.fn(),
-      }}
-    >
-      <RouterProvider
-        router={createMemoryRouter(routes, { initialEntries: [path] })}
-      />
-    </AuthContext.Provider>,
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider
+        value={{
+          user: { fullName: 'Test', roles },
+          isAuthenticated: true,
+          isChecking: false,
+          logout: vi.fn(),
+        }}
+      >
+        <RouterProvider
+          router={createMemoryRouter(routes, { initialEntries: [path] })}
+        />
+      </AuthContext.Provider>
+    </QueryClientProvider>,
   )
 }
+
 it.each([
   ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
   ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
   ['/assets', ['MANAGER'], 'Tài sản'],
-  ['/administration/locations', ['ADMIN'], 'Địa điểm'],
-  ['/administration/equipment-types', ['ADMIN'], 'Loại thiết bị'],
 ])(
   'reserves the correct guarded integration entry %s without claiming a finished UI',
   (path, roles, title) => {
@@ -53,6 +63,16 @@ it.each([
     expect(screen.getByTestId('location')).toHaveTextContent(path)
   },
 )
+
+it.each([
+  ['/administration/locations', ['ADMIN'], 'Quản lý địa điểm'],
+  ['/administration/equipment-types', ['ADMIN'], 'Loại thiết bị'],
+])('renders full management UI for %s', (path, roles, title) => {
+  open(path, roles)
+  expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
+  expect(screen.getByTestId('location')).toHaveTextContent(path)
+})
+
 it.each([
   '/tickets/new',
   '/technicians',
@@ -64,10 +84,12 @@ it.each([
   expect(screen.getByText('403 — Từ chối truy cập')).toBeInTheDocument()
   expect(screen.getByTestId('location')).toHaveTextContent(path)
 })
+
 it.each(['TECHNICIAN', 'MANAGER'])('denies Create Ticket to %s', (role) => {
   open('/tickets/new', [role])
   expect(screen.getByText('403 — Từ chối truy cập')).toBeInTheDocument()
 })
+
 it('preserves unknown route context on a real 404 page', () => {
   open('/missing-screen?source=test', ['ADMIN'])
   expect(
