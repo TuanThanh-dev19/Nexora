@@ -51,8 +51,6 @@ function open(path, roles) {
 }
 
 it.each([
-  ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
-  ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
   ['/assets', ['MANAGER'], 'Tài sản'],
 ])(
   'reserves the correct guarded integration entry %s without claiming a finished UI',
@@ -67,6 +65,8 @@ it.each([
 it.each([
   ['/administration/locations', ['ADMIN'], 'Quản lý địa điểm'],
   ['/administration/equipment-types', ['ADMIN'], 'Loại thiết bị'],
+  ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
+  ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
 ])('renders full management UI for %s', (path, roles, title) => {
   open(path, roles)
   expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()

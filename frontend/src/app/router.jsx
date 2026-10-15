@@ -21,6 +21,8 @@ import { UserListPage } from '../features/administration/pages/UserListPage'
 import { UserDetailPage } from '../features/administration/pages/UserDetailPage'
 import { LocationManagementPage } from '../features/locations/pages/LocationManagementPage'
 import { EquipmentTypeManagementPage } from '../features/equipmentTypes/pages/EquipmentTypeManagementPage'
+import { TechnicianListPage } from '../features/technicians/pages/TechnicianListPage'
+import { TechnicianDetailPage } from '../features/technicians/pages/TechnicianDetailPage'
 import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
@@ -69,12 +71,7 @@ export const appRoutes = [
               { path: 'my-work', element: <MyWorkPage /> },
               {
                 path: 'technicians/me',
-                element: (
-                  <PendingFeaturePage
-                    title="Hồ sơ kỹ thuật của tôi"
-                    issue={52}
-                  />
-                ),
+                element: <TechnicianDetailPage readOnly />,
               },
             ],
           },
@@ -89,15 +86,11 @@ export const appRoutes = [
               },
               {
                 path: 'technicians',
-                element: (
-                  <PendingFeaturePage title="Kỹ thuật viên" issue={52} />
-                ),
+                element: <TechnicianListPage />,
               },
               {
                 path: 'technicians/:technicianId',
-                element: (
-                  <PendingFeaturePage title="Hồ sơ kỹ thuật viên" issue={52} />
-                ),
+                element: <TechnicianDetailPage />,
               },
             ],
           },
