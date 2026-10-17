@@ -47,5 +47,45 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long>, JpaSpec
             where user.id in :ids
             """)
     List<AppUser> findAllByIdWithRoles(@Param("ids") Collection<Long> ids);
+
+    @Query("""
+            select distinct u
+            from AppUser u
+            left join fetch u.roleAssignments ra
+            left join fetch ra.role
+            where exists (
+                select 1 from UserRole ur
+                where ur.user = u and ur.role.code = com.nexora.user.entity.RoleCode.TECHNICIAN
+            )
+            or exists (
+                select 1 from TechnicianProfile tp
+                where tp.technicianId = u.id
+            )
+            order by u.fullName asc, u.id asc
+            """)
+    List<AppUser> findAllCandidateUsersWithRoles();
+
+    @Query("""
+            select distinct u
+            from AppUser u
+            left join fetch u.roleAssignments ra
+            left join fetch ra.role
+            where (
+                exists (
+                    select 1 from UserRole ur
+                    where ur.user = u and ur.role.code = com.nexora.user.entity.RoleCode.TECHNICIAN
+                )
+                or exists (
+                    select 1 from TechnicianProfile tp
+                    where tp.technicianId = u.id
+                )
+            )
+            and (
+                lower(u.fullName) like lower(concat('%', :query, '%'))
+                or lower(u.email) like lower(concat('%', :query, '%'))
+            )
+            order by u.fullName asc, u.id asc
+            """)
+    List<AppUser> findCandidateUsersWithRolesMatching(@Param("query") String query);
 }
 

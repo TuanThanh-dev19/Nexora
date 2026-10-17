@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Alert,
   Badge,
@@ -18,7 +18,6 @@ import {
 import { useEligibleTechnicians } from '../hooks/useTicketWorkflow'
 import {
   candidateEligibility,
-  OVERRIDE_REASON_MAX_LENGTH,
   validateWorkflowPayload,
 } from '../schemas/ticketWorkflowValidation'
 import { TicketReasonField, TicketWorkflowModal } from './TicketActionModal'
@@ -37,7 +36,6 @@ export function TicketAssignmentDialog({
   const [size, setSize] = useState(20)
   const [technicianId, setTechnicianId] = useState(null)
   const [reason, setReason] = useState('')
-  const [overrideReason, setOverrideReason] = useState('')
   const [errors, setErrors] = useState({})
   const queryText = useDebounce(search.trim())
   const candidates = useEligibleTechnicians(
@@ -50,21 +48,32 @@ export function TicketAssignmentDialog({
     },
     true,
   )
+  const selectedTechnicianId =
+    mutation.error?.response?.status === 422 ? null : technicianId
   const selected = candidates.data?.content.find(
-    (candidate) => candidate.technicianId === technicianId,
+    (candidate) => candidate.technicianId === selectedTechnicianId,
   )
   const eligibility = candidateEligibility(selected)
   const loading = candidates.isFetching || search.trim() !== queryText
   const fieldErrors = {
     ...mutation.error?.response?.data?.fieldErrors,
-    ...errors,
+    ...(mutation.error?.response?.status === 422 ? {} : errors),
   }
+
+  // Reload candidates on 422 eligibility conflict
+  const refetchCandidates = candidates.refetch
+  useEffect(() => {
+    if (mutation.error?.response?.status === 422) {
+      void refetchCandidates()
+    }
+  }, [mutation.error, refetchCandidates])
+
   const clearSelection = () => {
     setTechnicianId(null)
-    setOverrideReason('')
     setErrors({})
     mutation.reset()
   }
+
   const submit = (event) => {
     event.preventDefault()
     if (
@@ -74,14 +83,13 @@ export function TicketAssignmentDialog({
       mutation.error?.response?.status === 409
     )
       return
-    const payload = { version: ticket.version, technicianId }
+    const payload = { version: ticket.version, technicianId: selectedTechnicianId }
     if (action === 'reassign') payload.reason = reason.trim()
-    if (eligibility.requiresOverride)
-      payload.overrideReason = overrideReason.trim()
     const next = validateWorkflowPayload(action, payload, selected)
     setErrors(next)
     if (!Object.keys(next).length) void onSubmit(payload)
   }
+
   return (
     <TicketWorkflowModal
       size="xl"
@@ -130,7 +138,6 @@ export function TicketAssignmentDialog({
             >
               <option value="ALL">Tất cả ứng viên</option>
               <option value="ELIGIBLE">Đủ điều kiện</option>
-              <option value="OVERRIDE_REQUIRED">Cần ghi đè</option>
               <option value="BLOCKED">Không thể phân công</option>
             </Form.Select>
           </Form.Group>
@@ -196,7 +203,7 @@ export function TicketAssignmentDialog({
                           type="radio"
                           name="candidate"
                           aria-label={`Chọn ${candidate.fullName}`}
-                          checked={candidate.technicianId === technicianId}
+                          checked={candidate.technicianId === selectedTechnicianId}
                           disabled={state.blocked || loading}
                           onChange={() => {
                             clearSelection()
@@ -210,7 +217,13 @@ export function TicketAssignmentDialog({
                           {candidate.email}
                         </div>
                       </td>
-                      <td>{candidate.available ? 'Có' : 'Không'}</td>
+                      <td>
+                        {candidate.available == null
+                          ? '—'
+                          : candidate.available
+                            ? 'Có'
+                            : 'Không'}
+                      </td>
                       <td>
                         {candidate.activeTicketCount} /{' '}
                         {candidate.maxActiveTickets ?? '—'}
@@ -226,29 +239,21 @@ export function TicketAssignmentDialog({
                           .join(', ') || '—'}
                       </td>
                       <td>
-                        <Badge
-                          bg={
-                            state.blocked
-                              ? 'danger'
-                              : state.requiresOverride
-                                ? 'warning'
-                                : 'success'
-                          }
-                          text={state.requiresOverride ? 'dark' : undefined}
-                        >
+                        <Badge bg={state.blocked ? 'danger' : 'success'}>
                           {state.blocked
                             ? 'Không thể phân công'
-                            : state.requiresOverride
-                              ? 'Cần ghi đè'
-                              : 'Đủ điều kiện'}
+                            : 'Đủ điều kiện'}
                         </Badge>
-                        <ul className="small mb-0 mt-1">
-                          {candidate.eligibilityReasons.map(({ code }) => (
-                            <li key={code}>
-                              {ELIGIBILITY_REASON_LABELS[code] ?? code}
-                            </li>
-                          ))}
-                        </ul>
+                        {candidate.eligibilityReasons &&
+                          candidate.eligibilityReasons.length > 0 && (
+                            <ul className="small mb-0 mt-1">
+                              {candidate.eligibilityReasons.map(({ code }) => (
+                                <li key={code}>
+                                  {ELIGIBILITY_REASON_LABELS[code] ?? code}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                       </td>
                     </tr>
                   )
@@ -317,26 +322,6 @@ export function TicketAssignmentDialog({
             mutation.reset()
           }}
         />
-      )}
-      {eligibility.requiresOverride && (
-        <>
-          <Alert variant="warning">
-            Ứng viên không đáp ứng tất cả điều kiện. Manager/Admin phải ghi rõ
-            lý do ghi đè.
-          </Alert>
-          <TicketReasonField
-            id="ticket-override-reason"
-            label="Lý do ghi đè"
-            value={overrideReason}
-            error={fieldErrors.overrideReason}
-            maxLength={OVERRIDE_REASON_MAX_LENGTH}
-            onChange={(value) => {
-              setOverrideReason(value)
-              setErrors({})
-              mutation.reset()
-            }}
-          />
-        </>
       )}
     </TicketWorkflowModal>
   )

@@ -249,7 +249,7 @@ describe('manager ticket workflow UI', () => {
       screen.getByText(/Kỹ thuật viên hiện tại: Chưa phân công/),
     ).toBeInTheDocument()
   })
-  it('searches, filters and paginates candidates; requires override and disables hard blockers', async () => {
+  it('searches, filters and paginates candidates; disables blocked candidates without override', async () => {
     const assign = vi.spyOn(ticketApi, 'assign')
     await mount(11)
     const dialog = await openDialog('Phân công')
@@ -270,51 +270,33 @@ describe('manager ticket workflow UI', () => {
     ).toBeDisabled()
     await userEvent.selectOptions(
       dialog.getByLabelText('Điều kiện phân công'),
-      'OVERRIDE_REQUIRED',
-    )
-    await waitFor(() =>
-      expect(
-        dialog.queryByRole('radio', { name: 'Chọn Đỗ Khánh' }),
-      ).not.toBeInTheDocument(),
+      'BLOCKED',
     )
     expect(await dialog.findByText('Đã đạt sức chứa')).toBeInTheDocument()
+    await userEvent.selectOptions(
+      dialog.getByLabelText('Điều kiện phân công'),
+      'ELIGIBLE',
+    )
     await userEvent.type(
       dialog.getByRole('searchbox', { name: 'Tìm kỹ thuật viên' }),
-      'Trần',
+      'Nguyễn',
     )
     await waitFor(() =>
       expect(
-        dialog.queryByRole('radio', { name: 'Chọn Lê Chi' }),
-      ).not.toBeInTheDocument(),
-    )
-    await waitFor(() =>
-      expect(
-        dialog.getByRole('radio', { name: 'Chọn Trần Bình' }),
+        dialog.getByRole('radio', { name: 'Chọn Nguyễn An' }),
       ).toBeEnabled(),
     )
-    await userEvent.click(dialog.getByRole('radio', { name: 'Chọn Trần Bình' }))
-    await userEvent.click(
-      dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
-    )
-    expect(
-      dialog.getByText('Vui lòng nhập lý do ghi đè điều kiện.'),
-    ).toBeInTheDocument()
-    expect(assign).not.toHaveBeenCalled()
-    await userEvent.type(
-      dialog.getByRole('textbox', { name: /Lý do ghi đè/ }),
-      'Đã xác nhận nhận việc',
-    )
+    await userEvent.click(dialog.getByRole('radio', { name: 'Chọn Nguyễn An' }))
     await userEvent.click(
       dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
     )
     await waitForSuccess('Phân công')
     expect(assign).toHaveBeenCalledExactlyOnceWith(11, {
       version: 1,
-      technicianId: 22,
-      overrideReason: 'Đã xác nhận nhận việc',
+      technicianId: 21,
     })
   })
-  it('refreshes changed capacity after 422 and permits an explicit override without retrying automatically', async () => {
+  it('refreshes changed capacity after 422 and resets selection requiring new choice', async () => {
     const assign = vi.spyOn(ticketApi, 'assign')
     await mount(11)
     const dialog = await openDialog('Phân công')
@@ -327,22 +309,27 @@ describe('manager ticket workflow UI', () => {
     await userEvent.click(
       dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
     )
-    const override = await dialog.findByRole('textbox', {
-      name: /Lý do ghi đè/,
-    })
     expect(assign).toHaveBeenCalledTimes(1)
-    expect(mock.store.tickets.find((ticket) => ticket.id === 11).version).toBe(
-      1,
+    // 422 causes candidates to reload and clears stale selection
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('radio', { name: 'Chọn Nguyễn An' }),
+      ).toBeDisabled(),
     )
-    await userEvent.type(override, 'Cho phép tăng khối lượng')
+    expect(
+      dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
+    ).toBeDisabled()
+    // Select an eligible candidate
+    await userEvent.click(
+      dialog.getByRole('radio', { name: 'Chọn Phan Nam' }),
+    )
     await userEvent.click(
       dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
     )
     await waitForSuccess('Phân công')
     expect(assign).toHaveBeenLastCalledWith(11, {
       version: 1,
-      technicianId: 21,
-      overrideReason: 'Cho phép tăng khối lượng',
+      technicianId: 29,
     })
   })
   it.each([undefined, 503])(

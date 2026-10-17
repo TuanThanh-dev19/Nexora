@@ -31,6 +31,14 @@ public interface TechnicianServiceAreaRepository
             """)
     List<TechnicianServiceArea> findByTechnicianIdWithLocation(@Param("technicianId") Long technicianId);
 
+    @Query("""
+            select tsa from TechnicianServiceArea tsa
+            join fetch tsa.location l
+            where tsa.technician.technicianId in :technicianIds
+            order by l.name asc, l.code asc
+            """)
+    List<TechnicianServiceArea> findByTechnicianIdInWithLocation(@Param("technicianIds") java.util.Collection<Long> technicianIds);
+
     @Modifying
     @Query("delete from TechnicianServiceArea tsa where tsa.technician.technicianId = :technicianId")
     void deleteByTechnicianId(@Param("technicianId") Long technicianId);

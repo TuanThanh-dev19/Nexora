@@ -29,4 +29,8 @@ public interface TechnicianProfileRepository extends JpaRepository<TechnicianPro
             """)
     Optional<TechnicianProfile> findByIdWithServiceAreas(
             @Param("technicianId") Long technicianId);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select technician from TechnicianProfile technician where technician.technicianId = :technicianId")
+    Optional<TechnicianProfile> findByIdForUpdate(@Param("technicianId") Long technicianId);
 }

@@ -19,13 +19,21 @@ import com.nexora.config.*;
 import com.nexora.auth.security.JwtRoleConverter;
 import com.nexora.common.exception.GlobalExceptionHandler;
 import com.nexora.common.pagination.PageResponse;
+import com.nexora.ticket.dto.request.AssignTicketRequest;
+import com.nexora.ticket.dto.response.EligibleTechnicianResponse;
+import com.nexora.ticket.dto.response.TicketActionResultResponse;
+import com.nexora.ticket.entity.TicketStatus;
+import com.nexora.ticket.service.TicketAssignmentService;
 import com.nexora.ticket.service.TicketReadService;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import org.springframework.http.MediaType;
 
 @WebMvcTest(TicketController.class)
 @Import({SecurityConfig.class, GlobalExceptionHandler.class, JwtRoleConverter.class, ProblemAuthenticationEntryPoint.class, ProblemAccessDeniedHandler.class})
 class TicketControllerMvcTest {
     @Autowired MockMvc mvc;
     @MockitoBean TicketReadService service;
+    @MockitoBean TicketAssignmentService assignmentService;
     @MockitoBean JwtDecoder decoder;
 
     @Test
@@ -56,5 +64,54 @@ class TicketControllerMvcTest {
         mvc.perform(get("/api/v1/tickets/" + id).with(jwt())).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type").value("https://nexora.app/problems/validation-failed"));
         verifyNoInteractions(service);
+    }
+
+    @Test
+    void eligibleTechniciansReturnsSharedPageEnvelope() throws Exception {
+        when(assignmentService.eligibleTechnicians(any(), eq(11L), any()))
+                .thenReturn(new PageResponse<>(List.of(), 0, 20, 0, 0));
+        mvc.perform(get("/api/v1/tickets/11/eligible-technicians").with(jwt().jwt(j -> j.subject("10"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"?page=-1", "?size=0", "?size=101", "?query=", "?eligibility=UNKNOWN",
+            "?eligibility=", "?page=0&page=1", "?unknown=val"})
+    void invalidEligibleTechniciansParametersAre400(String query) throws Exception {
+        mvc.perform(get("/api/v1/tickets/11/eligible-technicians" + query).with(jwt()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        verifyNoInteractions(assignmentService);
+    }
+
+    @Test
+    void assignValidatesPayloadAndInvokesService() throws Exception {
+        when(assignmentService.assign(any(), eq(11L), any()))
+                .thenReturn(new TicketActionResultResponse(11L, TicketStatus.ASSIGNED, 1L, null));
+        mvc.perform(post("/api/v1/tickets/11/assign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"version\":0,\"technicianId\":25}")
+                        .with(jwt().jwt(j -> j.subject("10"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(11))
+                .andExpect(jsonPath("$.status").value("ASSIGNED"))
+                .andExpect(jsonPath("$.version").value(1));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"version\":-1,\"technicianId\":25}", "{\"version\":0,\"technicianId\":-1}",
+            "{\"version\":0}", "{\"technicianId\":25}"})
+    void invalidAssignPayloadReturns400(String payload) throws Exception {
+        mvc.perform(post("/api/v1/tickets/11/assign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload)
+                        .with(jwt().jwt(j -> j.subject("10"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        verifyNoInteractions(assignmentService);
     }
 }

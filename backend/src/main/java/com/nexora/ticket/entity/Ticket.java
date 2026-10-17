@@ -303,6 +303,10 @@ public class Ticket {
         return updatedAt;
     }
 
+    public void changeStatus(TicketStatus status) {
+        this.status = Objects.requireNonNull(status, "status is required");
+    }
+
     @Override
     public String toString() {
         return "Ticket{id=" + id + ", ticketNumber='" + ticketNumber + "', status=" + status + "}";
