@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 /** Pure submission checks. The caller owns the transaction and locked reference snapshot. */
 @Component
 public class TicketSubmissionValidator {
+    // Matches ECMAScript trim whitespace, including NBSP and BOM, without trimming stored text.
+    private static final Pattern BLANK = Pattern.compile("[\\s\\p{Z}\\uFEFF]*");
     private final Validator beans;
     private final FormValidator formRules;
     private final ObjectReader json;
@@ -230,7 +232,7 @@ public class TicketSubmissionValidator {
             case TEXT, TEXTAREA -> {
                 if (!value.isTextual()) throw new IllegalArgumentException();
                 String text = value.textValue();
-                if ((field.isRequired() && text.isBlank())
+                if ((field.isRequired() && BLANK.matcher(text).matches())
                         || text.length() < rule.path("minLength").asInt(0)
                         || text.length() > rule.path("maxLength").asInt(Integer.MAX_VALUE)
                         || (rule.has("pattern")
@@ -313,7 +315,7 @@ public class TicketSubmissionValidator {
     private static boolean empty(JsonNode value) {
         return value == null
                 || value.isNull()
-                || (value.isTextual() && value.textValue().isBlank())
+                || (value.isTextual() && BLANK.matcher(value.textValue()).matches())
                 || (value.isArray() && value.isEmpty());
     }
 

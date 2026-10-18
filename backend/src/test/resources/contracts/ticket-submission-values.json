@@ -8,6 +8,7 @@
   {"type":"TEXT","rules":{"pattern":"[A-Z]+"},"value":"AB\n","valid":false},
   {"type":"TEXTAREA","rules":{"minLength":3},"value":"a\nb","valid":true},
   {"type":"TEXT","rules":{},"value":"   ","valid":false,"required":true},
+  {"type":"TEXT","rules":{},"value":"\u00a0\ufeff","valid":false,"required":true},
   {"type":"DATE","rules":{},"value":"2026-02-30","valid":false},
   {"type":"DATE","rules":{"min":"2026-10-18","max":"2026-10-18"},"value":"2026-10-18","valid":true},
   {"type":"DATETIME","rules":{"min":"2026-10-18T02:30:00Z","max":"2026-10-18T09:30:00+07:00"},"value":"2026-10-18T09:30:00+07:00","valid":true},
