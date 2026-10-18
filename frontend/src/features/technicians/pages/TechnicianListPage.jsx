@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Alert,
   Button,
@@ -11,6 +11,7 @@ import { Link } from 'react-router'
 import { FiArrowUpRight, FiRotateCcw, FiUsers } from 'react-icons/fi'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner'
+import { useDebounce } from '../../../shared/hooks/useDebounce'
 import { UserStatusBadge } from '../../administration/components/UserStatusBadge'
 import { TechnicianStatusBadge } from '../components/TechnicianStatusBadge'
 import { TechnicianFilters } from '../components/TechnicianFilters'
@@ -26,7 +27,19 @@ export function TechnicianListPage() {
     available: '',
   })
 
-  const query = useTechnicians(params)
+  const debouncedQuery = useDebounce(params.query.trim(), 250)
+
+  const requestParams = useMemo(
+    () => ({
+      page: params.page,
+      size: params.size,
+      query: debouncedQuery,
+      available: params.available,
+    }),
+    [params.page, params.size, debouncedQuery, params.available],
+  )
+
+  const query = useTechnicians(requestParams)
 
   const handleFilterChange = (updates) => {
     setParams((prev) => ({ ...prev, ...updates }))
@@ -42,9 +55,9 @@ export function TechnicianListPage() {
   }
 
   const data = query.data
-  const items = data?.content ?? data?.items ?? []
-  const totalElements = data?.totalElements ?? items.length
-  const totalPages = data?.totalPages ?? 1
+  const items = data?.content ?? []
+  const totalElements = data?.totalElements ?? 0
+  const totalPages = data?.totalPages ?? 0
   const currentPage = data?.page ?? params.page
 
   return (

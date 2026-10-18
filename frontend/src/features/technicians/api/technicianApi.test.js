@@ -71,6 +71,24 @@ describe('technicianApi', () => {
     })
   })
 
+  it('list: trims query and removes it when empty or whitespace-only', async () => {
+    httpClient.get.mockResolvedValue({ data: { content: [] } })
+
+    await technicianApi.list({ page: 1, size: 50, query: '   ' })
+
+    expect(httpClient.get).toHaveBeenCalledWith('/technicians', {
+      params: { page: 1, size: 50 },
+      signal: undefined,
+    })
+
+    await technicianApi.list({ page: 0, query: '  Nguyễn An  ' })
+
+    expect(httpClient.get).toHaveBeenCalledWith('/technicians', {
+      params: { page: 0, query: 'Nguyễn An' },
+      signal: undefined,
+    })
+  })
+
   it('getById: calls GET /technicians/{id}', async () => {
     const mockDetail = {
       technicianId: 3,

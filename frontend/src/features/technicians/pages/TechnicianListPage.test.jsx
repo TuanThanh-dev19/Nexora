@@ -177,4 +177,99 @@ describe('TechnicianListPage', () => {
       expect(screen.getByText('Nguyễn Kỹ Thuật')).toBeInTheDocument()
     })
   })
+
+  it('paginates using zero-based page numbers and resets page on filter change', async () => {
+    const multiPageData = {
+      content: [
+        {
+          technicianId: 3,
+          fullName: 'Nguyễn Kỹ Thuật',
+          email: 'tech1@nexora.campus',
+          status: 'ACTIVE',
+          available: true,
+          maxActiveTickets: 5,
+          version: 0,
+        },
+      ],
+      totalElements: 40,
+      totalPages: 2,
+      page: 0,
+      size: 20,
+    }
+    technicianApi.list.mockResolvedValue(multiPageData)
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Trang 1\/2/)).toBeInTheDocument()
+    })
+
+    // Click next page
+    const nextButton = screen.getByRole('button', { name: /Trang sau/ })
+    expect(nextButton).not.toBeDisabled()
+    fireEvent.click(nextButton)
+
+    await waitFor(() => {
+      expect(technicianApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1 }),
+        expect.anything(),
+      )
+    })
+
+    // Changing availability filter resets page to 0
+    const availSelect = screen.getByLabelText(/Trạng thái sẵn sàng/)
+    fireEvent.change(availSelect, { target: { value: 'false' } })
+
+    await waitFor(() => {
+      expect(technicianApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 0, available: 'false' }),
+        expect.anything(),
+      )
+    })
+  })
+
+  it('displays user status and technician availability separately with appropriate badges', async () => {
+    technicianApi.list.mockResolvedValueOnce({
+      content: [
+        {
+          technicianId: 10,
+          fullName: 'Trần Bị Khoá',
+          email: 'locked@nexora.campus',
+          status: 'LOCKED',
+          available: true,
+          maxActiveTickets: 5,
+          version: 1,
+        },
+        {
+          technicianId: 11,
+          fullName: 'Lê Vô Hiệu',
+          email: 'disabled@nexora.campus',
+          status: 'DISABLED',
+          available: false,
+          maxActiveTickets: 2,
+          version: 1,
+        },
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      page: 0,
+      size: 20,
+    })
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Trần Bị Khoá')).toBeInTheDocument()
+      expect(screen.getByText('Lê Vô Hiệu')).toBeInTheDocument()
+    })
+
+    // Status badges
+    expect(document.querySelector('[data-status="LOCKED"]')).toHaveTextContent('Tạm khóa')
+    expect(document.querySelector('[data-status="DISABLED"]')).toHaveTextContent('Vô hiệu hóa')
+
+    // Availability badges
+    expect(document.querySelector('[data-available="true"]')).toHaveTextContent('Sẵn sàng')
+    expect(document.querySelector('[data-available="false"]')).toHaveTextContent('Không sẵn sàng')
+  })
 })
+

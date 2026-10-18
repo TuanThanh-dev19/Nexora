@@ -14,9 +14,21 @@ export const technicianApi = {
     if (isTechnicianMockEnabled()) {
       return technicianMockAdapter.listTechnicians(params)
     }
-    const cleanParams = { ...params }
-    if (cleanParams.available === '' || cleanParams.available == null) {
-      delete cleanParams.available
+    const cleanParams = {}
+    if (params.page != null) {
+      cleanParams.page = params.page
+    }
+    if (params.size != null) {
+      cleanParams.size = params.size
+    }
+    if (typeof params.query === 'string') {
+      const trimmed = params.query.trim()
+      if (trimmed !== '') {
+        cleanParams.query = trimmed
+      }
+    }
+    if (params.available !== '' && params.available != null) {
+      cleanParams.available = params.available
     }
     const { data } = await httpClient.get('/technicians', {
       params: cleanParams,

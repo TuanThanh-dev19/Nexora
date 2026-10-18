@@ -21,14 +21,19 @@ import com.nexora.common.exception.GlobalExceptionHandler;
 import com.nexora.config.ProblemAccessDeniedHandler;
 import com.nexora.config.ProblemAuthenticationEntryPoint;
 import com.nexora.config.SecurityConfig;
+import com.nexora.auth.service.InvalidCredentialsException;
+import com.nexora.common.pagination.PageResponse;
 import com.nexora.user.dto.SkillAssignmentItem;
 import com.nexora.user.dto.TechnicianProfileResponse;
 import com.nexora.user.dto.TechnicianServiceAreaResponse;
 import com.nexora.user.dto.TechnicianServiceAreasUpdateRequest;
 import com.nexora.user.dto.TechnicianSkillResponse;
 import com.nexora.user.dto.TechnicianSkillsUpdateRequest;
+import com.nexora.user.dto.TechnicianSummaryResponse;
 import com.nexora.user.dto.TechnicianUpdateRequest;
+import com.nexora.user.entity.UserStatus;
 import com.nexora.user.service.TechnicianService;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -231,4 +236,165 @@ class TechnicianControllerMvcTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors").exists());
     }
+
+    // --- GET /api/v1/technicians Tests ---
+
+    @Test
+    @DisplayName("Anonymous caller cannot list technicians (401 Unauthorized)")
+    void list_anonymous_unauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("REQUESTER caller cannot list technicians (403 Forbidden)")
+    void list_requester_forbidden() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians")
+                        .with(jwt().jwt(j -> j.subject("10").claim("roles", List.of("REQUESTER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_REQUESTER"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/access-denied"));
+    }
+
+    @Test
+    @DisplayName("TECHNICIAN caller cannot list workforce technicians (403 Forbidden)")
+    void list_technician_forbidden() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians")
+                        .with(jwt().jwt(j -> j.subject("5").claim("roles", List.of("TECHNICIAN")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_TECHNICIAN"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/access-denied"));
+    }
+
+    @Test
+    @DisplayName("MANAGER caller can list technicians (200 OK)")
+    void list_manager_success() throws Exception {
+        TechnicianSummaryResponse item = new TechnicianSummaryResponse(
+                21L, "Nguyễn An", "an@example.test", UserStatus.ACTIVE, true, 5, 2L);
+        PageResponse<TechnicianSummaryResponse> pageResponse =
+                new PageResponse<>(List.of(item), 0, 20, 1L, 1);
+        given(technicianService.listTechnicians(any(), any())).willReturn(pageResponse);
+
+        mockMvc.perform(get("/api/v1/technicians?page=0&size=20&query=an&available=true")
+                        .with(jwt().jwt(j -> j.subject("2").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content[0].technicianId").value(21))
+                .andExpect(jsonPath("$.content[0].fullName").value("Nguyễn An"))
+                .andExpect(jsonPath("$.content[0].email").value("an@example.test"))
+                .andExpect(jsonPath("$.content[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.content[0].available").value(true))
+                .andExpect(jsonPath("$.content[0].maxActiveTickets").value(5))
+                .andExpect(jsonPath("$.content[0].version").value(2));
+    }
+
+    @Test
+    @DisplayName("ADMIN caller can list technicians (200 OK)")
+    void list_admin_success() throws Exception {
+        PageResponse<TechnicianSummaryResponse> emptyPage =
+                new PageResponse<>(List.of(), 0, 20, 0L, 0);
+        given(technicianService.listTechnicians(any(), any())).willReturn(emptyPage);
+
+        mockMvc.perform(get("/api/v1/technicians")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("ADMIN")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
+    }
+
+    @Test
+    @DisplayName("User with both MANAGER and ADMIN roles can list technicians (200 OK)")
+    void list_managerAndAdmin_success() throws Exception {
+        PageResponse<TechnicianSummaryResponse> emptyPage =
+                new PageResponse<>(List.of(), 0, 20, 0L, 0);
+        given(technicianService.listTechnicians(any(), any())).willReturn(emptyPage);
+
+        mockMvc.perform(get("/api/v1/technicians")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER", "ADMIN")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"), new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Invalid pagination parameters return 400 Bad Request with ProblemDetail")
+    void list_invalidPagination_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians?page=-1")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/invalid-pagination"));
+
+        mockMvc.perform(get("/api/v1/technicians?size=0")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/invalid-pagination"));
+
+        mockMvc.perform(get("/api/v1/technicians?size=101")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/invalid-pagination"));
+    }
+
+    @Test
+    @DisplayName("Unsupported sort parameter returns 400 Bad Request")
+    void list_sortParameter_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians?sort=fullName,asc")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/unsupported-sort"));
+    }
+
+    @Test
+    @DisplayName("Duplicate parameters return 400 Bad Request")
+    void list_duplicateParameters_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians?page=0&page=1")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/invalid-pagination"));
+    }
+
+    @Test
+    @DisplayName("Blank or whitespace-only query returns 400 Bad Request")
+    void list_blankQuery_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians?query=   ")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/unsupported-filter"));
+    }
+
+    @Test
+    @DisplayName("Invalid available boolean returns 400 Bad Request")
+    void list_invalidAvailable_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/technicians?available=notaboolean")
+                        .with(jwt().jwt(j -> j.subject("1").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/unsupported-filter"));
+    }
+
+    @Test
+    @DisplayName("Inactive or invalid caller handled according to existing auth rules (401)")
+    void list_inactiveCaller_returnsUnauthorized() throws Exception {
+        given(technicianService.listTechnicians(any(), any()))
+                .willThrow(new InvalidCredentialsException());
+
+        mockMvc.perform(get("/api/v1/technicians")
+                        .with(jwt().jwt(j -> j.subject("99").claim("roles", List.of("MANAGER")))
+                                .authorities(new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/invalid-credentials"));
+    }
 }
+

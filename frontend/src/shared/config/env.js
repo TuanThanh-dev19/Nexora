@@ -19,7 +19,7 @@ export function isDashboardMockEnabled() {
 export function isTechnicianMockEnabled() {
   return (
     import.meta.env.DEV &&
-    import.meta.env.VITE_TECHNICIAN_MOCK !== 'false'
+    import.meta.env.VITE_TECHNICIAN_MOCK === 'true'
   )
 }
 

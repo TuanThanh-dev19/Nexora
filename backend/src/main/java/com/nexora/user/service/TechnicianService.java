@@ -14,14 +14,19 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nexora.auth.dto.response.CurrentUserResponse;
+import com.nexora.auth.service.AuthService;
 import com.nexora.common.exception.BusinessRuleException;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.exception.StaleWriteException;
+import com.nexora.common.pagination.PageResponse;
 import com.nexora.location.entity.Location;
 import com.nexora.location.repository.LocationRepository;
+import com.nexora.user.dto.TechnicianListQuery;
 import com.nexora.user.dto.TechnicianProfileResponse;
 import com.nexora.user.dto.TechnicianServiceAreasUpdateRequest;
 import com.nexora.user.dto.TechnicianSkillsUpdateRequest;
+import com.nexora.user.dto.TechnicianSummaryResponse;
 import com.nexora.user.dto.TechnicianUpdateRequest;
 import com.nexora.user.entity.AppUser;
 import com.nexora.user.entity.RoleCode;
@@ -34,6 +39,9 @@ import com.nexora.user.repository.SkillRepository;
 import com.nexora.user.repository.TechnicianProfileRepository;
 import com.nexora.user.repository.TechnicianServiceAreaRepository;
 import com.nexora.user.repository.TechnicianSkillRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @Service
 @Transactional
@@ -47,20 +55,54 @@ public class TechnicianService {
     private final AppUserRepository userRepository;
     private final SkillRepository skillRepository;
     private final LocationRepository locationRepository;
+    private final AuthService authService;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public TechnicianService(
             TechnicianProfileRepository technicianProfileRepository,
             TechnicianSkillRepository technicianSkillRepository,
             TechnicianServiceAreaRepository technicianServiceAreaRepository,
             AppUserRepository userRepository,
             SkillRepository skillRepository,
-            LocationRepository locationRepository) {
+            LocationRepository locationRepository,
+            AuthService authService) {
         this.technicianProfileRepository = technicianProfileRepository;
         this.technicianSkillRepository = technicianSkillRepository;
         this.technicianServiceAreaRepository = technicianServiceAreaRepository;
         this.userRepository = userRepository;
         this.skillRepository = skillRepository;
         this.locationRepository = locationRepository;
+        this.authService = authService;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TechnicianSummaryResponse> listTechnicians(Jwt jwt, TechnicianListQuery query) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        requireManagerOrAdmin(viewer);
+
+        Page<TechnicianProfile> page = technicianProfileRepository.findAll(
+                query.toSpecification(), query.pageable());
+        return PageResponse.from(page.map(TechnicianSummaryResponse::from));
+    }
+
+    private CurrentUserResponse getViewer(Jwt jwt) {
+        if (jwt == null) {
+            throw new BadCredentialsException("Authentication required.");
+        }
+        if (authService == null) {
+            throw new IllegalStateException("AuthService is not configured");
+        }
+        return authService.getCurrentUser(jwt);
+    }
+
+    private void requireManagerOrAdmin(CurrentUserResponse viewer) {
+        boolean isManagerOrAdmin = viewer.roles() != null && (
+                viewer.roles().contains(RoleCode.MANAGER.name()) ||
+                viewer.roles().contains(RoleCode.ADMIN.name())
+        );
+        if (!isManagerOrAdmin) {
+            throw new AccessDeniedException("Only managers and admins can list technicians.");
+        }
     }
 
     @Transactional(readOnly = true)
