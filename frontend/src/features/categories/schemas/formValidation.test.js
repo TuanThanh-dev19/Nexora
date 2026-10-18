@@ -9,6 +9,23 @@ import {
 } from './formValidation'
 
 describe('dynamic form validation', () => {
+  it('blocks publishing combined active IMAGE requirements above five', () => {
+    const fields = Array.from({ length: 6 }, (_, i) => ({
+      ...newField(),
+      fieldKey: 'image' + i,
+      label: 'Image',
+      fieldType: 'IMAGE',
+      required: true,
+    }))
+    const draft = { fields, minAttachments: 0 }
+    expect(validateDraft(draft, { publishing: true }).fields).toBeTruthy()
+    expect(
+      validateDraft(
+        { ...draft, fields: fields.map((f, i) => ({ ...f, active: i !== 5 })) },
+        { publishing: true },
+      ).fields,
+    ).toBeUndefined()
+  })
   it('rejects a form attachment minimum above the submission limit', () => {
     expect(validateDraft({ minAttachments: 6, fields: [] })).toHaveProperty(
       'minAttachments',

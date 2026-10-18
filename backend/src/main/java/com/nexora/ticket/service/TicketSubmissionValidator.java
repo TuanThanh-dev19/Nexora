@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.*;
 import com.nexora.category.entity.*;
 import com.nexora.category.service.FormValidator;
 import com.nexora.common.exception.ProblemTypes;
+import com.nexora.common.storage.FileStorageException;
 import com.nexora.common.storage.FileStorageValidator;
+import com.nexora.common.storage.InvalidFileException;
 import com.nexora.ticket.dto.request.CreateTicketRequest;
 
 import jakarta.validation.Validator;
@@ -26,9 +28,14 @@ public class TicketSubmissionValidator {
     private final Validator beans;
     private final FormValidator formRules;
     private final ObjectReader json;
+    private final FileStorageValidator fileValidator;
 
     public TicketSubmissionValidator(
-            Validator beans, FormValidator formRules, ObjectMapper mapper) {
+            Validator beans,
+            FormValidator formRules,
+            ObjectMapper mapper,
+            FileStorageValidator fileValidator) {
+        this.fileValidator = fileValidator;
         this.beans = beans;
         this.formRules = formRules;
         this.json =
@@ -66,6 +73,15 @@ public class TicketSubmissionValidator {
             List<FieldOption> options,
             CreateTicketRequest request,
             List<MultipartFile> files) {
+        validateRequest(request);
+        if (!form.getCategory().getId().equals(request.categoryId()))
+            throw TicketSubmissionException.invalid(
+                    "formVersionId", "The form belongs to another category.");
+        if (!form.getId().equals(request.formVersionId())
+                || form.getFormStatus() != FormStatus.PUBLISHED)
+            throw TicketSubmissionException.stale();
+        if (!form.getCategory().isActive())
+            throw TicketSubmissionException.invalid("categoryId", "Category is inactive.");
         Map<String, FieldDefinition> fields = new LinkedHashMap<>();
         Map<String, JsonNode> rules = new HashMap<>();
         int requiredFiles = 0;
@@ -74,6 +90,8 @@ public class TicketSubmissionValidator {
                         && form.getCategory().getAssetPolicy() == AssetPolicy.FORBIDDEN))
             throw TicketSubmissionException.incompatible("formVersionId");
         for (FieldDefinition field : definitions) {
+            if (!field.getFormVersion().getId().equals(form.getId()))
+                throw TicketSubmissionException.incompatible("formVersionId");
             if (!field.isActive()) continue;
             if (fields.putIfAbsent(field.getFieldKey(), field) != null)
                 throw TicketSubmissionException.incompatible("formVersionId");
@@ -96,6 +114,10 @@ public class TicketSubmissionValidator {
                 errors.put(path, "Unknown, inactive, duplicate or IMAGE field.");
                 continue;
             }
+            if (empty(value.value())) {
+                if (field.isRequired()) errors.put(path, "This field is required.");
+                continue;
+            }
             try {
                 validateValue(field, value.value(), rules.get(value.fieldKey()), options);
                 answers.put(field, value.value());
@@ -111,7 +133,13 @@ public class TicketSubmissionValidator {
                     && !seen.contains(field.getFieldKey()))
                 errors.put("dynamicValues." + field.getFieldKey(), "This field is required.");
         }
-        if (files.size() > 5) errors.put("attachments", "At most five images are allowed.");
+        if (!files.isEmpty()) {
+            try {
+                fileValidator.validateCount(files);
+            } catch (InvalidFileException ex) {
+                errors.put("attachments", "At most five images are allowed.");
+            }
+        }
         if (files.size() < form.getMinAttachmentCount())
             errors.put("attachments", "Not enough evidence images.");
         if (request.attachments().size() != files.size())
@@ -147,42 +175,37 @@ public class TicketSubmissionValidator {
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             String path = "attachments[" + i + "]";
-            if (file.getSize() > FileStorageValidator.MAX_FILE_SIZE)
-                throw TicketSubmissionException.tooLarge(path);
-            if (file.getContentType() == null
-                    || !FileStorageValidator.ALLOWED_CONTENT_TYPES.contains(file.getContentType()))
-                throw TicketSubmissionException.media(path);
+            try {
+                fileValidator.validateSignature(file);
+            } catch (InvalidFileException ex) {
+                switch (ex.getReason()) {
+                    case TOO_LARGE -> throw TicketSubmissionException.tooLarge(path);
+                    case UNSUPPORTED_MEDIA -> throw TicketSubmissionException.media(path);
+                    default ->
+                            errors.put(
+                                    path,
+                                    "Image is empty or its signature does not match its MIME.");
+                }
+            } catch (FileStorageException ex) {
+                errors.put(path, "Cannot read uploaded image.");
+            }
             JsonNode rule =
                     linked.containsKey(i)
                             ? rules.get(linked.get(i).getFieldKey())
                             : json.createObjectNode();
-            if (file.isEmpty()
-                    || file.getOriginalFilename() == null
+            if (file.getOriginalFilename() == null
                     || file.getOriginalFilename().isBlank()
-                    || file.getOriginalFilename().length() > 255
-                    || file.getSize()
-                            > rule.path("maxSizeBytes").asLong(FileStorageValidator.MAX_FILE_SIZE))
-                errors.put(
-                        path,
-                        "Image is empty, has an invalid name, or exceeds the field size limit.");
+                    || file.getOriginalFilename().length() > 255)
+                errors.put(path, "Image filename must contain 1–255 characters.");
+            if (file.getSize()
+                    > rule.path("maxSizeBytes").asLong(FileStorageValidator.MAX_FILE_SIZE))
+                throw TicketSubmissionException.tooLarge(path);
             if (rule.has("allowedTypes")
                     && !contains(rule.get("allowedTypes"), file.getContentType()))
-                errors.put(path, "Image MIME is not allowed by this field.");
-            try (var input = file.getInputStream()) {
-                byte[] signature = input.readNBytes(8);
-                byte[] expected =
-                        "image/png".equals(file.getContentType())
-                                ? new byte[] {(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a}
-                                : new byte[] {(byte) 0xff, (byte) 0xd8, (byte) 0xff};
-                if (signature.length < expected.length
-                        || !Arrays.equals(expected, Arrays.copyOf(signature, expected.length)))
-                    errors.put(path, "Image signature does not match the declared MIME.");
-            } catch (IOException ex) {
-                throw TicketSubmissionException.invalid(path, "Cannot read uploaded image.");
-            }
+                throw TicketSubmissionException.media(path);
         }
         reject(errors);
-        return new Validated(answers, linked);
+        return new Validated(Map.copyOf(answers), Map.copyOf(linked));
     }
 
     private JsonNode compatibleRules(FieldDefinition field) {
@@ -215,7 +238,9 @@ public class TicketSubmissionValidator {
                     throw new IllegalArgumentException();
             }
             case NUMBER -> {
-                if (!value.isNumber() || !Double.isFinite(value.doubleValue()))
+                if (!value.isNumber()
+                        || ((value.isDouble() || value.isFloat())
+                                && !Double.isFinite(value.doubleValue())))
                     throw new IllegalArgumentException();
                 BigDecimal number = value.decimalValue();
                 if ((rule.has("min") && number.compareTo(rule.get("min").decimalValue()) < 0)
@@ -264,6 +289,8 @@ public class TicketSubmissionValidator {
             }
             case DATE -> {
                 if (!value.isTextual()) throw new IllegalArgumentException();
+                if (!value.textValue().matches("\\d{4}-\\d{2}-\\d{2}"))
+                    throw new IllegalArgumentException();
                 LocalDate date = LocalDate.parse(value.textValue());
                 if ((rule.has("min") && date.isBefore(LocalDate.parse(rule.get("min").textValue())))
                         || (rule.has("max")
@@ -281,6 +308,13 @@ public class TicketSubmissionValidator {
             }
             default -> throw new IllegalArgumentException();
         }
+    }
+
+    private static boolean empty(JsonNode value) {
+        return value == null
+                || value.isNull()
+                || (value.isTextual() && value.textValue().isBlank())
+                || (value.isArray() && value.isEmpty());
     }
 
     private static boolean contains(JsonNode values, String value) {

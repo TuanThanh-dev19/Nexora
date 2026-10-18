@@ -31,6 +31,8 @@ Ticket, non-IMAGE JSON values, REPORT_EVIDENCE metadata and SUBMIT history are p
 
 ## Submission validation boundary
 
+NEX-048 (#80) completes [normalization and shared validation](TICKET_SUBMISSION_VALIDATION.md): optional empty answers are omitted, combined IMAGE requirements are capped at five, field byte/MIME limits return 413/415 and shared fixtures verify decimal, regex and date semantics.
+
 No submission validator existed on the starting `develop` revision. `TicketSubmissionValidator` supplies that missing dependency here, reusing the existing admin rule validator where compatible. The existing admin/backend and frontend rule validators are aligned to offset DATETIME and JPEG/PNG limits without rebuilding CRUD/editor pages. Existing published rules are never rewritten.
 
 Submission accepts all nine field types with exact JSON types, active keys/options, unique dynamic keys/selections, required checks, text length/pattern, numeric min/max/step, date/time bounds and image rules. NUMBER 0 and BOOLEAN false are values. DATETIME values and bounds require an ISO offset (`Z` or `+07:00`), compared as instants. IMAGE rules support JPEG/PNG and cannot exceed global limits. Legacy GIF/WebP, local DATETIME bounds, malformed/unknown rules or contradictory asset requirements yield `422 form-configuration-incompatible`. Administrators must publish a compatible configuration; the API does not silently convert old form content. Newly saved/published forms use the same rule contract. Existing immutable incompatible versions must be replaced by an explicitly corrected draft.

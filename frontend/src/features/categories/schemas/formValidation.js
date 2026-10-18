@@ -219,6 +219,20 @@ export function validateDraft(draft, context = {}) {
     })
   })
   if (context.publishing) {
+    const requiredImages = draft.fields
+      .filter((f) => f.active && f.fieldType === 'IMAGE')
+      .reduce((sum, f) => {
+        try {
+          return (
+            sum +
+            Math.max(f.required ? 1 : 0, parseRules(f.rulesText)?.minFiles ?? 0)
+          )
+        } catch {
+          return sum
+        }
+      }, 0)
+    if (requiredImages > 5)
+      errors.fields = 'Tổng số ảnh bắt buộc của các trường không được vượt 5.'
     if (!context.category?.active)
       errors['category.active'] = 'Kích hoạt danh mục trước khi phát hành.'
     if (

@@ -723,7 +723,7 @@ public abstract class TicketCreateApiContract {
         post(payload()).andExpect(status().isBadRequest());
         var p = payload();
         ((ArrayNode) p.get("attachments")).addObject().put("fileIndex", 0).put("fieldKey", "image");
-        post(p, image()).andExpect(status().isBadRequest());
+        post(p, image()).andExpect(status().isPayloadTooLarge());
         tx(
                 () -> {
                     em.find(FieldDefinition.class, f.fields.get("image").getId())
@@ -869,5 +869,37 @@ public abstract class TicketCreateApiContract {
                 .put("fieldKey", "datetime")
                 .put("value", "2026-10-18T02:30:00Z");
         created(valid);
+    }
+
+    @Test
+    void optionalEmptyAnswersProduceNoRowsAndForeignCategoryIsNotStale() throws Exception {
+        var p = payload();
+        for (String key : List.of("text", "number", "boolean", "multi_select"))
+            ((ArrayNode) p.get("dynamicValues")).addObject().put("fieldKey", key).putNull("value");
+        var id = created(p).path("id").asLong();
+        assertThat(
+                        tx(
+                                () ->
+                                        em.createQuery(
+                                                        "select count(v) from TicketFieldValue v"
+                                                            + " where v.ticket.id=:id",
+                                                        Long.class)
+                                                .setParameter("id", id)
+                                                .getSingleResult()))
+                .isZero();
+        Long otherCategory =
+                tx(
+                        () ->
+                                f.persist(
+                                                new IncidentCategory(
+                                                        "OTHER-CATEGORY-"
+                                                                + UUID.randomUUID()
+                                                                        .toString()
+                                                                        .substring(0, 8),
+                                                        "Other"))
+                                        .getId());
+        post(payload().put("categoryId", otherCategory))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.formVersionId").exists());
     }
 }

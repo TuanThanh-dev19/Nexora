@@ -1,3 +1,5 @@
+import { decimalStepMatches } from '../../../shared/utils/decimalStep'
+
 export const MAX_FILES = 5
 export const MAX_FILE_BYTES = 5 * 1024 * 1024
 export const IMAGE_TYPES = ['image/jpeg', 'image/png']
@@ -7,7 +9,9 @@ export const orderedActive = (items = []) =>
     .toSorted((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
 export const fieldsOf = (form) => orderedActive(form?.fields)
 export const emptyValue = (value) =>
-  value == null || value === '' || (Array.isArray(value) && !value.length)
+  value == null ||
+  (typeof value === 'string' && !value.trim()) ||
+  (Array.isArray(value) && !value.length)
 export const equipmentRequired = (form) =>
   form?.requiresEquipment || form?.category?.assetPolicy === 'REQUIRED'
 
@@ -64,7 +68,7 @@ export function validateSubmission(form, input, photos) {
           errors[key] = 'Độ dài không hợp lệ.'
         if (rules.pattern) {
           try {
-            if (!new RegExp(`^(?:${rules.pattern})$`).test(value))
+            if (!new RegExp(`^(?:${rules.pattern})(?![\\s\\S])`).test(value))
               errors[key] = 'Nội dung không đúng định dạng.'
           } catch {
             errors[key] =
@@ -83,16 +87,20 @@ export function validateSubmission(form, input, photos) {
           errors[key] = 'Số ngoài khoảng cho phép.'
         if (
           rules.step &&
-          Math.abs(
-            (n - (rules.min ?? 0)) / rules.step -
-              Math.round((n - (rules.min ?? 0)) / rules.step),
-          ) > 1e-8
+          !decimalStepMatches(value, rules.min ?? 0, rules.step)
         )
           errors[key] = 'Số không đúng bước quy định.'
         break
       }
       case 'SELECT':
       case 'MULTI_SELECT': {
+        if (
+          (field.fieldType === 'MULTI_SELECT' && !Array.isArray(value)) ||
+          (field.fieldType === 'SELECT' && typeof value !== 'string')
+        ) {
+          errors[key] = 'Kiểu lựa chọn không hợp lệ.'
+          break
+        }
         const selected = Array.isArray(value) ? value : [value]
         const allowed = orderedActive(field.options).map((o) => o.optionValue)
         if (
@@ -109,6 +117,15 @@ export function validateSubmission(form, input, photos) {
       }
       case 'DATE':
       case 'DATETIME': {
+        if (
+          field.fieldType === 'DATE' &&
+          (!/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+            !Number.isFinite(Date.parse(value)) ||
+            new Date(value).toISOString().slice(0, 10) !== value)
+        ) {
+          errors[key] = 'Ngày không tồn tại hoặc sai định dạng YYYY-MM-DD.'
+          break
+        }
         const comparable =
           field.fieldType === 'DATE' ? value : new Date(value).getTime()
         const bound = (v) =>
