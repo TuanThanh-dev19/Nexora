@@ -47,13 +47,14 @@ public class LocalFileStorageService implements FileStorageService {
                 copyWithLimit(input, output);
             }
             validator.validateSignature(temporaryFile, file.getContentType());
+            long storedSize = Files.size(temporaryFile);
             moveIntoPlace(temporaryFile, target);
             temporaryFile = null;
             return new StoredFile(
                     storageKey,
                     file.getOriginalFilename(),
                     file.getContentType(),
-                    Files.size(target));
+                    storedSize);
         } catch (InvalidFileException exception) {
             throw exception;
         } catch (IOException exception) {

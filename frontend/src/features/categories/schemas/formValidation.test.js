@@ -9,6 +9,11 @@ import {
 } from './formValidation'
 
 describe('dynamic form validation', () => {
+  it('rejects a form attachment minimum above the submission limit', () => {
+    expect(validateDraft({ minAttachments: 6, fields: [] })).toHaveProperty(
+      'minAttachments',
+    )
+  })
   it('restores server ordering without mutating fields, options or rules', () => {
     const form = {
       revision: 7,
@@ -58,6 +63,10 @@ describe('dynamic form validation', () => {
     ['DATE', { min: '2026-02-30' }],
     ['IMAGE', { allowedTypes: ['text/html'] }],
     ['IMAGE', { maxFiles: 0 }],
+    ['IMAGE', { allowedTypes: ['image/gif'] }],
+    ['IMAGE', { maxFiles: 6 }],
+    ['IMAGE', { maxSizeBytes: 5242881 }],
+    ['DATETIME', { min: '2026-10-07T12:30:00' }],
   ])('rejects invalid %s rules: %j', (type, rules) =>
     expect(validateRules(type, rules)).toBeTruthy(),
   )
@@ -65,8 +74,8 @@ describe('dynamic form validation', () => {
   it('accepts persisted image rules and numeric bounds', () => {
     expect(
       validateRules('DATETIME', {
-        min: '2026-10-07T12:30:00.0',
-        max: '2026-10-07T12:30',
+        min: '2026-10-07T12:30:00.0+07:00',
+        max: '2026-10-07T05:30Z',
       }),
     ).toBeNull()
     expect(

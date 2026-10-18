@@ -79,7 +79,7 @@ it('renders all nine fields and submits once while pending then routes to detail
   await screen.findByText('Created detail')
   expect(router.state.location.state.createdTicketNumber).toBe('NX-12')
 })
-it.each([400, 401, 403, 404, 413, 415, 500])(
+it.each([400, 401, 403, 404, 413, 415, 422, 500])(
   'retains input and shows errors for HTTP %s',
   async (status) => {
     const { user } = open({
@@ -162,7 +162,7 @@ it('warns before leaving unsent input and allows staying or discarding', async (
   expect(router.state.location.pathname).toBe('/tickets')
 })
 it('preserves input after a network failure', async () => {
-  const { user } = open({
+  const { user, api } = open({
     submit: vi.fn(async () => {
       throw new Error('Offline')
     }),
@@ -170,8 +170,45 @@ it('preserves input after a network failure', async () => {
   await fill(user)
   await user.click(screen.getByRole('button', { name: 'Gửi phiếu' }))
   await screen.findByText(/Không gửi được phiếu/)
+  expect(
+    screen.getByText(/Kiểm tra danh sách phiếu trước khi gửi lại/),
+  ).toBeInTheDocument()
+  expect(api.submit).toHaveBeenCalledTimes(1)
   expect(screen.getByLabelText('Tiêu đề *')).toHaveValue('Broken')
   expect(screen.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+})
+it.each([413, 415])('keeps selected evidence after HTTP %s', async (status) => {
+  const { user, api } = open({
+    submit: vi.fn(async () => {
+      throw { response: { status } }
+    }),
+  })
+  await fill(user)
+  await user.upload(
+    screen.getByLabelText('Ảnh thiết bị'),
+    new File(['sample'], 'keep.png', { type: 'image/png' }),
+  )
+  await user.click(screen.getByRole('button', { name: 'Gửi phiếu' }))
+  await waitFor(() => expect(api.submit).toHaveBeenCalledTimes(1))
+  expect(screen.getByRole('img', { name: 'keep.png' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Tiêu đề *')).toHaveValue('Broken')
+})
+it('requires a location when locationRequired is false in the published category', async () => {
+  const { user, api } = open({
+    form: vi.fn(async () => ({
+      ...createFormFixture,
+      minAttachments: 0,
+      category: { ...createFormFixture.category, locationRequired: false },
+    })),
+  })
+  await screen.findByRole('option', { name: 'Thiết bị phòng học' })
+  await user.selectOptions(screen.getByLabelText('Danh mục *'), '1')
+  await screen.findByText(/Địa điểm luôn bắt buộc/)
+  await user.type(screen.getByLabelText('Tiêu đề *'), 'Broken')
+  await user.type(screen.getByLabelText('Mô tả *'), 'Details')
+  await user.click(screen.getByRole('button', { name: 'Gửi phiếu' }))
+  await screen.findAllByText(/Chọn địa điểm\./)
+  expect(api.submit).not.toHaveBeenCalled()
 })
 it('does not render a draft or allow submission', async () => {
   const { user, api } = open({

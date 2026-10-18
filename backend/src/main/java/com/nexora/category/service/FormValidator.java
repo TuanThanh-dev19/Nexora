@@ -1,7 +1,7 @@
 package com.nexora.category.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -20,6 +20,7 @@ public class FormValidator {
     public Map<String, String> errors(DraftRequest request, boolean publishing) {
         Map<String, String> errors = new LinkedHashMap<>();
         validator.validate(request).forEach(v -> errors.putIfAbsent(v.getPropertyPath().toString(), v.getMessage()));
+        if (request.minAttachments() > 5) errors.put("minAttachments", "Image rules cannot exceed five files or 5 MiB per file.");
         if (request.fields() == null) return errors;
         Set<String> keys = new HashSet<>();
         for (int i = 0; i < request.fields().size(); i++) {
@@ -72,14 +73,14 @@ public class FormValidator {
             } else if (key.equals("allowedTypes")) {
                 if (!value.isArray() || value.isEmpty()) errors.put(target, "Choose at least one image MIME type.");
                 else value.forEach(v -> {
-                    if (!v.isTextual() || !Set.of("image/jpeg", "image/png", "image/webp", "image/gif").contains(v.textValue()))
-                        errors.put(target, "Supported types: image/jpeg, image/png, image/webp, image/gif.");
+                    if (!v.isTextual() || !Set.of("image/jpeg", "image/png").contains(v.textValue()))
+                        errors.put(target, "Supported types: image/jpeg, image/png.");
                 });
             } else if (type == DynamicFieldType.DATE || type == DynamicFieldType.DATETIME) {
                 try {
                     if (!value.isTextual()) throw new IllegalArgumentException();
                     if (type == DynamicFieldType.DATE) LocalDate.parse(value.textValue());
-                    else LocalDateTime.parse(value.textValue());
+                    else OffsetDateTime.parse(value.textValue());
                 } catch (RuntimeException ex) { errors.put(target, "Use an ISO " + type + " value."); }
             } else if (type == DynamicFieldType.NUMBER) {
                 if (!value.isNumber() || !Double.isFinite(value.doubleValue()) || (key.equals("step") && value.decimalValue().signum() <= 0))
@@ -88,6 +89,10 @@ public class FormValidator {
                     || (Set.of("maxFiles", "maxSizeBytes").contains(key) && value.intValue() == 0)) {
                 errors.put(target, "Use a non-negative integer (file limits must be positive).");
             }
+            if (type == DynamicFieldType.IMAGE && value.isIntegralNumber()
+                    && ((Set.of("minFiles", "maxFiles").contains(key) && value.longValue() > 5)
+                    || (key.equals("maxSizeBytes") && value.longValue() > 5242880)))
+                errors.put(target, "Image rules cannot exceed five files or 5 MiB per file.");
         });
         for (String[] pair : List.of(new String[]{"minLength", "maxLength"}, new String[]{"min", "max"},
                 new String[]{"minItems", "maxItems"}, new String[]{"minFiles", "maxFiles"})) {
@@ -95,7 +100,7 @@ public class FormValidator {
             if (min == null || max == null || errors.keySet().stream().anyMatch(k -> k.startsWith(path))) continue;
             boolean reversed;
             if (type == DynamicFieldType.DATE) reversed = LocalDate.parse(min.asText()).isAfter(LocalDate.parse(max.asText()));
-            else if (type == DynamicFieldType.DATETIME) reversed = LocalDateTime.parse(min.asText()).isAfter(LocalDateTime.parse(max.asText()));
+            else if (type == DynamicFieldType.DATETIME) reversed = OffsetDateTime.parse(min.asText()).isAfter(OffsetDateTime.parse(max.asText()));
             else reversed = min.decimalValue().compareTo(max.decimalValue()) > 0;
             if (reversed) errors.put(path + "." + pair[1], "Maximum must be greater than or equal to minimum.");
         }

@@ -21,6 +21,32 @@ import com.nexora.auth.service.InvalidCredentialsException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(com.nexora.ticket.service.TicketSubmissionException.class)
+    ProblemDetail handleTicketSubmission(com.nexora.ticket.service.TicketSubmissionException exception, HttpServletRequest request) {
+        ProblemDetail problem = ApiProblemDetails.create(exception.getStatus(), exception.getType(),
+                exception.getStatus().getReasonPhrase(), exception.getMessage(), request);
+        if (!exception.getFieldErrors().isEmpty()) problem.setProperty("fieldErrors", exception.getFieldErrors());
+        return problem;
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    ProblemDetail handleUploadLimit(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.PAYLOAD_TOO_LARGE, ProblemTypes.VALIDATION_FAILED,
+                "Upload too large", "Maximum file size is 5 MiB and maximum request size is 30 MiB.", request);
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    ProblemDetail handleUnsupportedMedia(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ProblemTypes.VALIDATION_FAILED,
+                "Unsupported media type", "The request content type is not supported.", request);
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    ProblemDetail handleMultipart(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
+                "Malformed multipart request", "Supply valid multipart/form-data with a browser-generated boundary.", request);
+    }
+
     @ExceptionHandler(com.nexora.category.service.FormValidationException.class)
     ProblemDetail handleFormValidation(com.nexora.category.service.FormValidationException exception,
             HttpServletRequest request) {

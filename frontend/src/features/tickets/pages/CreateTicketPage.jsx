@@ -185,12 +185,14 @@ export function CreateTicketPage({
           400: 'Kiểm tra lại các trường được đánh dấu.',
           401: 'Phiên đăng nhập đã hết hạn.',
           403: 'Bạn không có quyền tạo phiếu.',
-          404: 'Danh mục, biểu mẫu hoặc dữ liệu tham chiếu không tồn tại; máy chủ có thể chưa hỗ trợ tạo phiếu.',
+          404: 'Danh mục, biểu mẫu hoặc dữ liệu tham chiếu không tồn tại. Kiểm tra lại lựa chọn.',
           409: 'Biểu mẫu đã thay đổi. Tải lại biểu mẫu và kiểm tra dữ liệu tương thích.',
           413: 'Tổng dung lượng ảnh vượt giới hạn máy chủ.',
           415: 'Định dạng ảnh không được máy chủ hỗ trợ.',
+          422: 'Biểu mẫu có cấu hình chưa tương thích. Liên hệ quản trị viên; dữ liệu đang nhập được giữ lại.',
           405: 'API tạo phiếu chưa sẵn sàng. Phiếu chưa được lưu.',
-        }[status] ?? 'Không gửi được phiếu. Dữ liệu được giữ lại; hãy thử lại.',
+        }[status] ??
+          'Không gửi được phiếu hoặc chưa xác nhận được kết quả. Dữ liệu được giữ lại. Kiểm tra danh sách phiếu trước khi gửi lại để tránh tạo trùng.',
       )
     } finally {
       submitting.current = false
@@ -332,11 +334,7 @@ export function CreateTicketPage({
                 <Card.Body>
                   <h2 className="h5">2. Địa điểm và tài sản</h2>
                   <p>
-                    Địa điểm{' '}
-                    {form.category.locationRequired
-                      ? 'bắt buộc'
-                      : 'không bắt buộc'}
-                    .{' '}
+                    Địa điểm luôn bắt buộc khi tạo phiếu.{' '}
                     {form.category.assetPolicy === 'FORBIDDEN'
                       ? 'Danh mục không cho phép chọn tài sản.'
                       : equipmentRequired(form)

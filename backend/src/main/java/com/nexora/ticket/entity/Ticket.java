@@ -198,6 +198,14 @@ public class Ticket {
         updatedAt = now;
     }
 
+    /** Submission uses one server instant for number year, creation time, SLA and initial history. */
+    public Ticket(String ticketNumber, AppUser reporter, IncidentCategory category, CategoryFormVersion formVersion,
+            Location location, Asset asset, String title, String description, Priority priority,
+            OffsetDateTime slaDueAt, Skill requiredSkill, OffsetDateTime createdAt) {
+        this(ticketNumber, reporter, category, formVersion, location, asset, title, description, priority, slaDueAt, requiredSkill);
+        this.createdAt = Objects.requireNonNull(createdAt, "createdAt is required");
+    }
+
     @PreUpdate
     void updateTimestamp() {
         updatedAt = OffsetDateTime.now(ZoneOffset.UTC);

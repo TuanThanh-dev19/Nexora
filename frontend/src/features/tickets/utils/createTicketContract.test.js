@@ -30,6 +30,31 @@ const readBlob = (blob) =>
   })
 
 describe('create ticket contract', () => {
+  it('always requires a real location and limits the trimmed title to 200 characters', () => {
+    const optionalLocation = {
+      ...form,
+      category: { ...form.category, locationRequired: false },
+    }
+    expect(
+      validateSubmission(optionalLocation, { ...input, locationId: '' }, [])
+        .locationId,
+    ).toBeTruthy()
+    expect(
+      validateSubmission(
+        form,
+        { ...input, title: ' '.repeat(2) + 'x'.repeat(200) + ' ' },
+        [],
+      ).title,
+    ).toBeUndefined()
+    expect(
+      validateSubmission(form, { ...input, title: 'x'.repeat(201) }, []).title,
+    ).toBeTruthy()
+    expect(
+      validateSubmission(form, input, [
+        { file: new File([], 'empty.png', { type: 'image/png' }) },
+      ])['attachments[0]'],
+    ).toBeTruthy()
+  })
   it('requires equipment by either form flag or category policy', () => {
     expect(
       validateSubmission({ ...form, requiresEquipment: true }, input, [])
