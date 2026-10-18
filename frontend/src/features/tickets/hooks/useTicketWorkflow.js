@@ -14,9 +14,12 @@ export function useTicketWorkflow() {
   const enabled =
     isTicketWorkflowMockEnabled() && isAuthenticated && !isChecking
   const refresh = () =>
-    client.invalidateQueries({
-      queryKey: ['tickets', ...ticketViewerKey(user)],
-    })
+    Promise.all([
+      client.invalidateQueries({
+        queryKey: ['tickets', ...ticketViewerKey(user)],
+      }),
+      client.invalidateQueries({ queryKey: ['dashboard'] }),
+    ])
   const mutation = useMutation({
     mutationFn: ({ action, ticketId, payload, ticket }) => {
       if (!enabled || !availableTicketActions(ticket, user).includes(action))
