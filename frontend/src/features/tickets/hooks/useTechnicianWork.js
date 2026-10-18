@@ -42,9 +42,12 @@ export function useTechnicianMutation(ticket) {
   const { user } = useAuth()
   const client = useQueryClient()
   const refresh = () =>
-    client.invalidateQueries({
-      queryKey: ['tickets', ...ticketViewerKey(user)],
-    })
+    Promise.all([
+      client.invalidateQueries({
+        queryKey: ['tickets', ...ticketViewerKey(user)],
+      }),
+      client.invalidateQueries({ queryKey: ['dashboard'] }),
+    ])
   const mutation = useMutation({
     mutationFn: ({ action, payload, files }) => {
       const source = action === 'start' ? 'ASSIGNED' : 'IN_PROGRESS'

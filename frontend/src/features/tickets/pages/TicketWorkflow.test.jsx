@@ -121,7 +121,8 @@ describe('manager ticket workflow UI', () => {
   it('reviews then assigns with exact version payloads and refreshes detail/list/history', async () => {
     const review = vi.spyOn(ticketApi, 'review')
     const assign = vi.spyOn(ticketApi, 'assign')
-    await mount()
+    const { client } = await mount()
+    const invalidation = vi.spyOn(client, 'invalidateQueries')
     const dialog = await openDialog('Bắt đầu xem xét')
     expect(dialog.queryByLabelText(/^Lý do/)).not.toBeInTheDocument()
     await userEvent.click(
@@ -129,6 +130,7 @@ describe('manager ticket workflow UI', () => {
     )
     await waitForSuccess('Bắt đầu xem xét')
     expect(review).toHaveBeenCalledExactlyOnceWith(10, { version: 0 })
+    expect(invalidation).toHaveBeenCalledWith({ queryKey: ['dashboard'] })
     expect(
       screen.queryByRole('button', { name: 'Bắt đầu xem xét', exact: true }),
     ).not.toBeInTheDocument()
