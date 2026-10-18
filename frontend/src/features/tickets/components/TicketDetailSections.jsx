@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Button, Card, ListGroup } from 'react-bootstrap'
-import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
 import { TicketAttachmentPreview } from './TicketAttachmentPreview'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { TICKET_STATUS_LABELS } from '../constants/ticketStatuses'
@@ -203,15 +202,13 @@ export function TicketStatusHistory({ history }) {
 
 export function TicketAttachments({ ticketId, attachments }) {
   const [selected, setSelected] = useState(null)
-  const available = isTicketWorkflowMockEnabled() && Boolean(ticketId)
+  const available = Boolean(ticketId)
   return (
     <Card className="ticket-section mb-3">
       <Card.Body>
         <h2 className="h5">Tệp đính kèm</h2>
         <p className="text-secondary small">
-          {available
-            ? 'Bản mô phỏng: mở ảnh để xem trước hoặc tải xuống.'
-            : 'Thông tin tệp. Chức năng xem và tải xuống chưa khả dụng.'}
+          Mở ảnh để xem trước hoặc tải xuống bằng phiên đăng nhập hiện tại.
         </p>
         {attachments.length === 0 ? (
           <EmptyState message="Chưa có tệp đính kèm." />

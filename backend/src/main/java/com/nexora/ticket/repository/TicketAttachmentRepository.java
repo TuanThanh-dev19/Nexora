@@ -11,6 +11,8 @@ import com.nexora.ticket.entity.TicketAttachment;
 /** Persistence of metadata only; this repository never reads or writes stored files. */
 public interface TicketAttachmentRepository extends JpaRepository<TicketAttachment, Long> {
 
+    java.util.Optional<TicketAttachment> findByTicketIdAndId(Long ticketId, Long id);
+
     @EntityGraph(attributePaths = {"uploadedBy", "fieldDefinition"})
     List<TicketAttachment> findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(
             Long ticketId, List<AttachmentType> attachmentTypes);

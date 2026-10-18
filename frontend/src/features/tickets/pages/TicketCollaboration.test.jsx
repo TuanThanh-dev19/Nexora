@@ -533,7 +533,7 @@ describe('Ticket Detail collaboration', () => {
       expect(URL.revokeObjectURL).toHaveBeenCalledWith(value)
   })
   it.each([false, true])(
-    'makes no collaboration requests when unavailable (production=%s)',
+    'keeps real images available without enabling other collaboration (production=%s)',
     async (production) => {
       if (production) vi.stubEnv('DEV', false)
       else vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
@@ -543,7 +543,7 @@ describe('Ticket Detail collaboration', () => {
       await mount()
       expect(
         screen.getByRole('button', { name: 'Xem ảnh minh-chứng.png' }),
-      ).toBeDisabled()
+      ).toBeEnabled()
       expect(
         screen.getByRole('button', { name: 'Hủy phiếu', exact: true }),
       ).toBeDisabled()
@@ -554,6 +554,15 @@ describe('Ticket Detail collaboration', () => {
       expect(comments).not.toHaveBeenCalled()
       expect(feedback).not.toHaveBeenCalled()
       expect(image).not.toHaveBeenCalled()
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Xem ảnh minh-chứng.png' }),
+      )
+      await screen.findByRole('img', { name: 'minh-chứng.png' })
+      expect(image).toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: 'Tải xuống' })).toHaveAttribute(
+        'href',
+        expect.stringContaining('blob:'),
+      )
     },
   )
 })
