@@ -19,7 +19,7 @@ class FormValidatorTest {
     @CsvSource(value = {
         "TEXT|[]", "TEXT|{\"unknown\":1}", "TEXT|{\"minLength\":-1}", "TEXT|{\"minLength\":8,\"maxLength\":3}",
         "TEXT|{\"pattern\":\"[\"}", "NUMBER|{\"min\":\"1\"}", "NUMBER|{\"step\":0}", "NUMBER|{\"min\":10,\"max\":5}",
-        "BOOLEAN|{\"min\":0}", "DATE|{\"min\":\"2026-02-30\"}", "DATETIME|{\"min\":\"yesterday\"}",
+        "IMAGE|{\"maxFiles\":6}", "IMAGE|{\"maxSizeBytes\":5242881}", "IMAGE|{\"allowedTypes\":[\"image/gif\"]}", "DATETIME|{\"min\":\"2026-10-18T09:30:00\"}", "BOOLEAN|{\"min\":0}", "DATE|{\"min\":\"2026-02-30\"}", "DATETIME|{\"min\":\"yesterday\"}",
         "MULTI_SELECT|{\"minItems\":3,\"maxItems\":2}", "IMAGE|{\"allowedTypes\":[]}", "IMAGE|{\"allowedTypes\":[\"text/html\"]}", "IMAGE|{\"maxFiles\":0}"
     }, delimiter = '|')
     void rejectsUnsupportedOrInvalidRules(DynamicFieldType type, String rules) throws Exception {
@@ -31,7 +31,7 @@ class FormValidatorTest {
     @ParameterizedTest
     @CsvSource(value = {
         "TEXT|{\"minLength\":1,\"maxLength\":80,\"pattern\":\"^[A-Z]+$\"}", "NUMBER|{\"min\":-10.5,\"max\":100,\"step\":0.5}",
-        "DATE|{\"min\":\"2026-01-01\",\"max\":\"2026-12-31\"}", "DATETIME|{\"min\":\"2026-10-07T12:30:00\"}",
+        "DATE|{\"min\":\"2026-01-01\",\"max\":\"2026-12-31\"}", "DATETIME|{\"min\":\"2026-10-07T12:30:00+07:00\"}",
         "IMAGE|{\"minFiles\":1,\"maxFiles\":3,\"allowedTypes\":[\"image/png\"]}", "BOOLEAN|{}", "SELECT|{}"
     }, delimiter = '|')
     void acceptsSupportedRules(DynamicFieldType type, String rules) throws Exception {
@@ -41,6 +41,7 @@ class FormValidatorTest {
     }
 
     @Test void detectsBlankDuplicateKeysOptionsAndNegativeAttachments() throws Exception {
+        assertThat(validator.errors(new DraftRequest(0L, false, 6, null, null, List.of()), false)).containsKey("minAttachments");
         FieldRequest f = new FieldRequest("duplicate", "Label", DynamicFieldType.TEXT, null, null, true, true, 0,
                 json.readTree("{}"), List.of(new OptionRequest("same", "A", 0, true), new OptionRequest("SAME", "B", 1, false)));
         FieldRequest blank = new FieldRequest("", "", DynamicFieldType.SELECT, null, null, false, true, 2, json.readTree("{}"), List.of());

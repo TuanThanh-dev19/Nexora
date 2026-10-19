@@ -1,4 +1,8 @@
 const messages = {
+  'Supported types: image/jpeg, image/png.':
+    'Định dạng hỗ trợ: image/jpeg, image/png.',
+  'Image rules cannot exceed five files or 5 MiB per file.':
+    'Tối đa 5 ảnh và 5 MiB mỗi ảnh.',
   'The published form requires equipment. Publish a compatible form first.':
     'Biểu mẫu đang phát hành bắt buộc tài sản. Phát hành biểu mẫu phù hợp trước khi đổi chính sách.',
   'Skill not found.': 'Không tìm thấy kỹ năng.',

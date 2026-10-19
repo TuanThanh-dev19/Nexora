@@ -101,9 +101,9 @@ Every draft save (including field-only edits), publication and archive increment
 | TEXT, TEXTAREA  | `minLength`, `maxLength`: non-negative integers; `pattern`: a valid regular expression, maximum 500 characters. Use expressions compatible with Java and JavaScript.                |
 | NUMBER          | `min`, `max`: finite numbers; `step`: positive finite number.                                                                                                                       |
 | DATE            | `min`, `max`: ISO calendar dates (`YYYY-MM-DD`).                                                                                                                                    |
-| DATETIME        | `min`, `max`: ISO local date-times, e.g. `2026-10-07T09:30:00`.                                                                                                                     |
+| DATETIME        | `min`, `max`: ISO offset date-times, e.g. `2026-10-07T09:30:00+07:00` (compared as instants).                                                                                                                     |
 | MULTI_SELECT    | `minItems`, `maxItems`: non-negative integers.                                                                                                                                      |
-| IMAGE           | `minFiles`: non-negative integer; `maxFiles`, `maxSizeBytes`: positive integers; `allowedTypes`: nonempty array containing `image/jpeg`, `image/png`, `image/webp`, or `image/gif`. |
+| IMAGE           | `minFiles`: non-negative integer; `maxFiles`, `maxSizeBytes`: positive integers; `allowedTypes`: nonempty array containing `image/jpeg` or `image/png`; maximum five files and 5,242,880 bytes per file. |
 | SELECT, BOOLEAN | Empty object `{}`.                                                                                                                                                                  |
 
 All minima must be less than or equal to their matching maxima. Integer rules are limited to the signed 32-bit range. Existing seeded image rules (`minFiles`, `maxFiles`, `allowedTypes`) remain supported.

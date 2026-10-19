@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { isSelect } from '../schemas/formValidation'
+import { datetimeLocal } from '../../../shared/utils/datetimeLocal'
 
 /** Controlled render-only component: no persistence or form-designer mutations. */
 export function DynamicFormControl({
@@ -102,8 +103,12 @@ export function DynamicFormControl({
       }
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      min={rules.min}
-      max={rules.max}
+      min={
+        field.fieldType === 'DATETIME' ? datetimeLocal(rules.min) : rules.min
+      }
+      max={
+        field.fieldType === 'DATETIME' ? datetimeLocal(rules.max) : rules.max
+      }
       step={
         field.fieldType === 'NUMBER'
           ? (rules.step ?? 'any')

@@ -26,11 +26,15 @@ export function validateSubmission(form, input, photos) {
   if (!form || form.status !== 'PUBLISHED')
     errors.categoryId = 'Chọn danh mục có biểu mẫu đã phát hành.'
   if (!input.title.trim()) errors.title = 'Nhập tiêu đề sự cố.'
+  else if (input.title.trim().length > 200)
+    errors.title = 'Tiêu đề có tối đa 200 ký tự.'
   if (!input.description.trim()) errors.description = 'Mô tả sự cố.'
-  if (form?.category?.locationRequired && !input.locationId)
-    errors.locationId = 'Chọn địa điểm.'
+  if (!input.locationId) errors.locationId = 'Chọn địa điểm.'
   if (equipmentRequired(form) && !input.assetId)
     errors.assetId = 'Chọn tài sản hợp lệ.'
+  if (form?.requiresEquipment && form?.category?.assetPolicy === 'FORBIDDEN')
+    errors.formVersionId =
+      'Biểu mẫu có cấu hình tài sản mâu thuẫn. Liên hệ quản trị viên.'
   if (photos.length < (form?.minAttachments ?? 0))
     errors.attachments = `Cần ít nhất ${form.minAttachments} ảnh minh chứng.`
   if (photos.length > MAX_FILES) errors.attachments = `Tối đa ${MAX_FILES} ảnh.`
@@ -129,7 +133,10 @@ export function validateSubmission(form, input, photos) {
     )
       errors[`attachments[${index}]`] =
         'Chỉ nhận ảnh JPEG/PNG được biểu mẫu cho phép.'
-    if (p.file.size > Math.min(MAX_FILE_BYTES, rules.maxSizeBytes ?? Infinity))
+    if (
+      !p.file.size ||
+      p.file.size > Math.min(MAX_FILE_BYTES, rules.maxSizeBytes ?? Infinity)
+    )
       errors[`attachments[${index}]`] = 'Ảnh vượt giới hạn dung lượng.'
   })
   return errors
