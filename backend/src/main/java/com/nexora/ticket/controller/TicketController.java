@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nexora.common.pagination.PageResponse;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
+import com.nexora.ticket.dto.request.ReviewTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
 import com.nexora.ticket.dto.request.TicketListQuery;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse;
@@ -79,7 +80,8 @@ public class TicketController {
 
     @GetMapping(value = "/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Read a visible ticket", description = "Stored form, verbatim JSON values, ordered history "
-            + "and REPORT_EVIDENCE/WORK_RESULT metadata. No storage keys or file URLs. "
+            + "and REPORT_EVIDENCE/WORK_RESULT metadata. currentAssignment is the active assignment (endedAt=null), "
+            + "or explicitly null when none exists. No storage keys or file URLs. "
             + "Missing and invisible tickets return the same safe 404.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Read-only ticket detail"),
@@ -121,9 +123,29 @@ public class TicketController {
         return assignmentService.eligibleTechnicians(jwt, ticketId, EligibleTechniciansQuery.from(parameters));
     }
 
-    @PostMapping(value = "/{ticketId}/assign", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{ticketId}/review", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Begin reviewing a submitted ticket", description = "MANAGER/ADMIN only. Accepts only a required "
+            + "nonnegative integer Ticket version. Commits SUBMITTED to UNDER_REVIEW and BEGIN_REVIEW history together. "
+            + "Returns the updated version and currentAssignment=null; does not assign a Technician.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Review committed"),
+            @ApiResponse(responseCode = "404", description = "Ticket unavailable", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale Ticket version; reload and confirm again", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Invalid source state", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public TicketActionResultResponse review(@AuthenticationPrincipal Jwt jwt, @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody ReviewTicketRequest request) {
+        return assignmentService.review(jwt, ticketId, request);
+    }
+
+    @PostMapping(value = "/{ticketId}/assign", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Assign a technician to a ticket",
-            description = "Re-evaluates eligibility rules within the transaction and serializes candidate capacity check. "
+            description = "Accepts only required integer version (>=0) and technicianId (>0); no override or unknown fields. "
+                    + "Assigns from UNDER_REVIEW or REOPENED. Re-evaluates eligibility within the transaction and serializes capacity. "
                     + "Transitions ticket to ASSIGNED, creates an active assignment record, and appends status history. "
                     + "Requires MANAGER or ADMIN authorization. Returns 409 on version conflict and 422 if the candidate is blocked.")
     @ApiResponses({
@@ -134,7 +156,7 @@ public class TicketController {
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Requires MANAGER or ADMIN role", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+            @ApiResponse(responseCode = "404", description = "Ticket unavailable or technician user does not exist", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),

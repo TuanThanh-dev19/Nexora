@@ -124,6 +124,7 @@ public class TechnicianService {
     }
 
     public TechnicianProfileResponse updateProfile(Long technicianId, TechnicianUpdateRequest request) {
+        TechnicianProfile profile = technicianProfileRepository.findByIdForUpdate(technicianId).orElse(null);
         AppUser user = userRepository.findByIdWithRoles(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + technicianId));
 
@@ -134,7 +135,6 @@ public class TechnicianService {
             throw new BusinessRuleException("User " + technicianId + " does not have the TECHNICIAN role");
         }
 
-        TechnicianProfile profile = technicianProfileRepository.findById(technicianId).orElse(null);
         if (profile != null) {
             if (request.version() != null && !Objects.equals(profile.getVersion(), request.version())) {
                 log.warn("Optimistic locking conflict on technician profile id={}: expected={} current={}",
@@ -159,7 +159,7 @@ public class TechnicianService {
     }
 
     public TechnicianProfileResponse updateSkills(Long technicianId, TechnicianSkillsUpdateRequest request) {
-        TechnicianProfile profile = technicianProfileRepository.findById(technicianId)
+        TechnicianProfile profile = technicianProfileRepository.findByIdForUpdate(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician profile not found for id: " + technicianId));
 
         if (request.version() != null && !Objects.equals(profile.getVersion(), request.version())) {
@@ -202,7 +202,7 @@ public class TechnicianService {
 
     public TechnicianProfileResponse updateServiceAreas(
             Long technicianId, TechnicianServiceAreasUpdateRequest request) {
-        TechnicianProfile profile = technicianProfileRepository.findById(technicianId)
+        TechnicianProfile profile = technicianProfileRepository.findByIdForUpdate(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician profile not found for id: " + technicianId));
 
         if (request.version() != null && !Objects.equals(profile.getVersion(), request.version())) {

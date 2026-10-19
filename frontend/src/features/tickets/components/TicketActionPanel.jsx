@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Card, Stack } from 'react-bootstrap'
 import { useAuth } from '../../auth/context/useAuth'
+import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
 import {
   availableTicketActions,
   canManageTickets,
@@ -14,7 +15,7 @@ import { TicketStatusBadge } from './TicketStatusBadge'
 
 export function TicketActionPanel({ ticket }) {
   const { user } = useAuth()
-  const { enabled, mutation, refresh } = useTicketWorkflow()
+  const { enabled, isActionEnabled, mutation, refresh } = useTicketWorkflow()
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState('')
   if (!canManageTickets(user) && !isTicketOwner(ticket, user)) return null
@@ -34,7 +35,7 @@ export function TicketActionPanel({ ticket }) {
         payload,
       })
       setNotice(
-        `${TICKET_WORKFLOW_ACTIONS[dialog.action].label} thành công trong bản mô phỏng.`,
+        `${TICKET_WORKFLOW_ACTIONS[dialog.action].label} thành công${isTicketWorkflowMockEnabled() ? ' trong bản mô phỏng' : ''}.`,
       )
       setDialog(null)
     } catch {
@@ -65,9 +66,9 @@ export function TicketActionPanel({ ticket }) {
               'Chưa phân công')}
         </p>
         <Alert variant="info">
-          {enabled
+          {isTicketWorkflowMockEnabled()
             ? 'Bản mô phỏng: thay đổi chỉ nằm trong dữ liệu demo, chưa lưu lên máy chủ.'
-            : 'Chức năng xử lý phiếu chưa được hỗ trợ. API workflow sẽ được bổ sung ở milestone sau.'}
+            : 'Tiếp nhận và phân công được lưu trên máy chủ.'}
         </Alert>
         {notice && (
           <Alert variant="success" role="status">
@@ -84,7 +85,7 @@ export function TicketActionPanel({ ticket }) {
                   : 'outline-primary'
               }
               disabled={
-                !enabled ||
+                !isActionEnabled(action) ||
                 mutation.isPending ||
                 !Number.isSafeInteger(ticket.version) ||
                 ticket.version < 0

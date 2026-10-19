@@ -22,11 +22,7 @@ public record TicketActionResultResponse(
             String overrideReason) {
     }
 
-    public record TechnicianSummary(Long id, Long technicianId, String fullName) {
-        public TechnicianSummary(Long id, String fullName) {
-            this(id, id, fullName);
-        }
-    }
+    public record TechnicianSummary(Long technicianId, String fullName) {}
 
     public record UserSummary(Long id, String fullName) {
     }

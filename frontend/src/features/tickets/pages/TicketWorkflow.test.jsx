@@ -62,32 +62,45 @@ async function waitForSuccess(label) {
 
 describe('manager ticket workflow UI', () => {
   it.each([false, true])(
-    'keeps real detail usable with mock disabled or production build (production=%s)',
+    'reviews and assigns with the workflow mock disabled (production=%s)',
     async (production) => {
       if (production) vi.stubEnv('DEV', false)
       else vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
-      let candidateCalls = 0
-      server.use(
-        http.get('*/api/v1/tickets/11/eligible-technicians', () => {
-          candidateCalls += 1
-          return HttpResponse.json({ content: [] })
-        }),
-      )
-      await mount(11)
+      const review = vi.spyOn(ticketApi, 'review')
+      const assign = vi.spyOn(ticketApi, 'assign')
+      await mount()
       expect(
-        screen.getByRole('button', { name: 'Phân công', exact: true }),
+        screen.getByRole('button', { name: 'Từ chối', exact: true }),
       ).toBeDisabled()
+      const confirmation = await openDialog('Bắt đầu xem xét')
+      await userEvent.click(
+        confirmation.getByRole('button', { name: 'Xác nhận bắt đầu xem xét' }),
+      )
+      await screen.findByText('Bắt đầu xem xét thành công.')
+      expect(review).toHaveBeenCalledExactlyOnceWith(10, { version: 0 })
+      const dialog = await openDialog('Phân công')
+      expect(dialog.queryByLabelText(/Lý do ghi đè/)).not.toBeInTheDocument()
+      await userEvent.click(
+        await dialog.findByRole('radio', { name: 'Chọn Nguyễn An' }),
+      )
+      await userEvent.click(
+        dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
+      )
+      await screen.findByText('Phân công thành công.')
+      expect(assign).toHaveBeenCalledExactlyOnceWith(10, {
+        version: 1,
+        technicianId: 21,
+      })
       expect(
-        screen.getByText(/API workflow sẽ được bổ sung/),
-      ).toBeInTheDocument()
+        screen.getByRole('button', { name: 'Phân công lại', exact: true }),
+      ).toBeDisabled()
       expect(
         screen.getByRole('heading', { name: 'Lịch sử trạng thái' }),
       ).toBeInTheDocument()
-      expect(screen.getByText('Chỉ đọc')).toBeInTheDocument()
+      expect(screen.getByText('Chi tiết phiếu')).toBeInTheDocument()
       expect(
         screen.queryByText(/thành công trong bản mô phỏng/),
       ).not.toBeInTheDocument()
-      expect(candidateCalls).toBe(0)
     },
   )
   it('distinguishes unavailable assignment data from an unassigned ticket', async () => {
@@ -299,6 +312,7 @@ describe('manager ticket workflow UI', () => {
     })
   })
   it('refreshes changed capacity after 422 and resets selection requiring new choice', async () => {
+    vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
     const assign = vi.spyOn(ticketApi, 'assign')
     await mount(11)
     const dialog = await openDialog('Phân công')
@@ -322,13 +336,11 @@ describe('manager ticket workflow UI', () => {
       dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
     ).toBeDisabled()
     // Select an eligible candidate
-    await userEvent.click(
-      dialog.getByRole('radio', { name: 'Chọn Phan Nam' }),
-    )
+    await userEvent.click(dialog.getByRole('radio', { name: 'Chọn Phan Nam' }))
     await userEvent.click(
       dialog.getByRole('button', { name: 'Xác nhận phân công', exact: true }),
     )
-    await waitForSuccess('Phân công')
+    await screen.findByText('Phân công thành công.')
     expect(assign).toHaveBeenLastCalledWith(11, {
       version: 1,
       technicianId: 29,
@@ -427,6 +439,7 @@ describe('manager ticket workflow UI', () => {
     },
   )
   it('locks a stale dialog on 409, reloads current detail and never replays the action', async () => {
+    vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
     const review = vi.spyOn(ticketApi, 'review')
     await mount()
     const dialog = await openDialog('Bắt đầu xem xét')
@@ -451,6 +464,7 @@ describe('manager ticket workflow UI', () => {
     expect(review).toHaveBeenCalledTimes(1)
   })
   it('keeps the version shown when opening a dialog even after a background detail refresh', async () => {
+    vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
     const { client } = await mount(11)
     const dialog = await openDialog('Phân công')
     await dialog.findByRole('radio', { name: 'Chọn Nguyễn An' })

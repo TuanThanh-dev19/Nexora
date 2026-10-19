@@ -125,6 +125,8 @@ public class AdminUserService {
     }
 
     public UserResponse updateUserStatus(Long userId, UserStatusUpdateRequest request) {
+        // Serialize eligibility changes with assignment before loading the target user's state.
+        technicianProfileRepository.findByIdForUpdate(userId);
         AppUser user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
@@ -141,6 +143,7 @@ public class AdminUserService {
     }
 
     public UserResponse updateUserRoles(Long userId, UserRolesUpdateRequest request, Long adminId) {
+        technicianProfileRepository.findByIdForUpdate(userId);
         AppUser user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 

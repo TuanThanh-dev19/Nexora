@@ -2,6 +2,7 @@ package com.nexora.ticket.service;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
@@ -22,12 +23,10 @@ import com.nexora.common.exception.StaleWriteException;
 import com.nexora.common.pagination.PageResponse;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
+import com.nexora.ticket.dto.request.ReviewTicketRequest;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse.EligibilityReason;
 import com.nexora.ticket.dto.response.TicketActionResultResponse;
-import com.nexora.ticket.dto.response.TicketActionResultResponse.CurrentAssignmentResponse;
-import com.nexora.ticket.dto.response.TicketActionResultResponse.TechnicianSummary;
-import com.nexora.ticket.dto.response.TicketActionResultResponse.UserSummary;
 import com.nexora.ticket.entity.Ticket;
 import com.nexora.ticket.entity.TicketAction;
 import com.nexora.ticket.entity.TicketAssignment;
@@ -54,6 +53,7 @@ public class TicketAssignmentService {
     private final TicketAssignmentRepository assignmentRepository;
     private final TicketStatusHistoryRepository statusHistoryRepository;
     private final TechnicianEligibilityService eligibilityService;
+    private final TicketResponseMapper mapper;
 
     public TicketAssignmentService(
             AuthService authService,
@@ -62,7 +62,7 @@ public class TicketAssignmentService {
             TechnicianProfileRepository profileRepository,
             TicketAssignmentRepository assignmentRepository,
             TicketStatusHistoryRepository statusHistoryRepository,
-            TechnicianEligibilityService eligibilityService) {
+            TechnicianEligibilityService eligibilityService, TicketResponseMapper mapper) {
         this.authService = authService;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
@@ -70,6 +70,7 @@ public class TicketAssignmentService {
         this.assignmentRepository = assignmentRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.eligibilityService = eligibilityService;
+        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
@@ -87,29 +88,29 @@ public class TicketAssignmentService {
         return eligibilityService.findEligibleTechnicians(ticket, query);
     }
 
+    public TicketActionResultResponse review(Jwt jwt, Long ticketId, ReviewTicketRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        requireManagerOrAdmin(getRoles(viewer));
+        Ticket ticket = lockedTicket(ticketId, request.version(), TicketAction.BEGIN_REVIEW);
+        AppUser actor = userRepository.getReferenceById(viewer.id());
+        recordTransition(ticket, TicketAction.BEGIN_REVIEW, actor, OffsetDateTime.now(ZoneOffset.UTC));
+        ticketRepository.flush();
+        return new TicketActionResultResponse(ticket.getId(), ticket.getStatus(), ticket.getVersion(), null);
+    }
+
     public TicketActionResultResponse assign(Jwt jwt, Long ticketId, AssignTicketRequest request) {
         CurrentUserResponse viewer = getViewer(jwt);
-        Set<RoleCode> roles = getRoles(viewer);
-        requireManagerOrAdmin(roles);
-
-        Ticket ticket = ticketRepository.findOne(
-                TicketSpecifications.visibleTo(viewer.id(), roles)
-                        .and(TicketSpecifications.id(ticketId)))
-                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
-
-        TicketWorkflowContract.requireTransition(ticket.getStatus(), TicketAction.ASSIGN);
+        requireManagerOrAdmin(getRoles(viewer));
+        Ticket ticket = lockedTicket(ticketId, request.version(), TicketAction.ASSIGN);
 
         if (assignmentRepository.existsByTicketIdAndEndedAtIsNull(ticketId)) {
             throw new BusinessRuleException("Ticket already has an active assignment.");
         }
 
-        if (!Objects.equals(ticket.getVersion(), request.version())) {
-            throw new StaleWriteException();
-        }
-
+        // Every assignment/configuration writer acquires Ticket before profile when both are needed.
         profileRepository.findByIdForUpdate(request.technicianId());
 
-        EligibilityEvaluation evaluation = eligibilityService.evaluateCandidate(ticket, request.technicianId());
+        EligibilityEvaluation evaluation = eligibilityService.evaluateCandidateForAssignment(ticket, request.technicianId());
         if (!evaluation.isEligible()) {
             String reasons = evaluation.reasons().stream()
                     .map(EligibilityReason::code)
@@ -120,7 +121,8 @@ public class TicketAssignmentService {
         AppUser actor = userRepository.findById(viewer.id())
                 .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
 
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        // Microsecond precision round-trips on both supported persistence test databases.
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
 
         TicketAssignment assignment = new TicketAssignment(
                 ticket.getId(),
@@ -129,34 +131,27 @@ public class TicketAssignmentService {
                 now);
         assignment = assignmentRepository.save(assignment);
 
-        TicketStatusHistory history = new TicketStatusHistory(
-                ticket,
-                ticket.getStatus(),
-                TicketStatus.ASSIGNED,
-                TicketAction.ASSIGN,
-                null,
-                actor,
-                now);
-        statusHistoryRepository.save(history);
+        recordTransition(ticket, TicketAction.ASSIGN, actor, now);
+        // JPA increments @Version exactly once. Map only after that update has executed.
+        ticketRepository.flush();
+        return new TicketActionResultResponse(ticket.getId(), ticket.getStatus(), ticket.getVersion(),
+                mapper.assignment(assignment, evaluation.user(), actor));
+    }
 
-        ticket.changeStatus(TicketStatus.ASSIGNED);
-        ticket = ticketRepository.save(ticket);
+    private Ticket lockedTicket(Long ticketId, Long version, TicketAction action) {
+        // MANAGER/ADMIN have full visibility under TicketSpecifications.visibleTo.
+        // Do not preload the entity: the lock must read the previous writer's committed state.
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+        if (!Objects.equals(ticket.getVersion(), version)) throw new StaleWriteException();
+        TicketWorkflowContract.requireTransition(ticket.getStatus(), action);
+        return ticket;
+    }
 
-        AppUser technician = evaluation.user();
-        return new TicketActionResultResponse(
-                ticket.getId(),
-                ticket.getStatus(),
-                ticket.getVersion(),
-                new CurrentAssignmentResponse(
-                        assignment.getId(),
-                        ticket.getId(),
-                        new TechnicianSummary(technician.getId(), technician.getFullName()),
-                        new UserSummary(actor.getId(), actor.getFullName()),
-                        assignment.getAssignedAt(),
-                        assignment.getAcceptedAt(),
-                        assignment.getEndedAt(),
-                        assignment.getEndReason(),
-                        assignment.getOverrideReason()));
+    private void recordTransition(Ticket ticket, TicketAction action, AppUser actor, OffsetDateTime at) {
+        TicketStatus from = ticket.getStatus();
+        ticket.changeStatus(TicketWorkflowContract.requireTransition(from, action).targetStatus());
+        statusHistoryRepository.save(new TicketStatusHistory(ticket, from, ticket.getStatus(), action, null, actor, at));
     }
 
     private CurrentUserResponse getViewer(Jwt jwt) {
@@ -178,7 +173,8 @@ public class TicketAssignmentService {
     }
 
     private void requireManagerOrAdmin(Set<RoleCode> roles) {
-        if (!roles.contains(RoleCode.MANAGER) && !roles.contains(RoleCode.ADMIN)) {
+        if (TicketWorkflowContract.definitionFor(TicketAction.ASSIGN).permittedActorRoles().stream()
+                .noneMatch(roles::contains)) {
             throw new AccessDeniedException("Only managers and admins can manage ticket assignments.");
         }
     }

@@ -17,6 +17,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.nexora.auth.service.InvalidCredentialsException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.nexora.ticket.dto.request.TicketActionRequestReader;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,8 +34,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, HandlerMethodValidationException.class})
     ProblemDetail handleInvalidParameter(Exception exception, HttpServletRequest request) {
-        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
+        ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
                 "Validation failed", "One or more request parameters are invalid.", request);
+        Map<String, String> errors = new LinkedHashMap<>();
+        if (exception instanceof MethodArgumentTypeMismatchException mismatch) {
+            errors.put(mismatch.getName(), "Invalid parameter value.");
+        } else if (exception instanceof HandlerMethodValidationException validation) {
+            validation.getParameterValidationResults().forEach(result -> {
+                if (result instanceof org.springframework.validation.method.ParameterErrors fields) {
+                    fields.getFieldErrors().forEach(error -> errors.putIfAbsent(error.getField(), error.getDefaultMessage()));
+                } else {
+                    String name = result.getMethodParameter().getParameterName();
+                    errors.put(name == null ? "parameter" : name, "Invalid parameter value.");
+                }
+            });
+        }
+        problem.setProperty("fieldErrors", errors);
+        return problem;
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -62,8 +79,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ProblemDetail handleMalformedRequest(HttpMessageNotReadableException exception, HttpServletRequest request) {
-        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
+        if (exception.getCause() instanceof JsonMappingException mapping && !mapping.getPath().isEmpty()
+                && mapping.getPath().getFirst().getFrom() == TicketActionRequestReader.class) {
+            ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
+                    "Validation failed", "One or more request fields are invalid.", request);
+            problem.setProperty("fieldErrors", Map.of(mapping.getPath().getFirst().getFieldName(), mapping.getOriginalMessage()));
+            return problem;
+        }
+        ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
                 "Malformed request", "The request body is missing or cannot be parsed.", request);
+        problem.setProperty("fieldErrors", Map.of("body", "Expected a valid JSON request body."));
+        return problem;
     }
 
     @ExceptionHandler(InvalidPaginationException.class)

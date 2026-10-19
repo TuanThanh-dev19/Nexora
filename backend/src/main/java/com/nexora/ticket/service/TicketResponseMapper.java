@@ -21,12 +21,16 @@ import com.nexora.ticket.dto.response.TicketSummaryResponse.AssetReference;
 import com.nexora.ticket.dto.response.TicketSummaryResponse.CatalogReference;
 import com.nexora.ticket.dto.response.TicketSummaryResponse.UserReference;
 import com.nexora.ticket.entity.Ticket;
+import com.nexora.ticket.entity.TicketAssignment;
+import com.nexora.ticket.dto.response.TicketActionResultResponse.CurrentAssignmentResponse;
+import com.nexora.ticket.dto.response.TicketActionResultResponse.TechnicianSummary;
+import com.nexora.ticket.dto.response.TicketActionResultResponse.UserSummary;
 import com.nexora.ticket.entity.TicketAttachment;
 import com.nexora.ticket.entity.TicketFieldValue;
 import com.nexora.ticket.entity.TicketStatusHistory;
 import com.nexora.user.entity.AppUser;
 
-/** Maps only explicitly public data; call within a read transaction. */
+/** Maps only explicitly public data; call within a transaction. */
 @Component
 public class TicketResponseMapper {
     public TicketSummaryResponse summary(Ticket ticket) {
@@ -39,7 +43,8 @@ public class TicketResponseMapper {
     }
 
     public TicketDetailResponse detail(Ticket ticket, List<FieldDefinition> fields, List<FieldOption> options,
-            List<TicketFieldValue> values, List<TicketStatusHistory> history, List<TicketAttachment> attachments) {
+            List<TicketFieldValue> values, List<TicketStatusHistory> history, List<TicketAttachment> attachments,
+            CurrentAssignmentResponse currentAssignment) {
         TicketSummaryResponse summary = summary(ticket);
         StoredForm storedForm = storedForm(ticket.getFormVersion(), fields, options);
         List<DynamicValue> dynamicValues = values.stream()
@@ -56,7 +61,14 @@ public class TicketResponseMapper {
         return new TicketDetailResponse(summary.id(), summary.ticketNumber(), summary.title(), summary.status(),
                 summary.priority(), summary.category(), summary.location(), summary.asset(), summary.reporter(),
                 summary.slaDueAt(), summary.createdAt(), summary.updatedAt(), ticket.getDescription(), ticket.getVersion(),
-                storedForm, dynamicValues, statusHistory, attachmentMetadata);
+                storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment);
+    }
+
+    public CurrentAssignmentResponse assignment(TicketAssignment assignment, AppUser technician, AppUser assignedBy) {
+        return new CurrentAssignmentResponse(assignment.getId(), assignment.getTicketId(),
+                new TechnicianSummary(technician.getId(), technician.getFullName()),
+                new UserSummary(assignedBy.getId(), assignedBy.getFullName()), assignment.getAssignedAt(),
+                assignment.getAcceptedAt(), assignment.getEndedAt(), assignment.getEndReason(), assignment.getOverrideReason());
     }
 
     private StoredForm storedForm(CategoryFormVersion form, List<FieldDefinition> fields, List<FieldOption> options) {

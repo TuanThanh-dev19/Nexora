@@ -1,5 +1,62 @@
 # Testing and local demo data
 
+## Real Ticket review and assignment
+
+With `VITE_TICKET_WORKFLOW_MOCK=false`, Manager/Admin can review a persisted
+SUBMITTED Ticket and assign an eligible Technician. Other unfinished workflow
+actions remain disabled. Development previews can still opt into the mock.
+The existing detail endpoint includes `currentAssignment`, explicitly null when
+no assignment has `endedAt=null`; historical visibility is unchanged.
+
+For a manual check, use a persisted SUBMITTED fixture, an ACTIVE Manager/Admin,
+and an ACTIVE Technician with an available profile, remaining capacity, the
+Ticket's required skill, and a covering service area. Review, assign, then refresh:
+state, assignee and history must survive. Open two confirmations at the same
+version: the losing request must receive 409 and require reload/reconfirmation.
+Change availability or fill capacity after opening the assignment dialog: 422
+must refresh candidates and require a new selection. No override is accepted.
+The separate Ticket-creation API is not required for fixture-based testing.
+
+Run from `backend`:
+
+```powershell
+mvn test
+$env:RUN_SQLSERVER_IT='true'
+mvn '-Dtest=TicketActionSqlServerIntegrationTest,TicketReadSqlServerIntegrationTest' test
+Remove-Item Env:RUN_SQLSERVER_IT
+```
+
+The action contract runs on H2 and SQL Server with independent transactions.
+SQL Server additionally verifies the existing filtered unique index. Tests cover
+post-flush versions, strict requests, persisted detail/history, rollback,
+same-Ticket writes, cross-Ticket capacity, and configuration changes during assign.
+H2 success alone is not evidence for the SQL Server concurrency requirements.
+
+Run from `frontend`:
+
+```powershell
+npm test -- --maxWorkers=2
+npm run lint
+npm run build
+```
+
+The worker limit avoids exhausting the local machine when other test suites or
+Docker are running; it does not change assertions or timeouts.
+
+### Handoff to Start / Resolve / Close
+
+- Reuse `TicketActionResultResponse`, its assignment DTO, and `TicketResponseMapper`.
+- Reuse `TicketAssignment.accept/end`; do not map the same table a second time.
+- Acquire the Ticket lock before the Technician profile lock whenever both are
+  needed, including assignment-ending operations. Configuration writes acquire
+  the profile lock before changing availability, capacity, skills, service areas,
+  or the target user's role/status. Assignment also holds read locks on the
+  required skill and location ancestry while evaluating shared catalog data.
+- Compare the supplied Ticket version before checking its state, mutate once,
+  write history in the same transaction, flush, then construct the response.
+  JPA owns the version increment. Never increment it manually or retry a mutation
+  automatically. The transaction must commit before the controller returns 200.
+
 ## Technician work UI mock (#53)
 
 The current-assignment query and technician actions are available only with
