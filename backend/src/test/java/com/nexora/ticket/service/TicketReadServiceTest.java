@@ -26,7 +26,8 @@ class TicketReadServiceTest {
     private final TicketStatusHistoryRepository history = mock(TicketStatusHistoryRepository.class);
     private final TicketAttachmentRepository attachments = mock(TicketAttachmentRepository.class);
     private final TicketReadService service = new TicketReadService(auth, tickets, fields, options, values,
-            history, attachments, new TicketResponseMapper());
+            history, attachments, new TicketResponseMapper(), mock(TicketAssignmentRepository.class),
+            mock(com.nexora.user.repository.AppUserRepository.class));
     private final Jwt jwt = Jwt.withTokenValue("test-token").header("alg", "HS256").subject("10").build();
 
     @Test

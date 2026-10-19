@@ -180,7 +180,7 @@ class TechnicianServiceTest {
         ReflectionTestUtils.setField(profile, "version", 2L);
 
         given(userRepository.findByIdWithRoles(5L)).willReturn(Optional.of(user));
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         TechnicianUpdateRequest request = new TechnicianUpdateRequest(true, 5, 1L);
 
@@ -198,7 +198,7 @@ class TechnicianServiceTest {
         ReflectionTestUtils.setField(profile, "version", 1L);
 
         given(userRepository.findByIdWithRoles(5L)).willReturn(Optional.of(user));
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
         given(technicianProfileRepository.save(any(TechnicianProfile.class))).willAnswer(inv -> inv.getArgument(0));
 
         TechnicianUpdateRequest request = new TechnicianUpdateRequest(false, 8, 1L);
@@ -213,7 +213,7 @@ class TechnicianServiceTest {
     void updateSkills_valid_replacesSkills() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         Skill skill1 = new Skill("ELECTRIC", "Điện");
         ReflectionTestUtils.setField(skill1, "id", 1L);
@@ -242,7 +242,7 @@ class TechnicianServiceTest {
     void updateSkills_duplicateSkill_throwsBusinessRuleException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         TechnicianSkillsUpdateRequest request = new TechnicianSkillsUpdateRequest(
                 List.of(
@@ -264,7 +264,7 @@ class TechnicianServiceTest {
     void updateSkills_skillNotFound_throwsResourceNotFoundException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         given(skillRepository.findAllById(Set.of(99L))).willReturn(List.of());
 
@@ -285,7 +285,7 @@ class TechnicianServiceTest {
     void updateServiceAreas_valid_replacesAreas() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         Location loc1 = new Location("BLD_A", "Tòa nhà A", LocationType.BUILDING, null);
         ReflectionTestUtils.setField(loc1, "id", 10L);
@@ -305,7 +305,7 @@ class TechnicianServiceTest {
     void updateServiceAreas_locationNotFound_throwsResourceNotFoundException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         given(locationRepository.findAllById(Set.of(999L))).willReturn(List.of());
 

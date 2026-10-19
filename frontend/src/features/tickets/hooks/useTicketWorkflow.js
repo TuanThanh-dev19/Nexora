@@ -11,8 +11,10 @@ import { retryTicketQuery, ticketViewerKey } from './ticketQueryOptions'
 export function useTicketWorkflow() {
   const { user, isAuthenticated, isChecking } = useAuth()
   const client = useQueryClient()
-  const enabled =
-    isTicketWorkflowMockEnabled() && isAuthenticated && !isChecking
+  const enabled = isAuthenticated && !isChecking
+  const isActionEnabled = (action) =>
+    enabled &&
+    (['review', 'assign'].includes(action) || isTicketWorkflowMockEnabled())
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({
@@ -22,14 +24,20 @@ export function useTicketWorkflow() {
     ])
   const mutation = useMutation({
     mutationFn: ({ action, ticketId, payload, ticket }) => {
-      if (!enabled || !availableTicketActions(ticket, user).includes(action))
+      if (
+        !isActionEnabled(action) ||
+        !availableTicketActions(ticket, user).includes(action)
+      )
         throw new Error('Chức năng xử lý phiếu chưa được hỗ trợ.')
       return ticketApi[action](ticketId, payload)
     },
     retry: false,
     onSuccess: refresh,
-    onError: (error) => {
-      if (error?.response?.status === 422)
+    onError: (error, { action }) => {
+      if (
+        ['assign', 'reassign'].includes(action) &&
+        error?.response?.status === 422
+      )
         return client.invalidateQueries({
           queryKey: [
             'tickets',
@@ -39,7 +47,7 @@ export function useTicketWorkflow() {
         })
     },
   })
-  return { enabled, mutation, refresh }
+  return { enabled, isActionEnabled, mutation, refresh }
 }
 
 export function useEligibleTechnicians(ticketId, params, open) {
@@ -54,12 +62,7 @@ export function useEligibleTechnicians(ticketId, params, open) {
     ],
     queryFn: ({ signal }) =>
       ticketApi.eligibleTechnicians(ticketId, params, signal),
-    enabled:
-      open &&
-      isTicketWorkflowMockEnabled() &&
-      isAuthenticated &&
-      !isChecking &&
-      canManageTickets(user),
+    enabled: open && isAuthenticated && !isChecking && canManageTickets(user),
     staleTime: 0,
     retry: retryTicketQuery,
   })

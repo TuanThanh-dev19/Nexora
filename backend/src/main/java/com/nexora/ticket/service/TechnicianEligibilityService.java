@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nexora.common.exception.ResourceNotFoundException;
@@ -34,6 +35,8 @@ import com.nexora.user.repository.AppUserRepository;
 import com.nexora.user.repository.TechnicianProfileRepository;
 import com.nexora.user.repository.TechnicianServiceAreaRepository;
 import com.nexora.user.repository.TechnicianSkillRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 
 @Service
 @Transactional(readOnly = true)
@@ -44,18 +47,20 @@ public class TechnicianEligibilityService {
     private final TechnicianSkillRepository skillRepository;
     private final TechnicianServiceAreaRepository serviceAreaRepository;
     private final TicketAssignmentRepository assignmentRepository;
+    private final EntityManager entityManager;
 
     public TechnicianEligibilityService(
             AppUserRepository userRepository,
             TechnicianProfileRepository profileRepository,
             TechnicianSkillRepository skillRepository,
             TechnicianServiceAreaRepository serviceAreaRepository,
-            TicketAssignmentRepository assignmentRepository) {
+            TicketAssignmentRepository assignmentRepository, EntityManager entityManager) {
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.skillRepository = skillRepository;
         this.serviceAreaRepository = serviceAreaRepository;
         this.assignmentRepository = assignmentRepository;
+        this.entityManager = entityManager;
     }
 
     public PageResponse<EligibleTechnicianResponse> findEligibleTechnicians(
@@ -130,11 +135,33 @@ public class TechnicianEligibilityService {
     }
 
     public EligibilityEvaluation evaluateCandidate(Ticket ticket, Long technicianId) {
+        return evaluateCandidate(ticket, technicianId, false);
+    }
+
+    /** Caller holds Ticket then profile locks. Keep shared catalog inputs stable until commit too. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public EligibilityEvaluation evaluateCandidateForAssignment(Ticket ticket, Long technicianId) {
+        return evaluateCandidate(ticket, technicianId, true);
+    }
+
+    private EligibilityEvaluation evaluateCandidate(Ticket ticket, Long technicianId, boolean forAssignment) {
         Objects.requireNonNull(ticket, "ticket is required");
         Objects.requireNonNull(technicianId, "technicianId is required");
 
         AppUser user = userRepository.findByIdWithRoles(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + technicianId));
+
+        if (forAssignment) {
+            // Also refresh when the actor is the candidate and AuthService loaded it before the profile lock.
+            entityManager.refresh(user, LockModeType.PESSIMISTIC_READ);
+            if (ticket.getRequiredSkill() != null)
+                entityManager.refresh(ticket.getRequiredSkill(), LockModeType.PESSIMISTIC_READ);
+            Location cursor = ticket.getLocation();
+            while (cursor != null) {
+                entityManager.refresh(cursor, LockModeType.PESSIMISTIC_READ);
+                cursor = cursor.getParent();
+            }
+        }
 
         TechnicianProfile profile = profileRepository.findById(technicianId).orElse(null);
         long activeCount = assignmentRepository.countActiveAssignmentsByTechnicianId(technicianId);

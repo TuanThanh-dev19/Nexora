@@ -49,7 +49,9 @@ export function TicketDetailPage() {
         </div>
         <span className="read-only-label">
           <FiEye aria-hidden="true" />{' '}
-          {isTicketWorkflowMockEnabled() ? 'Mô phỏng workflow' : 'Chỉ đọc'}
+          {isTicketWorkflowMockEnabled()
+            ? 'Mô phỏng workflow'
+            : 'Chi tiết phiếu'}
         </span>
       </div>
       {!isPositiveId(ticketId) ? (
@@ -88,6 +90,15 @@ export function TicketDetailPage() {
                     ['Địa điểm', ticket.location.name],
                     ['Tài sản', ticket.asset?.assetCode ?? '—'],
                     ['Người báo', ticket.reporter.fullName],
+                    ...(ticket.currentAssignment !== undefined
+                      ? [
+                          [
+                            'Kỹ thuật viên',
+                            ticket.currentAssignment?.technician.fullName ??
+                              'Chưa phân công',
+                          ],
+                        ]
+                      : []),
                     ['Hạn SLA', formatTicketTime(ticket.slaDueAt)],
                     ['Ngày tạo', formatTicketTime(ticket.createdAt)],
                     ['Cập nhật', formatTicketTime(ticket.updatedAt)],

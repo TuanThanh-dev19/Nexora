@@ -2,6 +2,7 @@ package com.nexora.ticket.dto.response;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import com.nexora.ticket.dto.response.TicketActionResultResponse.CurrentAssignmentResponse;
 
 import com.nexora.category.entity.DynamicFieldType;
 import com.nexora.category.entity.FormStatus;
@@ -18,7 +19,8 @@ public record TicketDetailResponse(
         CatalogReference category, CatalogReference location, AssetReference asset,
         UserReference reporter, OffsetDateTime slaDueAt, OffsetDateTime createdAt, OffsetDateTime updatedAt,
         String description, Long version, StoredForm formVersion, List<DynamicValue> dynamicValues,
-        List<HistoryEntry> statusHistory, List<AttachmentMetadata> attachments) {
+        List<HistoryEntry> statusHistory, List<AttachmentMetadata> attachments,
+        CurrentAssignmentResponse currentAssignment) {
     public TicketDetailResponse {
         dynamicValues = List.copyOf(dynamicValues);
         statusHistory = List.copyOf(statusHistory);

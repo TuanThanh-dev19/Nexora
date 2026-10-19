@@ -83,7 +83,7 @@ class TechnicianEligibilityServiceTest {
                 profileRepository,
                 skillRepository,
                 serviceAreaRepository,
-                assignmentRepository);
+                assignmentRepository, org.mockito.Mockito.mock(jakarta.persistence.EntityManager.class));
 
         // Location hierarchy: Campus -> Building A -> Floor 1 -> Room 101, Room 102
         campus = new Location("CAMPUS-1", "Main Campus", LocationType.CAMPUS, null);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Alert,
   Badge,
@@ -60,13 +60,7 @@ export function TicketAssignmentDialog({
     ...(mutation.error?.response?.status === 422 ? {} : errors),
   }
 
-  // Reload candidates on 422 eligibility conflict
-  const refetchCandidates = candidates.refetch
-  useEffect(() => {
-    if (mutation.error?.response?.status === 422) {
-      void refetchCandidates()
-    }
-  }, [mutation.error, refetchCandidates])
+  // The mutation hook reloads candidates on 422; selection stays empty until explicitly chosen again.
 
   const clearSelection = () => {
     setTechnicianId(null)
@@ -83,7 +77,10 @@ export function TicketAssignmentDialog({
       mutation.error?.response?.status === 409
     )
       return
-    const payload = { version: ticket.version, technicianId: selectedTechnicianId }
+    const payload = {
+      version: ticket.version,
+      technicianId: selectedTechnicianId,
+    }
     if (action === 'reassign') payload.reason = reason.trim()
     const next = validateWorkflowPayload(action, payload, selected)
     setErrors(next)
@@ -203,7 +200,9 @@ export function TicketAssignmentDialog({
                           type="radio"
                           name="candidate"
                           aria-label={`Chọn ${candidate.fullName}`}
-                          checked={candidate.technicianId === selectedTechnicianId}
+                          checked={
+                            candidate.technicianId === selectedTechnicianId
+                          }
                           disabled={state.blocked || loading}
                           onChange={() => {
                             clearSelection()

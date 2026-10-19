@@ -104,7 +104,7 @@ class TicketAssignmentServiceTest {
                 profileRepository,
                 assignmentRepository,
                 statusHistoryRepository,
-                eligibilityService);
+                eligibilityService, new TicketResponseMapper());
 
         jwt = Jwt.withTokenValue("mock-token")
                 .header("alg", "none")
@@ -210,19 +210,19 @@ class TicketAssignmentServiceTest {
         CurrentUserResponse managerResponse = new CurrentUserResponse(
                 10L, "manager@nexora.local", "Manager User", "ACTIVE", List.of("MANAGER"));
         given(authService.getCurrentUser(jwt)).willReturn(managerResponse);
-        given(ticketRepository.findOne(any(Specification.class))).willReturn(Optional.of(ticket));
+        given(ticketRepository.findByIdForUpdate(100L)).willReturn(Optional.of(ticket));
         given(assignmentRepository.existsByTicketIdAndEndedAtIsNull(100L)).willReturn(false);
         given(profileRepository.findByIdForUpdate(20L)).willReturn(Optional.of(technicianProfile));
 
         EligibilityEvaluation evaluation = new EligibilityEvaluation(technicianUser, technicianProfile, List.of());
-        given(eligibilityService.evaluateCandidate(ticket, 20L)).willReturn(evaluation);
+        given(eligibilityService.evaluateCandidateForAssignment(ticket, 20L)).willReturn(evaluation);
         given(userRepository.findById(10L)).willReturn(Optional.of(managerUser));
 
         TicketAssignment savedAssignment = new TicketAssignment(
                 100L, 20L, 10L, OffsetDateTime.now(ZoneOffset.UTC));
         ReflectionTestUtils.setField(savedAssignment, "id", 1000L);
         given(assignmentRepository.save(any(TicketAssignment.class))).willReturn(savedAssignment);
-        given(ticketRepository.save(any(Ticket.class))).willReturn(ticket);
+        org.mockito.Mockito.doAnswer(invocation -> { ReflectionTestUtils.setField(ticket, "version", 1L); return null; }).when(ticketRepository).flush();
 
         AssignTicketRequest request = new AssignTicketRequest(0L, 20L);
 
@@ -231,8 +231,9 @@ class TicketAssignmentServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(100L);
         assertThat(response.status()).isEqualTo(TicketStatus.ASSIGNED);
+        assertThat(response.version()).isEqualTo(1L);
         assertThat(response.currentAssignment()).isNotNull();
-        assertThat(response.currentAssignment().technician().id()).isEqualTo(20L);
+        assertThat(response.currentAssignment().technician().technicianId()).isEqualTo(20L);
 
         verify(profileRepository).findByIdForUpdate(20L);
         verify(statusHistoryRepository).save(any(TicketStatusHistory.class));
@@ -244,13 +245,13 @@ class TicketAssignmentServiceTest {
         CurrentUserResponse managerResponse = new CurrentUserResponse(
                 10L, "manager@nexora.local", "Manager User", "ACTIVE", List.of("MANAGER"));
         given(authService.getCurrentUser(jwt)).willReturn(managerResponse);
-        given(ticketRepository.findOne(any(Specification.class))).willReturn(Optional.of(ticket));
+        given(ticketRepository.findByIdForUpdate(100L)).willReturn(Optional.of(ticket));
         given(assignmentRepository.existsByTicketIdAndEndedAtIsNull(100L)).willReturn(false);
         given(profileRepository.findByIdForUpdate(20L)).willReturn(Optional.of(technicianProfile));
 
         EligibilityEvaluation evaluation = new EligibilityEvaluation(
                 technicianUser, technicianProfile, List.of(new EligibilityReason("CAPACITY_REACHED", false)));
-        given(eligibilityService.evaluateCandidate(ticket, 20L)).willReturn(evaluation);
+        given(eligibilityService.evaluateCandidateForAssignment(ticket, 20L)).willReturn(evaluation);
 
         AssignTicketRequest request = new AssignTicketRequest(0L, 20L);
 
@@ -268,8 +269,8 @@ class TicketAssignmentServiceTest {
         CurrentUserResponse managerResponse = new CurrentUserResponse(
                 10L, "manager@nexora.local", "Manager User", "ACTIVE", List.of("MANAGER"));
         given(authService.getCurrentUser(jwt)).willReturn(managerResponse);
-        given(ticketRepository.findOne(any(Specification.class))).willReturn(Optional.of(ticket));
-        given(assignmentRepository.existsByTicketIdAndEndedAtIsNull(100L)).willReturn(false);
+        given(ticketRepository.findByIdForUpdate(100L)).willReturn(Optional.of(ticket));
+
 
         AssignTicketRequest request = new AssignTicketRequest(999L, 20L); // Version mismatch
 
@@ -287,7 +288,7 @@ class TicketAssignmentServiceTest {
         CurrentUserResponse managerResponse = new CurrentUserResponse(
                 10L, "manager@nexora.local", "Manager User", "ACTIVE", List.of("MANAGER"));
         given(authService.getCurrentUser(jwt)).willReturn(managerResponse);
-        given(ticketRepository.findOne(any(Specification.class))).willReturn(Optional.of(ticket));
+        given(ticketRepository.findByIdForUpdate(100L)).willReturn(Optional.of(ticket));
 
         AssignTicketRequest request = new AssignTicketRequest(0L, 20L);
 

@@ -41,7 +41,7 @@ public class TicketAssignment {
     private String endReason;
 
     @Nationalized
-    @Column(name = "override_reason", length = 1000)
+    @Column(name = "override_reason", length = 1000, updatable = false)
     private String overrideReason;
 
     protected TicketAssignment() {}
@@ -54,12 +54,19 @@ public class TicketAssignment {
     }
 
     public void end(OffsetDateTime endedAt, String endReason) {
-        this.endedAt = Objects.requireNonNull(endedAt, "endedAt is required");
+        Objects.requireNonNull(endedAt, "endedAt is required");
+        if (this.endedAt != null || endedAt.isBefore(assignedAt)
+                || (acceptedAt != null && endedAt.isBefore(acceptedAt)))
+            throw new IllegalStateException("Assignment cannot be ended at this time.");
+        this.endedAt = endedAt;
         this.endReason = endReason;
     }
 
     public void accept(OffsetDateTime acceptedAt) {
-        this.acceptedAt = Objects.requireNonNull(acceptedAt, "acceptedAt is required");
+        Objects.requireNonNull(acceptedAt, "acceptedAt is required");
+        if (this.acceptedAt != null || endedAt != null || acceptedAt.isBefore(assignedAt))
+            throw new IllegalStateException("Assignment cannot be accepted at this time.");
+        this.acceptedAt = acceptedAt;
     }
 
     public Long getId() { return id; }

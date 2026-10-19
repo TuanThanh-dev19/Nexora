@@ -114,4 +114,29 @@ class TicketControllerMvcTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
         verifyNoInteractions(assignmentService);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1", "not-a-number", "9223372036854775808"})
+    void invalidActionPathReturnsFieldErrors(String id) throws Exception {
+        for (String action : List.of("review", "assign")) {
+            String body = action.equals("review") ? "{\"version\":0}" : "{\"version\":0,\"technicianId\":25}";
+            mvc.perform(post("/api/v1/tickets/" + id + "/" + action).with(jwt())
+                            .contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.fieldErrors.ticketId").exists());
+        }
+        verifyNoInteractions(assignmentService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "{", "null", "[]", "{\"version\":0} {\"version\":1}"})
+    void malformedActionJsonDoesNotInvokeService(String body) throws Exception {
+        for (String action : List.of("review", "assign")) {
+            mvc.perform(post("/api/v1/tickets/10/" + action).with(jwt())
+                            .contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                    .andExpect(jsonPath("$.fieldErrors.body").exists());
+        }
+        verifyNoInteractions(assignmentService);
+    }
 }

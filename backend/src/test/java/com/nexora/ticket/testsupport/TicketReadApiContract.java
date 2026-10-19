@@ -194,4 +194,19 @@ public abstract class TicketReadApiContract {
         mvc.perform(get("/api/v1/tickets").with(jwt().jwt(j -> j.subject(f.noRole.getId().toString()).claim("roles", List.of("ADMIN")))))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void detailExposesOnlyActiveAssignmentWhileHistoricalAssignmentsStillGrantVisibility() throws Exception {
+        var current = json.readTree(mvc.perform(get("/api/v1/tickets/{id}", f.current.getId())
+                        .with(jwt().jwt(j -> j.subject(f.technician.getId().toString()))))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(current.at("/currentAssignment/technician/technicianId").asLong()).isEqualTo(f.technician.getId());
+        assertThat(current.at("/currentAssignment/assignedBy/fullName").asText()).isEqualTo(f.manager.getFullName());
+        assertThat(current.at("/currentAssignment/endedAt").isNull()).isTrue();
+        var historical = json.readTree(mvc.perform(get("/api/v1/tickets/{id}", f.historical.getId())
+                        .with(jwt().jwt(j -> j.subject(f.technician.getId().toString()))))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(historical.has("currentAssignment")).isTrue();
+        assertThat(historical.get("currentAssignment").isNull()).isTrue();
+    }
 }
