@@ -79,9 +79,10 @@ public class TicketCreateService {
         if (!category.isActive())
             throw TicketSubmissionException.invalid("categoryId", "Category is inactive.");
         CategoryFormVersion form = locked(CategoryFormVersion.class, request.formVersionId());
-        if (!form.getCategory().getId().equals(category.getId())
-                || form.getFormStatus() != FormStatus.PUBLISHED)
-            throw TicketSubmissionException.stale();
+        if (!form.getCategory().getId().equals(category.getId()))
+            throw TicketSubmissionException.invalid(
+                    "formVersionId", "The form belongs to another category.");
+        if (form.getFormStatus() != FormStatus.PUBLISHED) throw TicketSubmissionException.stale();
         Location location = locked(Location.class, request.locationId());
         if (!location.isActive())
             throw TicketSubmissionException.invalid("locationId", "Location is inactive.");

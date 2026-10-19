@@ -7,6 +7,7 @@ import {
   validateSubmission,
 } from './createTicketContract'
 import { createFormFixture } from '../mocks/createTicketFixture'
+import sharedCases from '../../../../../backend/src/test/resources/contracts/ticket-submission-values.json'
 
 const input = {
   categoryId: '1',
@@ -30,6 +31,51 @@ const readBlob = (blob) =>
   })
 
 describe('create ticket contract', () => {
+  it.each(sharedCases)(
+    'shares backend validation for $type: $value',
+    (test) => {
+      const field = {
+        fieldKey: 'answer',
+        fieldType: test.type,
+        required: test.required ?? false,
+        active: true,
+        validationRules: test.rules,
+        options: [
+          { optionValue: 'a', active: true },
+          { optionValue: 'old', active: false },
+        ],
+      }
+      const errors = validateSubmission(
+        { ...form, fields: [field] },
+        { ...input, values: { answer: test.value } },
+        [],
+      )
+      expect(!errors['dynamicValues.answer']).toBe(test.valid)
+    },
+  )
+  it('omits optional blank/null/empty answers while preserving real multiline content', async () => {
+    const fields = [
+      'TEXT',
+      'TEXTAREA',
+      'NUMBER',
+      'BOOLEAN',
+      'MULTI_SELECT',
+    ].map((fieldType, i) => ({ fieldKey: 'f' + i, fieldType, active: true }))
+    const payload = buildTicketMultipart(
+      { ...form, fields },
+      {
+        ...input,
+        values: { f0: ' \n ', f1: '  a\nb  ', f2: null, f3: false, f4: [] },
+      },
+      [],
+    )
+    expect(
+      JSON.parse(await readBlob(payload.get('ticket'))).dynamicValues,
+    ).toEqual([
+      { fieldKey: 'f1', value: '  a\nb  ' },
+      { fieldKey: 'f3', value: false },
+    ])
+  })
   it('always requires a real location and limits the trimmed title to 200 characters', () => {
     const optionalLocation = {
       ...form,

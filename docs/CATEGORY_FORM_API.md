@@ -129,3 +129,5 @@ npm run build
 ```
 
 Use Java 21 and Node 24.15+ (the repository's current dependencies require a recent Node runtime). Tests cover role/authentication boundaries, active filtering, current-publication lookup, deterministic ordering, rule/type validation, immutable versions, stale revisions, concurrent draft creation/publication, publication rollback, option replacement with SQL Server foreign keys, and the UI draft/edit/save/confirm/publish/refresh flow through MSW.
+
+Submission/publish consistency, combined IMAGE limits and legacy handling are documented in [TICKET_SUBMISSION_VALIDATION.md](TICKET_SUBMISSION_VALIDATION.md).
