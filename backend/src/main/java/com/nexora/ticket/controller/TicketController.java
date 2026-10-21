@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nexora.common.pagination.PageResponse;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
-import com.nexora.ticket.dto.request.ReviewTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
+import com.nexora.ticket.dto.request.ReviewTicketRequest;
+import com.nexora.ticket.dto.request.StartTicketRequest;
 import com.nexora.ticket.dto.request.TicketListQuery;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse;
 import com.nexora.ticket.dto.response.TicketActionResultResponse;
@@ -168,6 +169,33 @@ public class TicketController {
             @PathVariable @Positive Long ticketId,
             @Valid @RequestBody AssignTicketRequest request) {
         return assignmentService.assign(jwt, ticketId, request);
+    }
+
+    @PostMapping(value = "/{ticketId}/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Start working on an assigned ticket",
+            description = "Accepts only required integer version (>=0). Only active accounts with TECHNICIAN role who are the current active assignee (endedAt is null) can start. "
+                    + "Transitions ticket from ASSIGNED to IN_PROGRESS, sets active assignment acceptedAt to server time, increments version, and appends START_WORK history event. "
+                    + "Returns 400 on malformed/unsupported fields, 401 on unauthenticated, 403 on non-technician, 404 on missing/invisible ticket, 409 on version conflict, 422 if not ASSIGNED or caller is not current assignee.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ticket successfully moved to IN_PROGRESS"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or unsupported fields", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Requires TECHNICIAN role", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Invalid ticket status transition or caller not current assignee", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public TicketActionResultResponse start(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody StartTicketRequest request) {
+        return assignmentService.start(jwt, ticketId, request);
     }
 }
 

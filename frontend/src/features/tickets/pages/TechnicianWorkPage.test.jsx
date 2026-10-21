@@ -308,18 +308,19 @@ describe('technician work UI', () => {
     expect(upload).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps missing technician APIs unavailable outside development mock mode', async () => {
+  it('allows my-work and start without mock gate, while keeping uncompleted APIs guarded', async () => {
     vi.stubEnv('DEV', false)
+    vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
     mount('/my-work')
     expect(
-      screen.getByText(/Danh sách công việc chưa khả dụng/),
+      await screen.findByRole('link', { name: 'NX-2026-000012' }),
     ).toBeInTheDocument()
     mount('/tickets/12')
     expect(
-      await screen.findByText(/Chức năng công việc chưa khả dụng/),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Bắt đầu xử lý', exact: true }),
-    ).toBeDisabled()
+      await screen.findByRole('button', {
+        name: 'Bắt đầu xử lý',
+        exact: true,
+      }),
+    ).toBeEnabled()
   })
 })

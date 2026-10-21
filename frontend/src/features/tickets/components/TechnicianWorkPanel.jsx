@@ -356,14 +356,16 @@ export function TechnicianWorkPanel({ ticket }) {
   const [notice, setNotice] = useState('')
   if (!user?.roles?.includes('TECHNICIAN')) return null
   const available = isTicketWorkflowMockEnabled()
-  const canStart = available && canTechnicianWrite(ticket, user, 'ASSIGNED')
+  const canStart = canTechnicianWrite(ticket, user, 'ASSIGNED')
   const canWork = available && canTechnicianWrite(ticket, user)
   const submit = async (action, payload) => {
     try {
       await mutation.mutateAsync({ action, payload })
       setDialog(null)
       setNotice(
-        'Thao tác thành công trong bản mô phỏng; chưa lưu trên máy chủ.',
+        action === 'start'
+          ? 'Bắt đầu xử lý phiếu thành công.'
+          : 'Thao tác thành công trong bản mô phỏng; chưa lưu trên máy chủ.',
       )
     } catch {
       /* Feedback stays visible in the dialog. */
@@ -401,11 +403,13 @@ export function TechnicianWorkPanel({ ticket }) {
                 ? `${ticket.currentAssignment.technician.fullName} · ${formatTicketTime(ticket.currentAssignment.assignedAt)}`
                 : 'Không còn phân công hiện tại'}
           </p>
-          <Alert variant="info">
-            {available
-              ? 'Bản mô phỏng: công việc và ảnh chưa được lưu trên máy chủ.'
-              : 'Chức năng công việc chưa khả dụng; API sẽ được bổ sung sau.'}
-          </Alert>
+          {ticket.status === 'IN_PROGRESS' && (
+            <Alert variant="info">
+              {available
+                ? 'Bản mô phỏng: công việc và ảnh chưa được lưu trên máy chủ.'
+                : 'Chức năng công việc chưa khả dụng; API sẽ được bổ sung sau.'}
+            </Alert>
+          )}
           {notice && (
             <Alert variant="success" role="status">
               {notice}

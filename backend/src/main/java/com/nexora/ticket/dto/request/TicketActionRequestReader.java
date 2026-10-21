@@ -20,6 +20,14 @@ public final class TicketActionRequestReader {
         }
     }
 
+    public static class Start extends JsonDeserializer<StartTicketRequest> {
+        @Override
+        public StartTicketRequest deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            JsonNode body = body(parser, Set.of("version"));
+            return new StartTicketRequest(integer(parser, body, "version"));
+        }
+    }
+
     public static class Assign extends JsonDeserializer<AssignTicketRequest> {
         @Override
         public AssignTicketRequest deserialize(JsonParser parser, DeserializationContext context) throws IOException {

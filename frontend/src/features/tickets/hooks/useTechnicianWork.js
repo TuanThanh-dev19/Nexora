@@ -7,12 +7,11 @@ import { retryTicketQuery, ticketViewerKey } from './ticketQueryOptions'
 
 export function useAssignedTickets(search) {
   const { user, isAuthenticated, isChecking } = useAuth()
-  const available = isTicketWorkflowMockEnabled()
+  const available = true
   const query = useQuery({
     queryKey: ['tickets', ...ticketViewerKey(user), 'assigned', search],
     queryFn: ({ signal }) => ticketApi.assignedToMe(search, signal),
     enabled:
-      available &&
       isAuthenticated &&
       !isChecking &&
       user?.roles?.includes('TECHNICIAN'),
@@ -52,7 +51,7 @@ export function useTechnicianMutation(ticket) {
     mutationFn: ({ action, payload, files }) => {
       const source = action === 'start' ? 'ASSIGNED' : 'IN_PROGRESS'
       if (
-        !isTicketWorkflowMockEnabled() ||
+        (action !== 'start' && !isTicketWorkflowMockEnabled()) ||
         !canTechnicianWrite(ticket, user, source)
       )
         throw new Error('Thao tác chưa khả dụng cho phiếu này.')

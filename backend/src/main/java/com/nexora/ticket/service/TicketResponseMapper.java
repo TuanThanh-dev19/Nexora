@@ -34,12 +34,17 @@ import com.nexora.user.entity.AppUser;
 @Component
 public class TicketResponseMapper {
     public TicketSummaryResponse summary(Ticket ticket) {
+        return summary(ticket, null);
+    }
+
+    public TicketSummaryResponse summary(Ticket ticket, CurrentAssignmentResponse currentAssignment) {
         return new TicketSummaryResponse(ticket.getId(), ticket.getTicketNumber(), ticket.getTitle(),
                 ticket.getStatus(), ticket.getPriority(),
                 new CatalogReference(ticket.getCategory().getId(), ticket.getCategory().getCode(), ticket.getCategory().getName()),
                 new CatalogReference(ticket.getLocation().getId(), ticket.getLocation().getCode(), ticket.getLocation().getName()),
                 ticket.getAsset() == null ? null : new AssetReference(ticket.getAsset().getId(), ticket.getAsset().getAssetCode()),
-                user(ticket.getReporter()), ticket.getSlaDueAt(), ticket.getCreatedAt(), ticket.getUpdatedAt());
+                user(ticket.getReporter()), ticket.getSlaDueAt(), ticket.getCreatedAt(), ticket.getUpdatedAt(),
+                currentAssignment);
     }
 
     public TicketDetailResponse detail(Ticket ticket, List<FieldDefinition> fields, List<FieldOption> options,

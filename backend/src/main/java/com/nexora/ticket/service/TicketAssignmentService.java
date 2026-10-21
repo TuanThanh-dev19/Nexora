@@ -21,12 +21,20 @@ import com.nexora.common.exception.BusinessRuleException;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.exception.StaleWriteException;
 import com.nexora.common.pagination.PageResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import com.nexora.ticket.dto.request.AssignTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
 import com.nexora.ticket.dto.request.ReviewTicketRequest;
+import com.nexora.ticket.dto.request.StartTicketRequest;
+import com.nexora.ticket.dto.request.TechnicianAssignedTicketsQuery;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse;
 import com.nexora.ticket.dto.response.EligibleTechnicianResponse.EligibilityReason;
 import com.nexora.ticket.dto.response.TicketActionResultResponse;
+import com.nexora.ticket.dto.response.TicketActionResultResponse.CurrentAssignmentResponse;
+import com.nexora.ticket.dto.response.TicketSummaryResponse;
 import com.nexora.ticket.entity.Ticket;
 import com.nexora.ticket.entity.TicketAction;
 import com.nexora.ticket.entity.TicketAssignment;
@@ -136,6 +144,107 @@ public class TicketAssignmentService {
         ticketRepository.flush();
         return new TicketActionResultResponse(ticket.getId(), ticket.getStatus(), ticket.getVersion(),
                 mapper.assignment(assignment, evaluation.user(), actor));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TicketSummaryResponse> assignedTickets(Jwt jwt, TechnicianAssignedTicketsQuery query) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+        if (!roles.contains(RoleCode.TECHNICIAN)) {
+            throw new AccessDeniedException("Only technicians can access assigned tickets.");
+        }
+
+        var spec = TicketSpecifications.currentTechnicianWork(
+                viewer.id(), query.status(), query.priority(), query.locationId());
+
+        org.springframework.data.domain.Page<Ticket> page = ticketRepository.findAll(spec, query.pageable());
+        if (page.isEmpty()) {
+            return new PageResponse<>(List.of(), page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
+        }
+
+        List<Long> ticketIds = page.getContent().stream().map(Ticket::getId).toList();
+        List<TicketAssignment> activeAssignments = assignmentRepository.findByTicketIdInAndEndedAtIsNull(ticketIds);
+        Map<Long, TicketAssignment> assignmentByTicketId = activeAssignments.stream()
+                .collect(Collectors.toMap(TicketAssignment::getTicketId, a -> a, (first, second) -> first));
+
+        Set<Long> userIds = activeAssignments.stream()
+                .flatMap(a -> Stream.of(a.getTechnicianId(), a.getAssignedBy()))
+                .collect(Collectors.toSet());
+        Map<Long, AppUser> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(AppUser::getId, u -> u));
+
+        List<TicketSummaryResponse> content = page.getContent().stream().map(ticket -> {
+            TicketAssignment assignment = assignmentByTicketId.get(ticket.getId());
+            AppUser tech = userMap.getOrDefault(assignment.getTechnicianId(),
+                    userRepository.getReferenceById(assignment.getTechnicianId()));
+            AppUser assignedBy = userMap.getOrDefault(assignment.getAssignedBy(),
+                    userRepository.getReferenceById(assignment.getAssignedBy()));
+            CurrentAssignmentResponse currentAssignment = mapper.assignment(assignment, tech, assignedBy);
+            return mapper.summary(ticket, currentAssignment);
+        }).toList();
+
+        return new PageResponse<>(content, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
+    }
+
+    public TicketActionResultResponse start(Jwt jwt, Long ticketId, StartTicketRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+        if (!roles.contains(RoleCode.TECHNICIAN)) {
+            throw new AccessDeniedException("Only technicians can start work on a ticket.");
+        }
+
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+
+        boolean isVisible = roles.contains(RoleCode.ADMIN) || roles.contains(RoleCode.MANAGER)
+                || assignmentRepository.existsByTicketIdAndTechnicianId(ticketId, viewer.id())
+                || (roles.contains(RoleCode.REQUESTER) && ticket.getReporter().getId().equals(viewer.id()));
+        if (!isVisible) {
+            throw new ResourceNotFoundException("The requested ticket is unavailable.");
+        }
+
+        if (!Objects.equals(ticket.getVersion(), request.version())) {
+            throw new StaleWriteException();
+        }
+
+        if (ticket.getStatus() != TicketStatus.ASSIGNED) {
+            throw new BusinessRuleException("Ticket must be in ASSIGNED status to start work.");
+        }
+
+        TicketWorkflowContract.requireTransition(ticket.getStatus(), TicketAction.START_WORK);
+
+        TicketAssignment currentAssignment = assignmentRepository.findByTicketIdAndEndedAtIsNull(ticketId)
+                .orElseThrow(() -> new BusinessRuleException("Ticket has no active assignment."));
+
+        if (!Objects.equals(currentAssignment.getTechnicianId(), viewer.id())) {
+            throw new BusinessRuleException("Only the current assigned technician can start work.");
+        }
+
+        if (currentAssignment.getEndedAt() != null) {
+            throw new BusinessRuleException("Assignment has already ended.");
+        }
+
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+
+        TicketStatus from = ticket.getStatus();
+        ticket.changeStatus(TicketStatus.IN_PROGRESS);
+
+        currentAssignment.accept(now);
+
+        AppUser actor = userRepository.findById(viewer.id())
+                .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
+        statusHistoryRepository.save(new TicketStatusHistory(ticket, from, TicketStatus.IN_PROGRESS,
+                TicketAction.START_WORK, null, actor, now));
+
+        ticketRepository.flush();
+
+        AppUser assignedBy = userRepository.findById(currentAssignment.getAssignedBy()).orElse(actor);
+
+        return new TicketActionResultResponse(
+                ticket.getId(),
+                ticket.getStatus(),
+                ticket.getVersion(),
+                mapper.assignment(currentAssignment, actor, assignedBy));
     }
 
     private Ticket lockedTicket(Long ticketId, Long version, TicketAction action) {

@@ -25,7 +25,11 @@ public interface TicketAssignmentRepository extends JpaRepository<TicketAssignme
 
     Optional<TicketAssignment> findByTicketIdAndEndedAtIsNull(Long ticketId);
 
+    List<TicketAssignment> findByTicketIdInAndEndedAtIsNull(Collection<Long> ticketIds);
+
     boolean existsByTicketIdAndEndedAtIsNull(Long ticketId);
+
+    boolean existsByTicketIdAndTechnicianId(Long ticketId, Long technicianId);
 
     List<TicketAssignment> findByTicketIdOrderByAssignedAtDescIdDesc(Long ticketId);
 }
