@@ -29,6 +29,7 @@ export function createWorkflowFixtures() {
       skills: [],
       serviceAreas: [],
     },
+    { technicianId: 29, fullName: 'Phan Nam' },
   ].map((candidate) => ({
     email: `technician${candidate.technicianId}@example.test`,
     userStatus: 'ACTIVE',

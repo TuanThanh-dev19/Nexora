@@ -88,7 +88,8 @@ describe('technician work UI', () => {
   })
 
   it('starts, adds a valid log, then resolves and removes the current assignment', async () => {
-    mount('/tickets/12')
+    const { client } = mount('/tickets/12')
+    const invalidation = vi.spyOn(client, 'invalidateQueries')
     await userEvent.click(
       await screen.findByRole('button', { name: 'Bắt đầu xử lý', exact: true }),
     )
@@ -98,6 +99,7 @@ describe('technician work UI', () => {
       }),
     )
     await screen.findByRole('button', { name: 'Thêm nhật ký' })
+    expect(invalidation).toHaveBeenCalledWith({ queryKey: ['dashboard'] })
     expect(
       screen.getByRole('button', { name: 'Hoàn tất xử lý' }),
     ).toBeDisabled()

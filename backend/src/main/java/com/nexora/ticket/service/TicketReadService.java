@@ -27,6 +27,8 @@ import com.nexora.ticket.repository.TicketFieldValueRepository;
 import com.nexora.ticket.repository.TicketStatusHistoryRepository;
 import com.nexora.ticket.repository.TicketAttachmentRepository;
 import com.nexora.ticket.repository.TicketSpecifications;
+import com.nexora.ticket.repository.TicketAssignmentRepository;
+import com.nexora.user.repository.AppUserRepository;
 import com.nexora.user.entity.RoleCode;
 
 @Service
@@ -40,10 +42,13 @@ public class TicketReadService {
     private final TicketStatusHistoryRepository history;
     private final TicketAttachmentRepository attachments;
     private final TicketResponseMapper mapper;
+    private final TicketAssignmentRepository assignments;
+    private final AppUserRepository users;
 
     public TicketReadService(AuthService auth, TicketRepository tickets, FieldDefinitionRepository fields,
             FieldOptionRepository options, TicketFieldValueRepository values, TicketStatusHistoryRepository history,
-            TicketAttachmentRepository attachments, TicketResponseMapper mapper) {
+            TicketAttachmentRepository attachments, TicketResponseMapper mapper,
+            TicketAssignmentRepository assignments, AppUserRepository users) {
         this.auth = auth;
         this.tickets = tickets;
         this.fields = fields;
@@ -52,6 +57,8 @@ public class TicketReadService {
         this.history = history;
         this.attachments = attachments;
         this.mapper = mapper;
+        this.assignments = assignments;
+        this.users = users;
     }
 
     public PageResponse<TicketSummaryResponse> list(Jwt jwt, TicketListQuery query) {
@@ -73,7 +80,12 @@ public class TicketReadService {
         var statusHistory = history.findByTicketIdOrderByChangedAtAscIdAsc(ticketId);
         var attachmentMetadata = attachments.findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(ticketId,
                 List.of(AttachmentType.REPORT_EVIDENCE, AttachmentType.WORK_RESULT));
-        return mapper.detail(ticket, storedFields, storedOptions, dynamicValues, statusHistory, attachmentMetadata);
+        var currentAssignment = assignments.findByTicketIdAndEndedAtIsNull(ticketId)
+                .map(assignment -> mapper.assignment(assignment, users.getReferenceById(assignment.getTechnicianId()),
+                        users.getReferenceById(assignment.getAssignedBy())))
+                .orElse(null);
+        return mapper.detail(ticket, storedFields, storedOptions, dynamicValues, statusHistory, attachmentMetadata,
+                currentAssignment);
     }
 
     private CurrentUserResponse viewer(Jwt jwt) {

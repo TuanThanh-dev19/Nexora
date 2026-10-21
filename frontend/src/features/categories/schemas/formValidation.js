@@ -97,17 +97,14 @@ export function validateRules(type, rules) {
       if (
         !Array.isArray(value) ||
         !value.length ||
-        value.some(
-          (v) =>
-            !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(v),
-        )
+        value.some((v) => !['image/jpeg', 'image/png'].includes(v))
       )
         return 'Chọn định dạng MIME ảnh được hỗ trợ.'
     } else if (type === 'DATE' || type === 'DATETIME') {
       const datePattern =
         type === 'DATE'
           ? /^\d{4}-\d{2}-\d{2}$/
-          : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?$/
+          : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?(Z|[+-](0\d|1[0-7]):[0-5]\d|[+-]18:00)$/
       if (
         typeof value !== 'string' ||
         !datePattern.test(value) ||
@@ -131,6 +128,12 @@ export function validateRules(type, rules) {
       (['maxFiles', 'maxSizeBytes'].includes(key) && value === 0)
     )
       return 'Nhập số nguyên không âm (giới hạn tệp phải lớn hơn 0).'
+    if (
+      type === 'IMAGE' &&
+      ((['minFiles', 'maxFiles'].includes(key) && value > 5) ||
+        (key === 'maxSizeBytes' && value > 5242880))
+    )
+      return 'Tối đa 5 ảnh và 5 MiB mỗi ảnh.'
   }
   for (const [min, max] of [
     ['minLength', 'maxLength'],
@@ -156,9 +159,9 @@ export function validateDraft(draft, context = {}) {
     draft.minAttachments === '' ||
     !Number.isInteger(Number(draft.minAttachments)) ||
     Number(draft.minAttachments) < 0 ||
-    Number(draft.minAttachments) > 2147483647
+    Number(draft.minAttachments) > 5
   )
-    errors.minAttachments = 'Số ảnh tối thiểu phải là số nguyên không âm.'
+    errors.minAttachments = 'Số ảnh tối thiểu phải là số nguyên từ 0 đến 5.'
   const keys = new Set()
   if (draft.fields.length > 100)
     errors.fields = 'Biểu mẫu có tối đa 100 trường.'
@@ -216,6 +219,20 @@ export function validateDraft(draft, context = {}) {
     })
   })
   if (context.publishing) {
+    const requiredImages = draft.fields
+      .filter((f) => f.active && f.fieldType === 'IMAGE')
+      .reduce((sum, f) => {
+        try {
+          return (
+            sum +
+            Math.max(f.required ? 1 : 0, parseRules(f.rulesText)?.minFiles ?? 0)
+          )
+        } catch {
+          return sum
+        }
+      }, 0)
+    if (requiredImages > 5)
+      errors.fields = 'Tổng số ảnh bắt buộc của các trường không được vượt 5.'
     if (!context.category?.active)
       errors['category.active'] = 'Kích hoạt danh mục trước khi phát hành.'
     if (

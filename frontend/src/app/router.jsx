@@ -6,7 +6,6 @@ import { TicketListPage } from '../features/tickets/pages/TicketListPage'
 import { CreateTicketPage } from '../features/tickets/pages/CreateTicketPage'
 import { TicketDetailPage } from '../features/tickets/pages/TicketDetailPage'
 import { MyWorkPage } from '../features/tickets/pages/MyWorkPage'
-import { PendingFeaturePage } from '../shared/components/PendingFeaturePage'
 import { NotFoundPage } from '../shared/components/NotFoundPage'
 import { RouteErrorPage } from '../shared/components/RouteErrorPage'
 import { ForbiddenPage } from '../shared/components/ForbiddenPage'
@@ -24,6 +23,8 @@ import { EquipmentTypeManagementPage } from '../features/equipmentTypes/pages/Eq
 import { AssetListPage } from '../features/assets/pages/AssetListPage'
 import { CreateAssetPage } from '../features/assets/pages/CreateAssetPage'
 import { AssetDetailPage } from '../features/assets/pages/AssetDetailPage'
+import { TechnicianListPage } from '../features/technicians/pages/TechnicianListPage'
+import { TechnicianDetailPage } from '../features/technicians/pages/TechnicianDetailPage'
 import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
@@ -72,12 +73,7 @@ export const appRoutes = [
               { path: 'my-work', element: <MyWorkPage /> },
               {
                 path: 'technicians/me',
-                element: (
-                  <PendingFeaturePage
-                    title="Hồ sơ kỹ thuật của tôi"
-                    issue={52}
-                  />
-                ),
+                element: <TechnicianDetailPage readOnly />,
               },
             ],
           },
@@ -100,15 +96,11 @@ export const appRoutes = [
               },
               {
                 path: 'technicians',
-                element: (
-                  <PendingFeaturePage title="Kỹ thuật viên" issue={52} />
-                ),
+                element: <TechnicianListPage />,
               },
               {
                 path: 'technicians/:technicianId',
-                element: (
-                  <PendingFeaturePage title="Hồ sơ kỹ thuật viên" issue={52} />
-                ),
+                element: <TechnicianDetailPage />,
               },
             ],
           },

@@ -1,3 +1,5 @@
+import { decimalStepMatches } from '../../../shared/utils/decimalStep'
+
 export const MAX_FILES = 5
 export const MAX_FILE_BYTES = 5 * 1024 * 1024
 export const IMAGE_TYPES = ['image/jpeg', 'image/png']
@@ -7,7 +9,9 @@ export const orderedActive = (items = []) =>
     .toSorted((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
 export const fieldsOf = (form) => orderedActive(form?.fields)
 export const emptyValue = (value) =>
-  value == null || value === '' || (Array.isArray(value) && !value.length)
+  value == null ||
+  (typeof value === 'string' && !value.trim()) ||
+  (Array.isArray(value) && !value.length)
 export const equipmentRequired = (form) =>
   form?.requiresEquipment || form?.category?.assetPolicy === 'REQUIRED'
 
@@ -26,11 +30,15 @@ export function validateSubmission(form, input, photos) {
   if (!form || form.status !== 'PUBLISHED')
     errors.categoryId = 'Chọn danh mục có biểu mẫu đã phát hành.'
   if (!input.title.trim()) errors.title = 'Nhập tiêu đề sự cố.'
+  else if (input.title.trim().length > 200)
+    errors.title = 'Tiêu đề có tối đa 200 ký tự.'
   if (!input.description.trim()) errors.description = 'Mô tả sự cố.'
-  if (form?.category?.locationRequired && !input.locationId)
-    errors.locationId = 'Chọn địa điểm.'
+  if (!input.locationId) errors.locationId = 'Chọn địa điểm.'
   if (equipmentRequired(form) && !input.assetId)
     errors.assetId = 'Chọn tài sản hợp lệ.'
+  if (form?.requiresEquipment && form?.category?.assetPolicy === 'FORBIDDEN')
+    errors.formVersionId =
+      'Biểu mẫu có cấu hình tài sản mâu thuẫn. Liên hệ quản trị viên.'
   if (photos.length < (form?.minAttachments ?? 0))
     errors.attachments = `Cần ít nhất ${form.minAttachments} ảnh minh chứng.`
   if (photos.length > MAX_FILES) errors.attachments = `Tối đa ${MAX_FILES} ảnh.`
@@ -60,7 +68,7 @@ export function validateSubmission(form, input, photos) {
           errors[key] = 'Độ dài không hợp lệ.'
         if (rules.pattern) {
           try {
-            if (!new RegExp(`^(?:${rules.pattern})$`).test(value))
+            if (!new RegExp(`^(?:${rules.pattern})(?![\\s\\S])`).test(value))
               errors[key] = 'Nội dung không đúng định dạng.'
           } catch {
             errors[key] =
@@ -79,16 +87,20 @@ export function validateSubmission(form, input, photos) {
           errors[key] = 'Số ngoài khoảng cho phép.'
         if (
           rules.step &&
-          Math.abs(
-            (n - (rules.min ?? 0)) / rules.step -
-              Math.round((n - (rules.min ?? 0)) / rules.step),
-          ) > 1e-8
+          !decimalStepMatches(value, rules.min ?? 0, rules.step)
         )
           errors[key] = 'Số không đúng bước quy định.'
         break
       }
       case 'SELECT':
       case 'MULTI_SELECT': {
+        if (
+          (field.fieldType === 'MULTI_SELECT' && !Array.isArray(value)) ||
+          (field.fieldType === 'SELECT' && typeof value !== 'string')
+        ) {
+          errors[key] = 'Kiểu lựa chọn không hợp lệ.'
+          break
+        }
         const selected = Array.isArray(value) ? value : [value]
         const allowed = orderedActive(field.options).map((o) => o.optionValue)
         if (
@@ -105,6 +117,15 @@ export function validateSubmission(form, input, photos) {
       }
       case 'DATE':
       case 'DATETIME': {
+        if (
+          field.fieldType === 'DATE' &&
+          (!/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+            !Number.isFinite(Date.parse(value)) ||
+            new Date(value).toISOString().slice(0, 10) !== value)
+        ) {
+          errors[key] = 'Ngày không tồn tại hoặc sai định dạng YYYY-MM-DD.'
+          break
+        }
         const comparable =
           field.fieldType === 'DATE' ? value : new Date(value).getTime()
         const bound = (v) =>
@@ -129,7 +150,10 @@ export function validateSubmission(form, input, photos) {
     )
       errors[`attachments[${index}]`] =
         'Chỉ nhận ảnh JPEG/PNG được biểu mẫu cho phép.'
-    if (p.file.size > Math.min(MAX_FILE_BYTES, rules.maxSizeBytes ?? Infinity))
+    if (
+      !p.file.size ||
+      p.file.size > Math.min(MAX_FILE_BYTES, rules.maxSizeBytes ?? Infinity)
+    )
       errors[`attachments[${index}]`] = 'Ảnh vượt giới hạn dung lượng.'
   })
   return errors

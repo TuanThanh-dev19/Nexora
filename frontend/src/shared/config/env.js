@@ -15,3 +15,11 @@ export function isAdminUserMockEnabled() {
 export function isDashboardMockEnabled() {
   return import.meta.env.DEV && import.meta.env.VITE_DASHBOARD_MOCK === 'true'
 }
+
+export function isTechnicianMockEnabled() {
+  return (
+    import.meta.env.DEV &&
+    import.meta.env.VITE_TECHNICIAN_MOCK === 'true'
+  )
+}
+

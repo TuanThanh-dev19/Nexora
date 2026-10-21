@@ -17,6 +17,10 @@ public interface TicketRepository
 
     Optional<Ticket> findByTicketNumber(String ticketNumber);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select t from Ticket t where t.id = :id")
+    Optional<Ticket> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
     @Override
     @EntityGraph(attributePaths = {"reporter", "category", "location", "asset", "formVersion"})
     Page<Ticket> findAll(Specification<Ticket> specification, Pageable pageable);

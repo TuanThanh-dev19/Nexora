@@ -1,7 +1,4 @@
-import {
-  OVERRIDABLE_ELIGIBILITY_REASONS,
-  TICKET_WORKFLOW_ACTIONS,
-} from '../constants/ticketWorkflow'
+import { TICKET_WORKFLOW_ACTIONS } from '../constants/ticketWorkflow'
 
 export const REASON_MAX_LENGTH = 500
 export const OVERRIDE_REASON_MAX_LENGTH = 1000
@@ -13,12 +10,8 @@ export function candidateEligibility(candidate) {
     candidate.userStatus !== 'ACTIVE' ||
     !candidate.hasTechnicianRole ||
     !candidate.hasProfile ||
-    reasons.some(
-      (reason) =>
-        !reason.overridable ||
-        !OVERRIDABLE_ELIGIBILITY_REASONS.includes(reason.code),
-    )
-  return { blocked, requiresOverride: !blocked && reasons.length > 0 }
+    reasons.length > 0
+  return { blocked, requiresOverride: false }
 }
 
 export function validateWorkflowPayload(
@@ -53,19 +46,7 @@ export function validateWorkflowPayload(
       const eligibility = candidateEligibility(candidate)
       if (eligibility.blocked)
         errors.technicianId = 'Không thể phân công kỹ thuật viên này.'
-      if (
-        eligibility.requiresOverride &&
-        (typeof payload.overrideReason !== 'string' ||
-          !payload.overrideReason.trim())
-      )
-        errors.overrideReason = 'Vui lòng nhập lý do ghi đè điều kiện.'
     }
-    if (
-      payload.overrideReason != null &&
-      (typeof payload.overrideReason !== 'string' ||
-        payload.overrideReason.length > OVERRIDE_REASON_MAX_LENGTH)
-    )
-      errors.overrideReason = `Lý do ghi đè tối đa ${OVERRIDE_REASON_MAX_LENGTH} ký tự.`
   }
   return errors
 }

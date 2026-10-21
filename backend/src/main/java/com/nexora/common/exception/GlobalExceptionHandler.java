@@ -17,9 +17,37 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.nexora.auth.service.InvalidCredentialsException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.nexora.ticket.dto.request.TicketActionRequestReader;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(com.nexora.ticket.service.TicketSubmissionException.class)
+    ProblemDetail handleTicketSubmission(com.nexora.ticket.service.TicketSubmissionException exception, HttpServletRequest request) {
+        ProblemDetail problem = ApiProblemDetails.create(exception.getStatus(), exception.getType(),
+                exception.getStatus().getReasonPhrase(), exception.getMessage(), request);
+        if (!exception.getFieldErrors().isEmpty()) problem.setProperty("fieldErrors", exception.getFieldErrors());
+        return problem;
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    ProblemDetail handleUploadLimit(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.PAYLOAD_TOO_LARGE, ProblemTypes.VALIDATION_FAILED,
+                "Upload too large", "Maximum file size is 5 MiB and maximum request size is 30 MiB.", request);
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    ProblemDetail handleUnsupportedMedia(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ProblemTypes.VALIDATION_FAILED,
+                "Unsupported media type", "The request content type is not supported.", request);
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    ProblemDetail handleMultipart(Exception exception, HttpServletRequest request) {
+        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
+                "Malformed multipart request", "Supply valid multipart/form-data with a browser-generated boundary.", request);
+    }
 
     @ExceptionHandler(com.nexora.category.service.FormValidationException.class)
     ProblemDetail handleFormValidation(com.nexora.category.service.FormValidationException exception,
@@ -32,8 +60,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, HandlerMethodValidationException.class})
     ProblemDetail handleInvalidParameter(Exception exception, HttpServletRequest request) {
-        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
+        ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
                 "Validation failed", "One or more request parameters are invalid.", request);
+        Map<String, String> errors = new LinkedHashMap<>();
+        if (exception instanceof MethodArgumentTypeMismatchException mismatch) {
+            errors.put(mismatch.getName(), "Invalid parameter value.");
+        } else if (exception instanceof HandlerMethodValidationException validation) {
+            validation.getParameterValidationResults().forEach(result -> {
+                if (result instanceof org.springframework.validation.method.ParameterErrors fields) {
+                    fields.getFieldErrors().forEach(error -> errors.putIfAbsent(error.getField(), error.getDefaultMessage()));
+                } else {
+                    String name = result.getMethodParameter().getParameterName();
+                    errors.put(name == null ? "parameter" : name, "Invalid parameter value.");
+                }
+            });
+        }
+        problem.setProperty("fieldErrors", errors);
+        return problem;
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -62,8 +105,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ProblemDetail handleMalformedRequest(HttpMessageNotReadableException exception, HttpServletRequest request) {
-        return ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
+        if (exception.getCause() instanceof JsonMappingException mapping && !mapping.getPath().isEmpty()
+                && mapping.getPath().getFirst().getFrom() == TicketActionRequestReader.class) {
+            ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.VALIDATION_FAILED,
+                    "Validation failed", "One or more request fields are invalid.", request);
+            problem.setProperty("fieldErrors", Map.of(mapping.getPath().getFirst().getFieldName(), mapping.getOriginalMessage()));
+            return problem;
+        }
+        ProblemDetail problem = ApiProblemDetails.create(HttpStatus.BAD_REQUEST, ProblemTypes.MALFORMED_REQUEST,
                 "Malformed request", "The request body is missing or cannot be parsed.", request);
+        problem.setProperty("fieldErrors", Map.of("body", "Expected a valid JSON request body."));
+        return problem;
     }
 
     @ExceptionHandler(InvalidPaginationException.class)

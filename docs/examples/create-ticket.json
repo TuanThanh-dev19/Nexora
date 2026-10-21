@@ -1,0 +1,14 @@
+{
+  "categoryId": 3,
+  "formVersionId": 8,
+  "locationId": 12,
+  "assetId": 25,
+  "title": "Máy chiếu không lên nguồn",
+  "description": "Máy chiếu phòng A101 không hoạt động.",
+  "dynamicValues": [
+    { "fieldKey": "affectedDevices", "value": 0 },
+    { "fieldKey": "powerOn", "value": false },
+    { "fieldKey": "observedAt", "value": "2026-10-18T09:30:00+07:00" }
+  ],
+  "attachments": [{ "fileIndex": 0, "fieldKey": "evidencePhoto" }]
+}

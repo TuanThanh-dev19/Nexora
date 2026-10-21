@@ -124,7 +124,7 @@ describe('DashboardPage', () => {
     [['MANAGER'], 'Tổng quan toàn bộ phiếu yêu cầu.'],
     [
       ['REQUESTER', 'TECHNICIAN'],
-      'Phiếu được phân công cho bạn hiện tại hoặc trong lịch sử.',
+      'Phiếu do bạn gửi và phiếu được phân công cho bạn hiện tại hoặc trong lịch sử.',
     ],
     [['TECHNICIAN', 'ADMIN'], 'Tổng quan toàn bộ phiếu yêu cầu.'],
   ])('renders role-aware scope copy for %s', async (roles, expectedCopy) => {

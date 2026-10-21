@@ -1,6 +1,14 @@
 import { httpClient } from '../../../shared/api/httpClient'
+import { eligibleAssetApi } from './eligibleAssetApi'
 
 export const assetApi = {
+  /**
+   * Lists assets eligible for ticket reporting at the specified location (Issue #38 / #47).
+   */
+  async getEligibleAssets(locationId, params = {}, signal) {
+    return eligibleAssetApi.listEligible(locationId, params, signal)
+  },
+
   /**
    * Lists assets with pagination, sort, locationId and status filters.
    * Only allowed parameters are included.

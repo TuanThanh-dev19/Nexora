@@ -129,7 +129,9 @@ export function FieldEditor({
               <Form.Text>
                 Văn bản: minLength, maxLength, pattern. Số: min, max, step.
                 Ngày/giờ: min, max. Chọn nhiều: minItems, maxItems. Ảnh:
-                minFiles, maxFiles, maxSizeBytes, allowedTypes.
+                minFiles, maxFiles, maxSizeBytes, allowedTypes. DATETIME dùng
+                ISO có múi giờ (Z hoặc +07:00). Ảnh chỉ JPEG/PNG, tối đa 5 ảnh
+                và 5 MiB/ảnh.
               </Form.Text>
             </Form.Group>
           </Row>

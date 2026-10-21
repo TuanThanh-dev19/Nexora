@@ -70,7 +70,7 @@ it('sends multipart with JSON ticket part, files and session authentication', as
   expect(captured.attachments).toEqual([{ fileIndex: 0, fieldKey: 'field8' }])
   expect(captured.dynamicValues).toEqual([{ fieldKey: 'field7', value: false }])
 })
-it.each([400, 401, 403, 404, 409, 413, 415])(
+it.each([400, 401, 403, 404, 409, 413, 415, 422])(
   'preserves Problem Details for HTTP %s',
   async (status) => {
     server.use(

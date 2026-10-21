@@ -20,6 +20,7 @@ import com.nexora.location.entity.Location;
 import com.nexora.location.entity.LocationType;
 import com.nexora.location.repository.LocationRepository;
 import com.nexora.user.dto.SkillAssignmentItem;
+import com.nexora.user.dto.TechnicianListQuery;
 import com.nexora.user.dto.TechnicianProfileResponse;
 import com.nexora.user.dto.TechnicianServiceAreasUpdateRequest;
 import com.nexora.user.dto.TechnicianSkillsUpdateRequest;
@@ -68,6 +69,9 @@ class TechnicianServiceTest {
     @Mock
     private LocationRepository locationRepository;
 
+    @Mock
+    private com.nexora.auth.service.AuthService authService;
+
     private TechnicianService service;
 
     @BeforeEach
@@ -78,7 +82,8 @@ class TechnicianServiceTest {
                 technicianServiceAreaRepository,
                 userRepository,
                 skillRepository,
-                locationRepository
+                locationRepository,
+                authService
         );
     }
 
@@ -175,7 +180,7 @@ class TechnicianServiceTest {
         ReflectionTestUtils.setField(profile, "version", 2L);
 
         given(userRepository.findByIdWithRoles(5L)).willReturn(Optional.of(user));
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         TechnicianUpdateRequest request = new TechnicianUpdateRequest(true, 5, 1L);
 
@@ -193,7 +198,7 @@ class TechnicianServiceTest {
         ReflectionTestUtils.setField(profile, "version", 1L);
 
         given(userRepository.findByIdWithRoles(5L)).willReturn(Optional.of(user));
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
         given(technicianProfileRepository.save(any(TechnicianProfile.class))).willAnswer(inv -> inv.getArgument(0));
 
         TechnicianUpdateRequest request = new TechnicianUpdateRequest(false, 8, 1L);
@@ -208,7 +213,7 @@ class TechnicianServiceTest {
     void updateSkills_valid_replacesSkills() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         Skill skill1 = new Skill("ELECTRIC", "Điện");
         ReflectionTestUtils.setField(skill1, "id", 1L);
@@ -237,7 +242,7 @@ class TechnicianServiceTest {
     void updateSkills_duplicateSkill_throwsBusinessRuleException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         TechnicianSkillsUpdateRequest request = new TechnicianSkillsUpdateRequest(
                 List.of(
@@ -259,7 +264,7 @@ class TechnicianServiceTest {
     void updateSkills_skillNotFound_throwsResourceNotFoundException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         given(skillRepository.findAllById(Set.of(99L))).willReturn(List.of());
 
@@ -280,7 +285,7 @@ class TechnicianServiceTest {
     void updateServiceAreas_valid_replacesAreas() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         Location loc1 = new Location("BLD_A", "Tòa nhà A", LocationType.BUILDING, null);
         ReflectionTestUtils.setField(loc1, "id", 10L);
@@ -300,7 +305,7 @@ class TechnicianServiceTest {
     void updateServiceAreas_locationNotFound_throwsResourceNotFoundException() {
         AppUser user = createTechnicianUser(5L);
         TechnicianProfile profile = new TechnicianProfile(user);
-        given(technicianProfileRepository.findById(5L)).willReturn(Optional.of(profile));
+        given(technicianProfileRepository.findByIdForUpdate(5L)).willReturn(Optional.of(profile));
 
         given(locationRepository.findAllById(Set.of(999L))).willReturn(List.of());
 
@@ -312,4 +317,54 @@ class TechnicianServiceTest {
 
         verify(technicianServiceAreaRepository, never()).deleteByTechnicianId(any());
     }
+
+    @Test
+    @DisplayName("listTechnicians: Manager or Admin can list technicians (200 OK)")
+    void listTechnicians_managerOrAdmin_success() {
+        org.springframework.security.oauth2.jwt.Jwt jwt = org.mockito.Mockito.mock(org.springframework.security.oauth2.jwt.Jwt.class);
+        com.nexora.auth.dto.response.CurrentUserResponse managerUser = new com.nexora.auth.dto.response.CurrentUserResponse(
+                1L, "mgr@nexora.local", "Manager User", "ACTIVE", List.of("MANAGER"));
+        given(authService.getCurrentUser(jwt)).willReturn(managerUser);
+
+        AppUser user = createTechnicianUser(5L);
+        TechnicianProfile profile = new TechnicianProfile(user);
+        org.springframework.data.domain.Page<TechnicianProfile> page =
+                new org.springframework.data.domain.PageImpl<>(List.of(profile));
+        given(technicianProfileRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(page);
+
+        TechnicianListQuery query = TechnicianListQuery.from(new org.springframework.util.LinkedMultiValueMap<>());
+        com.nexora.common.pagination.PageResponse<com.nexora.user.dto.TechnicianSummaryResponse> response =
+                service.listTechnicians(jwt, query);
+
+        assertThat(response).isNotNull();
+        assertThat(response.content()).hasSize(1);
+        assertThat(response.content().get(0).technicianId()).isEqualTo(5L);
+        assertThat(response.content().get(0).fullName()).isEqualTo("Kỹ thuật viên A");
+    }
+
+    @Test
+    @DisplayName("listTechnicians: Caller without MANAGER or ADMIN throws AccessDeniedException (403)")
+    void listTechnicians_unauthorizedRole_throwsAccessDeniedException() {
+        org.springframework.security.oauth2.jwt.Jwt jwt = org.mockito.Mockito.mock(org.springframework.security.oauth2.jwt.Jwt.class);
+        com.nexora.auth.dto.response.CurrentUserResponse techOnly = new com.nexora.auth.dto.response.CurrentUserResponse(
+                5L, "tech@nexora.local", "Tech Only", "ACTIVE", List.of("TECHNICIAN"));
+        given(authService.getCurrentUser(jwt)).willReturn(techOnly);
+
+        TechnicianListQuery query = TechnicianListQuery.from(new org.springframework.util.LinkedMultiValueMap<>());
+
+        assertThatThrownBy(() -> service.listTechnicians(jwt, query))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("Only managers and admins");
+    }
+
+    @Test
+    @DisplayName("listTechnicians: Null JWT throws BadCredentialsException (401)")
+    void listTechnicians_nullJwt_throwsBadCredentialsException() {
+        TechnicianListQuery query = TechnicianListQuery.from(new org.springframework.util.LinkedMultiValueMap<>());
+
+        assertThatThrownBy(() -> service.listTechnicians(null, query))
+                .isInstanceOf(org.springframework.security.authentication.BadCredentialsException.class);
+    }
 }
+

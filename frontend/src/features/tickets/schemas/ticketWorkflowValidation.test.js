@@ -101,26 +101,28 @@ describe('workflow form validation', () => {
       }),
     ).toHaveProperty('reason')
     expect(
-      validateWorkflowPayload(
-        'assign',
-        { version: 0, technicianId: 21, overrideReason: 'a'.repeat(1001) },
-        candidate,
-      ),
-    ).toHaveProperty('overrideReason')
+      validateWorkflowPayload('reject', {
+        version: 0,
+        reason: 'a'.repeat(501),
+      }),
+    ).toHaveProperty('reason')
   })
   it.each([
     'UNAVAILABLE',
     'CAPACITY_REACHED',
     'SKILL_MISMATCH',
     'COVERAGE_MISMATCH',
-  ])('requires an override reason for %s', (code) => {
+    'USER_INACTIVE',
+    'MISSING_TECHNICIAN_ROLE',
+    'MISSING_TECHNICIAN_PROFILE',
+  ])('blocks candidate and rejects assignment for %s', (code) => {
     const mismatch = {
       ...candidate,
-      eligibilityReasons: [{ code, overridable: true }],
+      eligibilityReasons: [{ code, overridable: false }],
     }
     expect(candidateEligibility(mismatch)).toEqual({
-      blocked: false,
-      requiresOverride: true,
+      blocked: true,
+      requiresOverride: false,
     })
     expect(
       validateWorkflowPayload(
@@ -128,24 +130,17 @@ describe('workflow form validation', () => {
         { version: 1, technicianId: 21 },
         mismatch,
       ),
-    ).toHaveProperty('overrideReason')
-    expect(
-      validateWorkflowPayload(
-        'assign',
-        { version: 1, technicianId: 21, overrideReason: 'Được duyệt' },
-        mismatch,
-      ),
-    ).toEqual({})
+    ).toHaveProperty('technicianId')
   })
   it.each([
     { userStatus: 'LOCKED' },
     { userStatus: 'DISABLED' },
     { hasProfile: false },
     { hasTechnicianRole: false },
-    { eligibilityReasons: [{ code: 'USER_INACTIVE', overridable: true }] },
-    { eligibilityReasons: [{ code: 'UNKNOWN_REASON', overridable: true }] },
+    { eligibilityReasons: [{ code: 'USER_INACTIVE', overridable: false }] },
+    { eligibilityReasons: [{ code: 'UNKNOWN_REASON', overridable: false }] },
     { eligibilityReasons: [{ code: 'CAPACITY_REACHED', overridable: false }] },
-  ])('never bypasses hard blockers: %j', (blocker) => {
+  ])('never bypasses blockers: %j', (blocker) => {
     const blocked = { ...candidate, ...blocker }
     expect(candidateEligibility(blocked)).toEqual({
       blocked: true,
@@ -154,7 +149,7 @@ describe('workflow form validation', () => {
     expect(
       validateWorkflowPayload(
         'assign',
-        { version: 1, technicianId: 21, overrideReason: 'Không được bypass' },
+        { version: 1, technicianId: 21 },
         blocked,
       ),
     ).toHaveProperty('technicianId')

@@ -10,7 +10,7 @@ export const locationKeys = {
   children: (parentId, active) => [
     ...locationKeys.all,
     'children',
-    parentId ?? null,
+    parentId !== undefined ? parentId : '__none__',
     Boolean(active),
   ],
   detail: (id) => [...locationKeys.all, 'detail', id],

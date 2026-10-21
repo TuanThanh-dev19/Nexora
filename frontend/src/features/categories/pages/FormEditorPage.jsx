@@ -233,6 +233,7 @@ export function FormEditor({
                         <Form.Control
                           type="number"
                           min={0}
+                          max={5}
                           step={1}
                           value={draft.minAttachments}
                           onChange={(e) =>

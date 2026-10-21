@@ -1,6 +1,7 @@
 import { Form } from 'react-bootstrap'
 import { orderedActive } from '../utils/createTicketContract'
 import { EvidencePicker } from './EvidencePicker'
+import { datetimeLocal } from '../../../shared/utils/datetimeLocal'
 
 const RULE_LABELS = {
   minLength: 'Độ dài tối thiểu',
@@ -98,10 +99,18 @@ export function DynamicTicketField({
               : undefined
         }
         min={
-          ['NUMBER', 'DATE'].includes(field.fieldType) ? rules.min : undefined
+          field.fieldType === 'DATETIME'
+            ? datetimeLocal(rules.min)
+            : ['NUMBER', 'DATE'].includes(field.fieldType)
+              ? rules.min
+              : undefined
         }
         max={
-          ['NUMBER', 'DATE'].includes(field.fieldType) ? rules.max : undefined
+          field.fieldType === 'DATETIME'
+            ? datetimeLocal(rules.max)
+            : ['NUMBER', 'DATE'].includes(field.fieldType)
+              ? rules.max
+              : undefined
         }
         value={value ?? ''}
         placeholder={field.placeholder ?? ''}

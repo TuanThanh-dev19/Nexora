@@ -44,6 +44,9 @@ function getScopeDescription(roles = []) {
     return 'Tổng quan toàn bộ phiếu yêu cầu.'
   }
   if (roles.includes(ROLE_CODES.TECHNICIAN)) {
+    if (roles.includes(ROLE_CODES.REQUESTER)) {
+      return 'Phiếu do bạn gửi và phiếu được phân công cho bạn hiện tại hoặc trong lịch sử.'
+    }
     return 'Phiếu được phân công cho bạn hiện tại hoặc trong lịch sử.'
   }
   return 'Phiếu yêu cầu do chính bạn gửi.'
@@ -81,8 +84,7 @@ export function DashboardPage() {
         <Alert variant="danger" role="alert">
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <span>
-              Chưa tải được số liệu tổng quan. API dữ liệu thật đang chờ triển
-              khai; không hiển thị số liệu giả.
+              Chưa tải được số liệu tổng quan. Vui lòng thử lại.
             </span>
             <Button
               variant="outline-danger"

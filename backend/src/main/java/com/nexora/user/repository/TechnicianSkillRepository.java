@@ -21,6 +21,14 @@ public interface TechnicianSkillRepository
             """)
     List<TechnicianSkill> findByTechnicianIdWithSkill(@Param("technicianId") Long technicianId);
 
+    @Query("""
+            select ts from TechnicianSkill ts
+            join fetch ts.skill s
+            where ts.technician.technicianId in :technicianIds
+            order by s.name asc, s.code asc
+            """)
+    List<TechnicianSkill> findByTechnicianIdInWithSkill(@Param("technicianIds") java.util.Collection<Long> technicianIds);
+
     @Modifying
     @Query("delete from TechnicianSkill ts where ts.technician.technicianId = :technicianId")
     void deleteByTechnicianId(@Param("technicianId") Long technicianId);

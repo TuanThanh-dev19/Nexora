@@ -38,15 +38,13 @@ describe('ticket workflow mock HTTP contract', () => {
     const originalAssignment = ticket(10).currentAssignment
     await ticketApi.reassign(10, {
       version: 2,
-      technicianId: 22,
+      technicianId: 29,
       reason: 'Đổi người',
-      overrideReason: 'Ngoại lệ availability',
     })
     expect(originalAssignment).toMatchObject({ endReason: 'Đổi người' })
     expect(originalAssignment.endedAt).not.toBeNull()
     expect(ticket(10).currentAssignment).toMatchObject({
-      technician: { technicianId: 22 },
-      overrideReason: 'Ngoại lệ availability',
+      technician: { technicianId: 29 },
       acceptedAt: null,
     })
     expect(ticket(10).statusHistory.at(-1)).toMatchObject({
@@ -77,7 +75,7 @@ describe('ticket workflow mock HTTP contract', () => {
       size: 20,
     })
     expect(
-      candidates.content.find((item) => item.technicianId === 22)
+      candidates.content.find((item) => item.technicianId === 29)
         .activeTicketCount,
     ).toBe(0)
     expect(
@@ -142,35 +140,22 @@ describe('ticket workflow mock HTTP contract', () => {
       currentAssignment: { technician: { technicianId: 21 } },
     })
   })
-  it('returns capacity failure without override and accepts a documented override', async () => {
+  it('returns capacity failure without override and rejects assignment when at capacity', async () => {
     const before = structuredClone(mock.store)
     await expectFailure(
       ticketApi.assign(11, { version: 1, technicianId: 24 }),
       422,
     )
     expect(mock.store).toEqual(before)
-    await ticketApi.assign(11, {
-      version: 1,
-      technicianId: 24,
-      overrideReason: 'Phê duyệt thêm một phiếu',
-    })
-    const candidates = await ticketApi.eligibleTechnicians(11, {
-      page: 0,
-      size: 20,
-    })
-    expect(
-      candidates.content.find((item) => item.technicianId === 24),
-    ).toMatchObject({ activeTicketCount: 2, maxActiveTickets: 1 })
   })
-  it.each([26, 27, 28])(
-    'never overrides inactive/missing role/profile candidate %s',
+  it.each([22, 23, 24, 25, 26, 27, 28])(
+    'never assigns blocked candidate %s',
     async (technicianId) => {
       const before = structuredClone(mock.store)
       await expectFailure(
         ticketApi.assign(11, {
           version: 1,
           technicianId,
-          overrideReason: 'Không được bypass',
         }),
         422,
       )
@@ -233,17 +218,17 @@ describe('ticket workflow mock HTTP contract', () => {
     expect(first).toMatchObject({
       page: 0,
       size: 5,
-      totalElements: 8,
+      totalElements: 9,
       totalPages: 2,
     })
     expect(first.content).toHaveLength(5)
     const second = await ticketApi.eligibleTechnicians(11, { page: 1, size: 5 })
     expect(second.content.map((item) => item.technicianId)).toEqual([
-      26, 27, 28,
+      26, 27, 28, 29,
     ])
     const matches = await ticketApi.eligibleTechnicians(11, {
       query: 'TRẦN',
-      eligibility: 'OVERRIDE_REQUIRED',
+      eligibility: 'BLOCKED',
     })
     expect(matches.content.map((item) => item.technicianId)).toEqual([22])
     expect(
@@ -253,8 +238,12 @@ describe('ticket workflow mock HTTP contract', () => {
     expect(
       (await ticketApi.eligibleTechnicians(11, { eligibility: 'BLOCKED' }))
         .content,
-    ).toHaveLength(3)
+    ).toHaveLength(7)
     await expectFailure(ticketApi.eligibleTechnicians(11, { query: '' }), 400)
+    await expectFailure(
+      ticketApi.eligibleTechnicians(11, { eligibility: 'OVERRIDE_REQUIRED' }),
+      400,
+    )
     await expectFailure(
       ticketApi.eligibleTechnicians(11, { eligibility: 'UNKNOWN' }),
       400,

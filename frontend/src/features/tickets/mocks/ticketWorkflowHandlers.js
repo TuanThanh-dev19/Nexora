@@ -184,19 +184,19 @@ export function createTicketWorkflowMock({
           assignment.endedAt == null,
       ).length
       const eligibilityReasons = []
-      const add = (code, overridable) =>
-        eligibilityReasons.push({ code, overridable })
-      if (candidate.userStatus !== 'ACTIVE') add('USER_INACTIVE', false)
-      if (!candidate.hasTechnicianRole) add('MISSING_TECHNICIAN_ROLE', false)
-      if (!candidate.hasProfile) add('MISSING_TECHNICIAN_PROFILE', false)
-      if (!candidate.available) add('UNAVAILABLE', true)
+      const add = (code) =>
+        eligibilityReasons.push({ code, overridable: false })
+      if (candidate.userStatus !== 'ACTIVE') add('USER_INACTIVE')
+      if (!candidate.hasTechnicianRole) add('MISSING_TECHNICIAN_ROLE')
+      if (!candidate.hasProfile) add('MISSING_TECHNICIAN_PROFILE')
+      if (!candidate.available) add('UNAVAILABLE')
       if (
         candidate.hasProfile &&
         activeTicketCount >= candidate.maxActiveTickets
       )
-        add('CAPACITY_REACHED', true)
-      if (!skillMatches) add('SKILL_MISMATCH', true)
-      if (!coverageMatches) add('COVERAGE_MISMATCH', true)
+        add('CAPACITY_REACHED')
+      if (!skillMatches) add('SKILL_MISMATCH')
+      if (!coverageMatches) add('COVERAGE_MISMATCH')
       return { ...candidate, activeTicketCount, eligibilityReasons }
     })
   const authenticate = async (request) => {
@@ -891,7 +891,7 @@ export function createTicketWorkflowMock({
         const filter = query.params.get('eligibility')
         if (
           filter &&
-          !['ELIGIBLE', 'OVERRIDE_REQUIRED', 'BLOCKED'].includes(filter)
+          !['ELIGIBLE', 'BLOCKED'].includes(filter)
         )
           return problem(
             400,
@@ -910,9 +910,7 @@ export function createTicketWorkflowMock({
             (!filter ||
               (filter === 'BLOCKED'
                 ? state.blocked
-                : filter === 'OVERRIDE_REQUIRED'
-                  ? state.requiresOverride
-                  : !state.blocked && !state.requiresOverride))
+                : !state.blocked))
           )
         })
         return pageResponse(content, query.page, query.size)
@@ -961,7 +959,7 @@ export function createTicketWorkflowMock({
             ...(definition.requiresReason || action === 'close'
               ? ['reason']
               : []),
-            ...(assignmentAction ? ['technicianId', 'overrideReason'] : []),
+            ...(assignmentAction ? ['technicianId'] : []),
           ]
           if (Object.keys(payload).some((key) => !fields.includes(key)))
             return problem(
@@ -1015,7 +1013,7 @@ export function createTicketWorkflowMock({
                 applyAction(
                   ticket,
                   'assign',
-                  { overrideReason: 'Phân công đồng thời trong demo' },
+                  {},
                   competingManager,
                   candidates().find(
                     (candidate) => !candidateEligibility(candidate).blocked,
@@ -1057,20 +1055,11 @@ export function createTicketWorkflowMock({
               'business-rule-violation',
               'Thao tác không phù hợp trạng thái phiếu.',
             )
-          if (assignmentAction && candidateEligibility(candidate).blocked)
+          if (assignmentAction && (!candidate || candidateEligibility(candidate).blocked))
             return problem(
               422,
               'business-rule-violation',
-              'Kỹ thuật viên không đủ điều kiện và không thể ghi đè.',
-            )
-          if (missingOverride)
-            return problem(
-              422,
-              'business-rule-violation',
-              'Điều kiện ứng viên yêu cầu lý do ghi đè.',
-              {
-                overrideReason: 'Vui lòng nhập lý do ghi đè điều kiện.',
-              },
+              'Kỹ thuật viên không đủ điều kiện phân công.',
             )
           if (
             ['reassign', 'unassign'].includes(action) &&
