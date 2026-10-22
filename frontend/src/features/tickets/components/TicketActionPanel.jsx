@@ -5,6 +5,7 @@ import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
 import {
   availableTicketActions,
   canManageTickets,
+  getResolverTechnician,
   isTicketOwner,
   TICKET_WORKFLOW_ACTIONS,
 } from '../constants/ticketWorkflow'
@@ -59,16 +60,22 @@ export function TicketActionPanel({ ticket }) {
           <TicketStatusBadge status={ticket.status} />
         </Stack>
         <p>
-          Kỹ thuật viên hiện tại:{' '}
+          {['RESOLVED', 'CLOSED'].includes(ticket.status)
+            ? 'Kỹ thuật viên xử lý: '
+            : 'Kỹ thuật viên hiện tại: '}
           {ticket.currentAssignment === undefined
             ? 'Dữ liệu phân công chưa được hỗ trợ'
             : (ticket.currentAssignment?.technician.fullName ??
-              'Chưa phân công')}
+              (['RESOLVED', 'CLOSED'].includes(ticket.status)
+                ? (getResolverTechnician(ticket)
+                    ? `${getResolverTechnician(ticket)} (Đã hoàn thành)`
+                    : 'Đã hoàn thành xử lý')
+                : 'Chưa phân công'))}
         </p>
         <Alert variant="info">
           {isTicketWorkflowMockEnabled()
             ? 'Bản mô phỏng: thay đổi chỉ nằm trong dữ liệu demo, chưa lưu lên máy chủ.'
-            : 'Tiếp nhận và phân công được lưu trên máy chủ.'}
+            : 'Tiếp nhận, phân công và đóng phiếu được lưu trên máy chủ.'}
         </Alert>
         {notice && (
           <Alert variant="success" role="status">

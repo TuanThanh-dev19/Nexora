@@ -112,6 +112,10 @@ public class Ticket {
     @Column(name = "resolution_outcome", length = 30)
     private ResolutionOutcome resolutionOutcome;
 
+    @Nationalized
+    @Column(name = "resolution_summary", length = 1000)
+    private String resolutionSummary;
+
     @Column(name = "sla_due_at")
     private OffsetDateTime slaDueAt;
 
@@ -287,6 +291,10 @@ public class Ticket {
         return resolutionOutcome;
     }
 
+    public String getResolutionSummary() {
+        return resolutionSummary;
+    }
+
     public OffsetDateTime getSlaDueAt() {
         return slaDueAt;
     }
@@ -313,6 +321,24 @@ public class Ticket {
 
     public void changeStatus(TicketStatus status) {
         this.status = Objects.requireNonNull(status, "status is required");
+    }
+
+    public void resolve(ResolutionOutcome outcome, String summary, OffsetDateTime resolvedAt) {
+        this.status = TicketStatus.RESOLVED;
+        this.resolutionOutcome = Objects.requireNonNull(outcome, "resolutionOutcome is required");
+        this.resolutionSummary = Objects.requireNonNull(summary, "resolutionSummary is required");
+        this.resolvedAt = Objects.requireNonNull(resolvedAt, "resolvedAt is required");
+        this.updatedAt = resolvedAt;
+    }
+
+    public void close(OffsetDateTime closedAt) {
+        this.status = TicketStatus.CLOSED;
+        this.closedAt = Objects.requireNonNull(closedAt, "closedAt is required");
+        this.updatedAt = closedAt;
+    }
+
+    public void touch(OffsetDateTime updatedAt) {
+        this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt is required");
     }
 
     @Override

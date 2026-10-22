@@ -20,13 +20,19 @@ import com.nexora.auth.service.InvalidCredentialsException;
 import com.nexora.common.exception.BusinessRuleException;
 import com.nexora.common.exception.ResourceNotFoundException;
 import com.nexora.common.exception.StaleWriteException;
+import com.nexora.common.exception.UnsupportedFilterException;
 import com.nexora.common.pagination.PageResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.springframework.util.MultiValueMap;
+
+import com.nexora.ticket.dto.request.AddWorkLogRequest;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
+import com.nexora.ticket.dto.request.CloseTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
+import com.nexora.ticket.dto.request.ResolveTicketRequest;
 import com.nexora.ticket.dto.request.ReviewTicketRequest;
 import com.nexora.ticket.dto.request.StartTicketRequest;
 import com.nexora.ticket.dto.request.TechnicianAssignedTicketsQuery;
@@ -35,15 +41,19 @@ import com.nexora.ticket.dto.response.EligibleTechnicianResponse.EligibilityReas
 import com.nexora.ticket.dto.response.TicketActionResultResponse;
 import com.nexora.ticket.dto.response.TicketActionResultResponse.CurrentAssignmentResponse;
 import com.nexora.ticket.dto.response.TicketSummaryResponse;
+import com.nexora.ticket.dto.response.WorkLogCreatedResponse;
+import com.nexora.ticket.dto.response.WorkLogResponse;
 import com.nexora.ticket.entity.Ticket;
 import com.nexora.ticket.entity.TicketAction;
 import com.nexora.ticket.entity.TicketAssignment;
 import com.nexora.ticket.entity.TicketStatus;
 import com.nexora.ticket.entity.TicketStatusHistory;
+import com.nexora.ticket.entity.WorkLog;
 import com.nexora.ticket.repository.TicketAssignmentRepository;
 import com.nexora.ticket.repository.TicketRepository;
 import com.nexora.ticket.repository.TicketSpecifications;
 import com.nexora.ticket.repository.TicketStatusHistoryRepository;
+import com.nexora.ticket.repository.WorkLogRepository;
 import com.nexora.ticket.service.TechnicianEligibilityService.EligibilityEvaluation;
 import com.nexora.user.entity.AppUser;
 import com.nexora.user.entity.RoleCode;
@@ -62,7 +72,9 @@ public class TicketAssignmentService {
     private final TicketStatusHistoryRepository statusHistoryRepository;
     private final TechnicianEligibilityService eligibilityService;
     private final TicketResponseMapper mapper;
+    private final WorkLogRepository workLogRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public TicketAssignmentService(
             AuthService authService,
             TicketRepository ticketRepository,
@@ -70,7 +82,9 @@ public class TicketAssignmentService {
             TechnicianProfileRepository profileRepository,
             TicketAssignmentRepository assignmentRepository,
             TicketStatusHistoryRepository statusHistoryRepository,
-            TechnicianEligibilityService eligibilityService, TicketResponseMapper mapper) {
+            TechnicianEligibilityService eligibilityService,
+            TicketResponseMapper mapper,
+            WorkLogRepository workLogRepository) {
         this.authService = authService;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
@@ -79,6 +93,20 @@ public class TicketAssignmentService {
         this.statusHistoryRepository = statusHistoryRepository;
         this.eligibilityService = eligibilityService;
         this.mapper = mapper;
+        this.workLogRepository = workLogRepository;
+    }
+
+    public TicketAssignmentService(
+            AuthService authService,
+            TicketRepository ticketRepository,
+            AppUserRepository userRepository,
+            TechnicianProfileRepository profileRepository,
+            TicketAssignmentRepository assignmentRepository,
+            TicketStatusHistoryRepository statusHistoryRepository,
+            TechnicianEligibilityService eligibilityService,
+            TicketResponseMapper mapper) {
+        this(authService, ticketRepository, userRepository, profileRepository, assignmentRepository,
+                statusHistoryRepository, eligibilityService, mapper, null);
     }
 
     @Transactional(readOnly = true)
@@ -245,6 +273,203 @@ public class TicketAssignmentService {
                 ticket.getStatus(),
                 ticket.getVersion(),
                 mapper.assignment(currentAssignment, actor, assignedBy));
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkLogResponse> workLogs(Jwt jwt, Long ticketId, MultiValueMap<String, String> queryParameters) {
+        if (queryParameters != null && !queryParameters.isEmpty()) {
+            throw new UnsupportedFilterException("Query parameters are not supported for work logs.");
+        }
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+
+        Ticket ticket = ticketRepository.findOne(
+                TicketSpecifications.visibleTo(viewer.id(), roles)
+                        .and(TicketSpecifications.id(ticketId)))
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+
+        return workLogRepository.findByTicketIdOrderByCreatedAtAscIdAsc(ticket.getId()).stream()
+                .map(mapper::workLog)
+                .toList();
+    }
+
+    public WorkLogCreatedResponse addWorkLog(Jwt jwt, Long ticketId, AddWorkLogRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+        if (!roles.contains(RoleCode.TECHNICIAN)) {
+            throw new AccessDeniedException("Only technicians can add work logs.");
+        }
+
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+
+        boolean isVisible = roles.contains(RoleCode.ADMIN) || roles.contains(RoleCode.MANAGER)
+                || assignmentRepository.existsByTicketIdAndTechnicianId(ticketId, viewer.id())
+                || (roles.contains(RoleCode.REQUESTER) && ticket.getReporter().getId().equals(viewer.id()));
+        if (!isVisible) {
+            throw new ResourceNotFoundException("The requested ticket is unavailable.");
+        }
+
+        if (!Objects.equals(ticket.getVersion(), request.version())) {
+            throw new StaleWriteException();
+        }
+
+        if (ticket.getStatus() != TicketStatus.IN_PROGRESS) {
+            throw new BusinessRuleException("Ticket must be in IN_PROGRESS status to add work log.");
+        }
+
+        TicketAssignment currentAssignment = assignmentRepository.findByTicketIdAndEndedAtIsNull(ticketId)
+                .orElseThrow(() -> new BusinessRuleException("Ticket has no active assignment."));
+
+        if (!Objects.equals(currentAssignment.getTechnicianId(), viewer.id())) {
+            throw new BusinessRuleException("Only the current assigned technician can add work logs.");
+        }
+
+        AppUser technician = userRepository.findById(viewer.id())
+                .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
+
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+
+        WorkLog workLog = new WorkLog(
+                ticket,
+                technician,
+                request.logType(),
+                request.content(),
+                request.startedAt(),
+                request.endedAt(),
+                request.minutesSpent(),
+                now);
+        workLog = workLogRepository.save(workLog);
+
+        ticket.touch(now);
+        ticketRepository.flush();
+
+        return mapper.workLogCreated(workLog, ticket.getVersion());
+    }
+
+    public TicketActionResultResponse resolve(Jwt jwt, Long ticketId, ResolveTicketRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+        if (!roles.contains(RoleCode.TECHNICIAN)) {
+            throw new AccessDeniedException("Only technicians can resolve tickets.");
+        }
+
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+
+        boolean isVisible = roles.contains(RoleCode.ADMIN) || roles.contains(RoleCode.MANAGER)
+                || assignmentRepository.existsByTicketIdAndTechnicianId(ticketId, viewer.id())
+                || (roles.contains(RoleCode.REQUESTER) && ticket.getReporter().getId().equals(viewer.id()));
+        if (!isVisible) {
+            throw new ResourceNotFoundException("The requested ticket is unavailable.");
+        }
+
+        if (!Objects.equals(ticket.getVersion(), request.version())) {
+            throw new StaleWriteException();
+        }
+
+        if (ticket.getStatus() != TicketStatus.IN_PROGRESS) {
+            throw new BusinessRuleException("Ticket must be in IN_PROGRESS status to resolve.");
+        }
+
+        TicketWorkflowContract.requireTransition(ticket.getStatus(), TicketAction.RESOLVE);
+
+        TicketAssignment currentAssignment = assignmentRepository.findByTicketIdAndEndedAtIsNull(ticketId)
+                .orElseThrow(() -> new BusinessRuleException("Ticket has no active assignment."));
+
+        if (!Objects.equals(currentAssignment.getTechnicianId(), viewer.id())) {
+            throw new BusinessRuleException("Only the current assigned technician can resolve the ticket.");
+        }
+
+        if (!workLogRepository.existsByTicketId(ticketId)) {
+            throw new BusinessRuleException("Ticket must have at least one saved work log before resolving.");
+        }
+
+        profileRepository.findByIdForUpdate(viewer.id());
+
+        AppUser actor = userRepository.findById(viewer.id())
+                .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
+
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+
+        TicketStatus from = ticket.getStatus();
+        ticket.resolve(request.resolutionOutcome(), request.resolutionSummary(), now);
+
+        currentAssignment.end(now, "RESOLVED");
+
+        statusHistoryRepository.save(new TicketStatusHistory(ticket, from, TicketStatus.RESOLVED,
+                TicketAction.RESOLVE, null, actor, now));
+
+        ticketRepository.flush();
+
+        return new TicketActionResultResponse(
+                ticket.getId(),
+                ticket.getStatus(),
+                ticket.getVersion(),
+                null);
+    }
+
+    public TicketActionResultResponse close(Jwt jwt, Long ticketId, CloseTicketRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        Set<RoleCode> roles = getRoles(viewer);
+
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
+
+        boolean isVisible = roles.contains(RoleCode.ADMIN) || roles.contains(RoleCode.MANAGER)
+                || assignmentRepository.existsByTicketIdAndTechnicianId(ticketId, viewer.id())
+                || (roles.contains(RoleCode.REQUESTER) && ticket.getReporter().getId().equals(viewer.id()));
+        if (!isVisible) {
+            throw new ResourceNotFoundException("The requested ticket is unavailable.");
+        }
+
+        if (!Objects.equals(ticket.getVersion(), request.version())) {
+            throw new StaleWriteException();
+        }
+
+        if (ticket.getStatus() != TicketStatus.RESOLVED) {
+            throw new BusinessRuleException("Ticket must be in RESOLVED status to close.");
+        }
+
+        boolean isOwner = ticket.getReporter().getId().equals(viewer.id()) && roles.contains(RoleCode.REQUESTER);
+        boolean isManagerOrAdmin = roles.contains(RoleCode.MANAGER) || roles.contains(RoleCode.ADMIN);
+
+        TicketAction action;
+        if (isOwner) {
+            action = TicketAction.CLOSE;
+        } else if (isManagerOrAdmin) {
+            action = TicketAction.FORCE_CLOSE;
+            if (request.reason() == null || request.reason().trim().isEmpty()) {
+                throw new BusinessRuleException("A non-blank reason is required to force-close a ticket.");
+            }
+        } else {
+            throw new AccessDeniedException("Only the ticket owner or a manager can close the ticket.");
+        }
+
+        TicketWorkflowContract.requireTransition(ticket.getStatus(), action);
+
+        AppUser actor = userRepository.findById(viewer.id())
+                .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
+
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+        TicketStatus from = ticket.getStatus();
+
+        ticket.close(now);
+
+        String reason = request.reason() != null && !request.reason().trim().isEmpty()
+                ? request.reason().trim()
+                : null;
+
+        statusHistoryRepository.save(new TicketStatusHistory(ticket, from, TicketStatus.CLOSED,
+                action, reason, actor, now));
+
+        ticketRepository.flush();
+
+        return new TicketActionResultResponse(
+                ticket.getId(),
+                ticket.getStatus(),
+                ticket.getVersion(),
+                null);
     }
 
     private Ticket lockedTicket(Long ticketId, Long version, TicketAction action) {

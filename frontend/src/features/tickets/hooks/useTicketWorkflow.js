@@ -14,7 +14,8 @@ export function useTicketWorkflow() {
   const enabled = isAuthenticated && !isChecking
   const isActionEnabled = (action) =>
     enabled &&
-    (['review', 'assign'].includes(action) || isTicketWorkflowMockEnabled())
+    (['review', 'assign', 'close'].includes(action) ||
+      isTicketWorkflowMockEnabled())
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({

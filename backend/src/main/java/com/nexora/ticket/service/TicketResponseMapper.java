@@ -66,7 +66,38 @@ public class TicketResponseMapper {
         return new TicketDetailResponse(summary.id(), summary.ticketNumber(), summary.title(), summary.status(),
                 summary.priority(), summary.category(), summary.location(), summary.asset(), summary.reporter(),
                 summary.slaDueAt(), summary.createdAt(), summary.updatedAt(), ticket.getDescription(), ticket.getVersion(),
-                storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment);
+                storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment,
+                ticket.getResolutionOutcome(), ticket.getResolutionSummary(), ticket.getResolvedAt(), ticket.getClosedAt());
+    }
+
+    public com.nexora.ticket.dto.response.WorkLogResponse workLog(com.nexora.ticket.entity.WorkLog log) {
+        return new com.nexora.ticket.dto.response.WorkLogResponse(
+                log.getId(),
+                log.getTicket().getId(),
+                new com.nexora.ticket.dto.response.WorkLogResponse.TechnicianSummary(
+                        log.getTechnician().getId(), log.getTechnician().getFullName()),
+                log.getLogType(),
+                log.getWorkDescription(),
+                log.getStartedAt(),
+                log.getEndedAt(),
+                log.getMinutesSpent(),
+                log.getCreatedAt());
+    }
+
+    public com.nexora.ticket.dto.response.WorkLogCreatedResponse workLogCreated(
+            com.nexora.ticket.entity.WorkLog log, Long ticketVersion) {
+        return new com.nexora.ticket.dto.response.WorkLogCreatedResponse(
+                log.getId(),
+                log.getTicket().getId(),
+                new com.nexora.ticket.dto.response.WorkLogResponse.TechnicianSummary(
+                        log.getTechnician().getId(), log.getTechnician().getFullName()),
+                log.getLogType(),
+                log.getWorkDescription(),
+                log.getStartedAt(),
+                log.getEndedAt(),
+                log.getMinutesSpent(),
+                log.getCreatedAt(),
+                ticketVersion);
     }
 
     public CurrentAssignmentResponse assignment(TicketAssignment assignment, AppUser technician, AppUser assignedBy) {

@@ -27,10 +27,8 @@ export function useWorkLogs(ticketId) {
     queryKey: ['tickets', ...ticketViewerKey(user), 'work-logs', ticketId],
     queryFn: ({ signal }) => ticketApi.workLogs(ticketId, signal),
     enabled:
-      isTicketWorkflowMockEnabled() &&
       isAuthenticated &&
       !isChecking &&
-      user?.roles?.includes('TECHNICIAN') &&
       Boolean(ticketId),
     staleTime: 0,
     retry: retryTicketQuery,
@@ -42,18 +40,14 @@ export function useTechnicianMutation(ticket) {
   const client = useQueryClient()
   const refresh = () =>
     Promise.all([
-      client.invalidateQueries({
-        queryKey: ['tickets', ...ticketViewerKey(user)],
-      }),
+      client.invalidateQueries({ queryKey: ['tickets'] }),
+      client.invalidateQueries({ queryKey: ['technicians'] }),
       client.invalidateQueries({ queryKey: ['dashboard'] }),
     ])
   const mutation = useMutation({
     mutationFn: ({ action, payload, files }) => {
       const source = action === 'start' ? 'ASSIGNED' : 'IN_PROGRESS'
-      if (
-        (action !== 'start' && !isTicketWorkflowMockEnabled()) ||
-        !canTechnicianWrite(ticket, user, source)
-      )
+      if (!canTechnicianWrite(ticket, user, source))
         throw new Error('Thao tác chưa khả dụng cho phiếu này.')
       if (action === 'uploadWorkResult')
         return ticketApi.uploadWorkResult(ticket.id, files)

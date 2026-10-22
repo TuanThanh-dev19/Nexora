@@ -197,5 +197,105 @@ public class TicketController {
             @Valid @RequestBody StartTicketRequest request) {
         return assignmentService.start(jwt, ticketId, request);
     }
+
+    @GetMapping(value = "/{ticketId}/work-logs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get ticket work logs",
+            description = "Returns a chronological list of work logs (createdAt ASC, id ASC) for a visible ticket. "
+                    + "Empty array if no logs exist. Rejects any unexpected query parameters with HTTP 400. "
+                    + "Caller must have visibility access to the ticket.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of work logs for the ticket"),
+            @ApiResponse(responseCode = "400", description = "Query parameters are not supported", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public java.util.List<com.nexora.ticket.dto.response.WorkLogResponse> workLogs(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable @Positive Long ticketId,
+            @Parameter(hidden = true) @RequestParam MultiValueMap<String, String> parameters) {
+        return assignmentService.workLogs(jwt, ticketId, parameters);
+    }
+
+    @PostMapping(value = "/{ticketId}/work-logs", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    @Operation(summary = "Add a work log to a ticket in progress",
+            description = "Creates a work log record for an IN_PROGRESS ticket. Only the current assigned technician can record work logs. "
+                    + "Increments ticket version and updates updatedAt timestamp. Returns the created work log and new ticketVersion.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Work log successfully created"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or unsupported fields", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Requires TECHNICIAN role", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Ticket not in IN_PROGRESS or caller is not current active assignee", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public com.nexora.ticket.dto.response.WorkLogCreatedResponse addWorkLog(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody com.nexora.ticket.dto.request.AddWorkLogRequest request) {
+        return assignmentService.addWorkLog(jwt, ticketId, request);
+    }
+
+    @PostMapping(value = "/{ticketId}/resolve", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Resolve an in-progress ticket",
+            description = "Resolves an IN_PROGRESS ticket. Requires at least one prior persisted work log. "
+                    + "Outcome must be FIXED, TEMPORARY_FIX, NO_FAULT_FOUND, or UNRESOLVED (DUPLICATE is rejected). "
+                    + "Terminates active assignment, records RESOLVE history, frees capacity, and increments ticket version.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ticket successfully resolved"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or unsupported fields", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Requires TECHNICIAN role", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Ticket not in IN_PROGRESS, caller not active assignee, or missing prior work log", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public TicketActionResultResponse resolve(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody com.nexora.ticket.dto.request.ResolveTicketRequest request) {
+        return assignmentService.resolve(jwt, ticketId, request);
+    }
+
+    @PostMapping(value = "/{ticketId}/close", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Close a resolved ticket",
+            description = "Transitions a ticket from RESOLVED to CLOSED. Ticket owners (REQUESTER) can close directly; managers/admins can force-close with a required non-blank reason. Sets closedAt and records status history.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ticket successfully closed"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or unsupported fields", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden if caller is not the owner or a manager/admin", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Ticket is not in RESOLVED status or missing required force-close reason", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public TicketActionResultResponse close(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody com.nexora.ticket.dto.request.CloseTicketRequest request) {
+        return assignmentService.close(jwt, ticketId, request);
+    }
 }
 

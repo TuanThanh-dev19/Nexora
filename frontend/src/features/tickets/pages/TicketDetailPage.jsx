@@ -18,6 +18,8 @@ import {
   TicketStatusHistory,
 } from '../components/TicketDetailSections'
 import { FORM_STATUS_LABELS } from '../constants/ticketPresentation'
+import { RESOLUTION_OUTCOMES } from '../constants/technicianWork'
+import { getResolverTechnician } from '../constants/ticketWorkflow'
 import { useTicket } from '../hooks/useTicket'
 import { isPositiveId } from '../hooks/useTicketSearchParams'
 import { formatTicketTime } from '../utils/ticketFormatting'
@@ -93,9 +95,13 @@ export function TicketDetailPage() {
                     ...(ticket.currentAssignment !== undefined
                       ? [
                           [
-                            'Kỹ thuật viên',
+                            ['RESOLVED', 'CLOSED'].includes(ticket.status)
+                              ? 'Kỹ thuật viên xử lý'
+                              : 'Kỹ thuật viên',
                             ticket.currentAssignment?.technician.fullName ??
-                              'Chưa phân công',
+                              (['RESOLVED', 'CLOSED'].includes(ticket.status)
+                                ? (getResolverTechnician(ticket) ?? 'Đã hoàn thành')
+                                : 'Chưa phân công'),
                           ],
                         ]
                       : []),
@@ -120,6 +126,49 @@ export function TicketDetailPage() {
               ticket={ticket}
             />
             <TechnicianWorkPanel ticket={ticket} />
+            {(ticket.resolutionOutcome || ticket.resolvedAt || ticket.resolutionSummary) && (
+              <Card className="ticket-section mb-3" data-testid="resolution-section">
+                <Card.Body>
+                  <h2 className="h5">Kết quả xử lý</h2>
+                  <Row as="dl" className="mb-0 ticket-metadata">
+                    <Col xs={12} sm={6} md={3} className="mt-2">
+                      <dt>Kết quả</dt>
+                      <dd>
+                        <Badge bg="success">
+                          {RESOLUTION_OUTCOMES.find(
+                            ([code]) => code === ticket.resolutionOutcome,
+                          )?.[1] ?? ticket.resolutionOutcome ?? '—'}
+                        </Badge>
+                      </dd>
+                    </Col>
+                    {getResolverTechnician(ticket) && (
+                      <Col xs={12} sm={6} md={3} className="mt-2">
+                        <dt>Kỹ thuật viên xử lý</dt>
+                        <dd>{getResolverTechnician(ticket)}</dd>
+                      </Col>
+                    )}
+                    <Col xs={12} sm={6} md={3} className="mt-2">
+                      <dt>Thời gian giải quyết</dt>
+                      <dd>{formatTicketTime(ticket.resolvedAt)}</dd>
+                    </Col>
+                    {ticket.closedAt && (
+                      <Col xs={12} sm={6} md={3} className="mt-2">
+                        <dt>Thời gian đóng</dt>
+                        <dd>{formatTicketTime(ticket.closedAt)}</dd>
+                      </Col>
+                    )}
+                  </Row>
+                  {ticket.resolutionSummary && (
+                    <div className="mt-3">
+                      <dt className="fw-semibold">Tóm tắt kết quả</dt>
+                      <dd className="mb-0 text-break" style={{ whiteSpace: 'pre-wrap' }}>
+                        {ticket.resolutionSummary}
+                      </dd>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            )}
             <div className="ticket-detail-grid">
               <div>
                 <Card className="ticket-section mb-3">

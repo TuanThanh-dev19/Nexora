@@ -198,26 +198,7 @@ describe('technician work UI', () => {
     ).toBeDisabled()
   })
 
-  it('validates image selection and retains it after an upload error for retry', async () => {
-    const createUrl = vi.fn(() => 'blob:preview')
-    const revokeUrl = vi.fn()
-    let finishUpload
-    const pendingUpload = new Promise((resolve) => {
-      finishUpload = resolve
-    })
-    vi.stubGlobal(
-      'URL',
-      Object.assign(class extends URL {}, {
-        createObjectURL: createUrl,
-        revokeObjectURL: revokeUrl,
-      }),
-    )
-    const upload = vi
-      .spyOn(ticketApi, 'uploadWorkResult')
-      .mockRejectedValueOnce({
-        response: { status: 500, data: { detail: 'Lỗi upload demo' } },
-      })
-      .mockImplementationOnce(() => pendingUpload)
+  it('hides WORK_RESULT upload control per demo scope', async () => {
     actor = {
       id: 24,
       fullName: 'Phạm Dũng',
@@ -225,90 +206,13 @@ describe('technician work UI', () => {
       roles: ['TECHNICIAN'],
     }
     mount('/tickets/13', actor)
-    const picker = await screen.findByLabelText('Chọn ảnh')
-    fireEvent.change(picker, {
-      target: { files: [new File(['bad'], 'bad.gif', { type: 'image/gif' })] },
-    })
-    expect(screen.getByText(/Chỉ chấp nhận ảnh JPEG/)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Bỏ ảnh' }))
-    fireEvent.change(picker, {
-      target: {
-        files: [new File(['image'], 'result.png', { type: 'image/png' })],
-      },
-    })
-    expect(screen.getByAltText('Xem trước result.png')).toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-    )
-    expect(await screen.findByText('Lỗi upload demo')).toBeInTheDocument()
-    expect(screen.getByAltText('Xem trước result.png')).toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-    )
-    expect(
-      screen.getByRole('button', { name: 'Đang tải ảnh...' }),
-    ).toBeDisabled()
-    await act(async () =>
-      finishUpload([{ id: 1, attachmentType: 'WORK_RESULT' }]),
-    )
-    await screen.findByText(/Ảnh đã tải trong bản mô phỏng/)
-    expect(upload).toHaveBeenCalledTimes(2)
-    expect(
-      screen.queryByAltText('Xem trước result.png'),
-    ).not.toBeInTheDocument()
-    expect(revokeUrl).toHaveBeenCalledWith('blob:preview')
+    expect(await screen.findByRole('button', { name: 'Thêm nhật ký' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Chọn ảnh')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tải ảnh mô phỏng' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Ảnh kết quả')).not.toBeInTheDocument()
   })
 
-  it('requires reload before retrying an image upload after a 409', async () => {
-    vi.stubGlobal(
-      'URL',
-      Object.assign(class extends URL {}, {
-        createObjectURL: () => 'blob:preview',
-        revokeObjectURL: vi.fn(),
-      }),
-    )
-    const upload = vi
-      .spyOn(ticketApi, 'uploadWorkResult')
-      .mockRejectedValueOnce({ response: { status: 409 } })
-      .mockResolvedValueOnce([{ id: 1, attachmentType: 'WORK_RESULT' }])
-    actor = {
-      id: 24,
-      fullName: 'Phạm Dũng',
-      status: 'ACTIVE',
-      roles: ['TECHNICIAN'],
-    }
-    mount('/tickets/13', actor)
-    fireEvent.change(await screen.findByLabelText('Chọn ảnh'), {
-      target: {
-        files: [new File(['image'], 'result.png', { type: 'image/png' })],
-      },
-    })
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-    )
-    expect(await screen.findByText(/Phiếu đã thay đổi/)).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-    ).toBeDisabled()
-    expect(screen.getByLabelText('Chọn ảnh')).toBeDisabled()
-    expect(upload).toHaveBeenCalledTimes(1)
-
-    await userEvent.click(screen.getByRole('button', { name: 'Tải lại phiếu' }))
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-      ).toBeEnabled(),
-    )
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Tải ảnh mô phỏng' }),
-    )
-    expect(
-      await screen.findByText(/Ảnh đã tải trong bản mô phỏng/),
-    ).toBeInTheDocument()
-    expect(upload).toHaveBeenCalledTimes(2)
-  })
-
-  it('allows my-work and start without mock gate, while keeping uncompleted APIs guarded', async () => {
+  it('allows my-work, start, work-logs and resolve without mock gate', async () => {
     vi.stubEnv('DEV', false)
     vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
     mount('/my-work')

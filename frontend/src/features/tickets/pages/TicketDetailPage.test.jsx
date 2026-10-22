@@ -74,4 +74,34 @@ describe('TicketDetailPage', () => {
     renderTicketApp('/tickets/not-a-number')
     expect(screen.getByRole('alert')).toHaveTextContent('Tham số không hợp lệ')
   })
+  it('displays read-only resolution outcome and summary when present', async () => {
+    const resolvedTicket = {
+      ...detail,
+      status: 'RESOLVED',
+      currentAssignment: null,
+      statusHistory: [
+        {
+          id: 1,
+          fromStatus: 'IN_PROGRESS',
+          toStatus: 'RESOLVED',
+          transitionAction: 'RESOLVE',
+          changedBy: { id: 21, fullName: 'Phạm Kỹ Thuật' },
+          changedAt: '2026-10-15T10:15:00+07:00',
+        },
+      ],
+      resolutionOutcome: 'FIXED',
+      resolutionSummary: 'Đã thay thế linh kiện hỏng, máy hoạt động bình thường.',
+      resolvedAt: '2026-10-15T10:15:00+07:00',
+      closedAt: null,
+    }
+    server.use(
+      http.get('*/api/v1/tickets/10', () => HttpResponse.json(resolvedTicket)),
+    )
+    renderTicketApp('/tickets/10')
+    expect(await screen.findByRole('heading', { name: 'Kết quả xử lý' })).toBeInTheDocument()
+    expect(screen.getByText('Đã sửa')).toBeInTheDocument()
+    expect(screen.getByText('Đã thay thế linh kiện hỏng, máy hoạt động bình thường.')).toBeInTheDocument()
+    expect(screen.getAllByText('Phạm Kỹ Thuật').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Kỹ thuật viên xử lý').length).toBeGreaterThanOrEqual(1)
+  })
 })

@@ -11,6 +11,7 @@ import com.nexora.ticket.dto.response.TicketSummaryResponse.AssetReference;
 import com.nexora.ticket.dto.response.TicketSummaryResponse.CatalogReference;
 import com.nexora.ticket.dto.response.TicketSummaryResponse.UserReference;
 import com.nexora.ticket.entity.AttachmentType;
+import com.nexora.ticket.entity.ResolutionOutcome;
 import com.nexora.ticket.entity.TicketAction;
 import com.nexora.ticket.entity.TicketStatus;
 
@@ -20,7 +21,11 @@ public record TicketDetailResponse(
         UserReference reporter, OffsetDateTime slaDueAt, OffsetDateTime createdAt, OffsetDateTime updatedAt,
         String description, Long version, StoredForm formVersion, List<DynamicValue> dynamicValues,
         List<HistoryEntry> statusHistory, List<AttachmentMetadata> attachments,
-        CurrentAssignmentResponse currentAssignment) {
+        CurrentAssignmentResponse currentAssignment,
+        ResolutionOutcome resolutionOutcome,
+        String resolutionSummary,
+        OffsetDateTime resolvedAt,
+        OffsetDateTime closedAt) {
     public TicketDetailResponse {
         dynamicValues = List.copyOf(dynamicValues);
         statusHistory = List.copyOf(statusHistory);

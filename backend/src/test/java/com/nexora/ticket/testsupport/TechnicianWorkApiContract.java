@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
@@ -53,6 +54,11 @@ import com.nexora.user.entity.TechnicianProfile;
 
 import jakarta.persistence.EntityManager;
 
+import com.nexora.ticket.entity.ResolutionOutcome;
+import com.nexora.ticket.entity.WorkLog;
+import com.nexora.ticket.entity.WorkLogType;
+import com.nexora.ticket.repository.WorkLogRepository;
+
 public abstract class TechnicianWorkApiContract {
 
     @Autowired protected MockMvc mvc;
@@ -62,6 +68,7 @@ public abstract class TechnicianWorkApiContract {
     @Autowired protected TicketAssignmentService assignmentService;
     @Autowired protected TicketRepository ticketRepository;
     @Autowired protected TicketAssignmentRepository assignmentRepository;
+    @Autowired protected WorkLogRepository workLogRepository;
     @MockitoSpyBean protected TicketStatusHistoryRepository historyRepository;
 
     protected TicketReadFixtures f;
@@ -85,7 +92,7 @@ public abstract class TechnicianWorkApiContract {
 
             // Active assignment for inProgressTicket
             TicketAssignment activeForHistorical = new TicketAssignment(
-                    inProgressTicket.getId(), f.technician.getId(), f.manager.getId(), TicketReadFixtures.TIME);
+                    inProgressTicket.getId(), f.technician.getId(), f.manager.getId(), TicketReadFixtures.TIME.plusHours(4));
             em.persist(activeForHistorical);
 
             em.flush();
@@ -96,6 +103,8 @@ public abstract class TechnicianWorkApiContract {
     void cleanup() {
         if (f == null) return;
         tx(() -> {
+            em.createQuery("delete from WorkLog w where w.ticket.id in :ids")
+                    .setParameter("ids", f.ticketIds()).executeUpdate();
             em.createQuery("delete from TicketStatusHistory h where h.ticket.id in :ids")
                     .setParameter("ids", f.ticketIds()).executeUpdate();
             em.createQuery("delete from TicketAssignment a where a.ticketId in :ids")
@@ -106,6 +115,10 @@ public abstract class TechnicianWorkApiContract {
 
     protected void tx(Runnable work) {
         new TransactionTemplate(transactions).executeWithoutResult(status -> work.run());
+    }
+
+    protected <T> T tx(java.util.function.Supplier<T> work) {
+        return new TransactionTemplate(transactions).execute(status -> work.get());
     }
 
     protected Jwt token(AppUser user) {
@@ -125,6 +138,43 @@ public abstract class TechnicianWorkApiContract {
                 .with(jwt().jwt(token(user)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body));
+    }
+
+    protected ResultActions getWorkLogs(Long ticketId, AppUser user, String... params) throws Exception {
+        var req = get("/api/v1/tickets/{id}/work-logs", ticketId).with(jwt().jwt(token(user)));
+        for (int i = 0; i < params.length; i += 2) {
+            req.param(params[i], params[i + 1]);
+        }
+        return mvc.perform(req);
+    }
+
+    protected ResultActions addWorkLog(Long ticketId, AppUser user, String body) throws Exception {
+        return mvc.perform(post("/api/v1/tickets/{id}/work-logs", ticketId)
+                .with(jwt().jwt(token(user)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    protected ResultActions resolveTicket(Long ticketId, AppUser user, String body) throws Exception {
+        return mvc.perform(post("/api/v1/tickets/{id}/resolve", ticketId)
+                .with(jwt().jwt(token(user)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    protected ResultActions closeTicket(Long ticketId, AppUser user, String body) throws Exception {
+        var req = post("/api/v1/tickets/{id}/close", ticketId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body);
+        if (user != null) {
+            req = req.with(jwt().jwt(token(user)));
+        }
+        return mvc.perform(req);
+    }
+
+    protected ResultActions getTicketDetail(Long ticketId, AppUser user) throws Exception {
+        return mvc.perform(get("/api/v1/tickets/{id}", ticketId)
+                .with(jwt().jwt(token(user))));
     }
 
     // ==========================================
@@ -474,8 +524,611 @@ public abstract class TechnicianWorkApiContract {
         assertThat(conflictOrErrorCount.get()).isEqualTo(1);
     }
 
+    // ==========================================
+    // 3. Work Log API Tests
+    // ==========================================
+
     @Test
-    void openApiIncludesBothEndpoints() throws Exception {
+    void getWorkLogsReturnsEmptyArrayWhenNoLogsExist() throws Exception {
+        getWorkLogs(inProgressTicket.getId(), f.technician)
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getWorkLogsReturnsChronologicalOrderAndFullDetailsWithoutTicketVersion() throws Exception {
+        OffsetDateTime t1 = OffsetDateTime.parse("2026-10-15T09:00:00+07:00");
+        OffsetDateTime t2 = OffsetDateTime.parse("2026-10-15T10:00:00+07:00");
+
+        tx(() -> {
+            em.persist(new WorkLog(inProgressTicket, f.technician, WorkLogType.DIAGNOSIS,
+                    "Diagnosis step", t1, t1.plusMinutes(20), 20, t1));
+            em.persist(new WorkLog(inProgressTicket, f.technician, WorkLogType.REPAIR,
+                    "Repair step", t2, t2.plusMinutes(30), 30, t2));
+            em.flush();
+        });
+
+        var res = getWorkLogs(inProgressTicket.getId(), f.technician)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andReturn();
+
+        JsonNode array = json.readTree(res.getResponse().getContentAsByteArray());
+        JsonNode first = array.get(0);
+        assertThat(first.get("ticketId").asLong()).isEqualTo(inProgressTicket.getId());
+        assertThat(first.get("logType").asText()).isEqualTo("DIAGNOSIS");
+        assertThat(first.get("content").asText()).isEqualTo("Diagnosis step");
+        assertThat(first.get("minutesSpent").asInt()).isEqualTo(20);
+        assertThat(first.at("/technician/id").asLong()).isEqualTo(f.technician.getId());
+        assertThat(first.at("/technician/fullName").asText()).isEqualTo(f.technician.getFullName());
+        assertThat(first.has("ticketVersion")).isFalse();
+
+        JsonNode second = array.get(1);
+        assertThat(second.get("logType").asText()).isEqualTo("REPAIR");
+        assertThat(second.has("ticketVersion")).isFalse();
+    }
+
+    @Test
+    void getWorkLogsRejectsUnexpectedQueryParametersWith400() throws Exception {
+        getWorkLogs(inProgressTicket.getId(), f.technician, "page", "0")
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/unsupported-filter"));
+    }
+
+    @Test
+    void getWorkLogsVisibilityPermissions() throws Exception {
+        // Reporter can read work logs
+        getWorkLogs(inProgressTicket.getId(), inProgressTicket.getReporter())
+                .andExpect(status().isOk());
+
+        // Manager can read work logs
+        getWorkLogs(inProgressTicket.getId(), f.manager)
+                .andExpect(status().isOk());
+
+        // Admin can read work logs
+        getWorkLogs(inProgressTicket.getId(), f.admin)
+                .andExpect(status().isOk());
+
+        // Missing or inaccessible ticket -> 404
+        getWorkLogs(999999L, f.technician)
+                .andExpect(status().isNotFound());
+    }
+
+    @ParameterizedTest
+    @MethodSource("com.nexora.ticket.testsupport.TechnicianWorkApiContract#validLogTypes")
+    void addWorkLogAcceptsAllFiveLogTypes(WorkLogType logType) throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        String body = """
+                {
+                    "version": %d,
+                    "logType": "%s",
+                    "content": "Work completed for %s",
+                    "startedAt": "2026-10-15T09:00:00+07:00",
+                    "endedAt": "2026-10-15T09:30:00+07:00",
+                    "minutesSpent": 30
+                }
+                """.formatted(version, logType.name(), logType.name());
+
+        var res = addWorkLog(ticketId, f.technician, body)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.logType").value(logType.name()))
+                .andExpect(jsonPath("$.content").value("Work completed for " + logType.name()))
+                .andExpect(jsonPath("$.ticketVersion").value(version + 1))
+                .andExpect(jsonPath("$.technician.id").value(f.technician.getId()))
+                .andReturn();
+
+        JsonNode data = json.readTree(res.getResponse().getContentAsByteArray());
+        assertThat(data.has("id")).isTrue();
+
+        // Verify database persistence
+        tx(() -> {
+            Ticket ticket = em.find(Ticket.class, ticketId);
+            assertThat(ticket.getVersion()).isEqualTo(version + 1);
+            List<WorkLog> logs = workLogRepository.findByTicketIdOrderByCreatedAtAscIdAsc(ticketId);
+            assertThat(logs).hasSize(1);
+            assertThat(logs.get(0).getLogType()).isEqualTo(logType);
+        });
+    }
+
+    static Stream<WorkLogType> validLogTypes() {
+        return Stream.of(WorkLogType.values());
+    }
+
+    @Test
+    void addWorkLogSupportsNullableEndedAtAndMinutesSpentWithoutAutocalculation() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        String body = """
+                {
+                    "version": %d,
+                    "logType": "PROGRESS",
+                    "content": "Progress report without endedAt or minutes",
+                    "startedAt": "2026-10-15T09:00:00Z"
+                }
+                """.formatted(version);
+
+        addWorkLog(ticketId, f.technician, body)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.endedAt").doesNotExist())
+                .andExpect(jsonPath("$.minutesSpent").doesNotExist())
+                .andExpect(jsonPath("$.ticketVersion").value(version + 1));
+
+        tx(() -> {
+            List<WorkLog> logs = workLogRepository.findByTicketIdOrderByCreatedAtAscIdAsc(ticketId);
+            assertThat(logs).hasSize(1);
+            assertThat(logs.get(0).getEndedAt()).isNull();
+            assertThat(logs.get(0).getMinutesSpent()).isNull();
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("com.nexora.ticket.testsupport.TechnicianWorkApiContract#invalidWorkLogPayloads")
+    void addWorkLogValidationRejections(String payload, String expectedFieldError) throws Exception {
+        addWorkLog(inProgressTicket.getId(), f.technician, payload)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andExpect(jsonPath("$.fieldErrors." + expectedFieldError).exists());
+    }
+
+    static Stream<Arguments> invalidWorkLogPayloads() {
+        return Stream.of(
+                // Missing version
+                Arguments.of("{\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\"}", "version"),
+                // Negative version
+                Arguments.of("{\"version\":-1,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\"}", "version"),
+                // Invalid logType enum
+                Arguments.of("{\"version\":0,\"logType\":\"INVALID_TYPE\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\"}", "logType"),
+                // Blank content
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"   \",\"startedAt\":\"2026-10-15T09:00:00Z\"}", "content"),
+                // Missing startedAt
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\"}", "startedAt"),
+                // startedAt without offset
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00\"}", "startedAt"),
+                // endedAt < startedAt
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T10:00:00Z\",\"endedAt\":\"2026-10-15T09:00:00Z\"}", "endedAt"),
+                // minutesSpent = 0
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\",\"minutesSpent\":0}", "minutesSpent"),
+                // minutesSpent negative
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\",\"minutesSpent\":-10}", "minutesSpent"),
+                // minutesSpent overflow (greater than int)
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\",\"minutesSpent\":99999999999}", "minutesSpent"),
+                // Unsupported extra field
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\",\"author\":\"technician\"}", "author"),
+                Arguments.of("{\"version\":0,\"logType\":\"PROGRESS\",\"content\":\"valid\",\"startedAt\":\"2026-10-15T09:00:00Z\",\"technicianId\":21}", "technicianId")
+        );
+    }
+
+    @Test
+    void addWorkLogPermissionsAndStateRules() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+        String validBody = "{\"version\":" + version + ",\"logType\":\"PROGRESS\",\"content\":\"Test\",\"startedAt\":\"2026-10-15T09:00:00Z\"}";
+
+        // Reporter cannot add log -> 403
+        addWorkLog(ticketId, f.requester, validBody).andExpect(status().isForbidden());
+
+        // Manager cannot add log -> 403
+        addWorkLog(ticketId, f.manager, validBody).andExpect(status().isForbidden());
+
+        // Technician without assignment on ticket -> 422
+        addWorkLog(ticketId, f.multi, validBody).andExpect(status().isUnprocessableEntity());
+
+        // Stale version -> 409
+        addWorkLog(ticketId, f.technician, "{\"version\":" + (version + 99) + ",\"logType\":\"PROGRESS\",\"content\":\"Test\",\"startedAt\":\"2026-10-15T09:00:00Z\"}")
+                .andExpect(status().isConflict());
+
+        // Ticket not in IN_PROGRESS (e.g. assignedTicket is in ASSIGNED status) -> 422
+        addWorkLog(assignedTicket.getId(), f.technician, "{\"version\":" + assignedTicket.getVersion() + ",\"logType\":\"PROGRESS\",\"content\":\"Test\",\"startedAt\":\"2026-10-15T09:00:00Z\"}")
+                .andExpect(status().isUnprocessableEntity());
+
+        // Non-existent ticket -> 404
+        addWorkLog(999999L, f.technician, validBody).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void addWorkLogDoesNotCreateStatusHistory() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        long historyCountBefore = tx(() -> em.createQuery(
+                "select count(h) from TicketStatusHistory h where h.ticket.id = :id", Long.class)
+                .setParameter("id", ticketId).getSingleResult());
+
+        addWorkLog(ticketId, f.technician, "{\"version\":" + version + ",\"logType\":\"REPAIR\",\"content\":\"Repaired cable\",\"startedAt\":\"2026-10-15T09:00:00Z\"}")
+                .andExpect(status().isCreated());
+
+        long historyCountAfter = tx(() -> em.createQuery(
+                "select count(h) from TicketStatusHistory h where h.ticket.id = :id", Long.class)
+                .setParameter("id", ticketId).getSingleResult());
+
+        assertThat(historyCountAfter).isEqualTo(historyCountBefore);
+    }
+
+    // ==========================================
+    // 4. Resolve API Tests
+    // ==========================================
+
+    @Test
+    void resolveRequiresPriorSavedWorkLog() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        String body = """
+                {
+                    "version": %d,
+                    "resolutionOutcome": "FIXED",
+                    "resolutionSummary": "Summary without prior log"
+                }
+                """.formatted(version);
+
+        resolveTicket(ticketId, f.technician, body)
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @ParameterizedTest
+    @MethodSource("com.nexora.ticket.testsupport.TechnicianWorkApiContract#invalidResolvePayloads")
+    void resolveValidationRejections(String payload, String expectedFieldError) throws Exception {
+        resolveTicket(inProgressTicket.getId(), f.technician, payload)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andExpect(jsonPath("$.fieldErrors." + expectedFieldError).exists());
+    }
+
+    static Stream<Arguments> invalidResolvePayloads() {
+        return Stream.of(
+                // Missing version
+                Arguments.of("{\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Done\"}", "version"),
+                // Negative version
+                Arguments.of("{\"version\":-1,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Done\"}", "version"),
+                // DUPLICATE outcome is rejected at resolve endpoint
+                Arguments.of("{\"version\":0,\"resolutionOutcome\":\"DUPLICATE\",\"resolutionSummary\":\"Duplicate ticket\"}", "resolutionOutcome"),
+                // Invalid outcome enum
+                Arguments.of("{\"version\":0,\"resolutionOutcome\":\"INVALID\",\"resolutionSummary\":\"Done\"}", "resolutionOutcome"),
+                // Blank resolutionSummary
+                Arguments.of("{\"version\":0,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"   \"}", "resolutionSummary"),
+                // resolutionSummary > 1000 characters
+                Arguments.of("{\"version\":0,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"" + "a".repeat(1001) + "\"}", "resolutionSummary"),
+                // Extra unsupported field
+                Arguments.of("{\"version\":0,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Done\",\"extra\":\"not allowed\"}", "extra")
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"FIXED", "TEMPORARY_FIX", "NO_FAULT_FOUND", "UNRESOLVED"})
+    void resolveSuccessfulFlowWithAllFourOutcomes(String outcome) throws Exception {
+        Long ticketId = inProgressTicket.getId();
+
+        // 1. Add work log first
+        Long version = inProgressTicket.getVersion();
+        addWorkLog(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "logType": "DIAGNOSIS",
+                    "content": "Checked the device",
+                    "startedAt": "2026-10-15T09:00:00Z"
+                }
+                """.formatted(version)).andExpect(status().isCreated());
+
+        Long newVersion = version + 1;
+
+        // Verify active assignment exists before resolve
+        long initialActiveCount = tx(() -> {
+            long count = assignmentRepository.countActiveAssignmentsByTechnicianId(f.technician.getId());
+            assertThat(count).isGreaterThanOrEqualTo(1);
+            return count;
+        });
+
+        // 2. Resolve ticket
+        String summary = "Resolution summary for outcome " + outcome;
+        String resolveBody = """
+                {
+                    "version": %d,
+                    "resolutionOutcome": "%s",
+                    "resolutionSummary": "%s"
+                }
+                """.formatted(newVersion, outcome, summary);
+
+        resolveTicket(ticketId, f.technician, resolveBody)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(ticketId))
+                .andExpect(jsonPath("$.status").value("RESOLVED"))
+                .andExpect(jsonPath("$.version").value(newVersion + 1))
+                .andExpect(jsonPath("$.currentAssignment").doesNotExist());
+
+        // 3. Verify database state
+        tx(() -> {
+            Ticket ticket = em.find(Ticket.class, ticketId);
+            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.RESOLVED);
+            assertThat(ticket.getResolutionOutcome()).isEqualTo(ResolutionOutcome.valueOf(outcome));
+            assertThat(ticket.getResolutionSummary()).isEqualTo(summary);
+            assertThat(ticket.getResolvedAt()).isNotNull();
+            assertThat(ticket.getClosedAt()).isNull();
+
+            // Assignment terminated
+            List<TicketAssignment> assignments = assignmentRepository.findByTicketIdOrderByAssignedAtDescIdDesc(ticketId);
+            assertThat(assignments).isNotEmpty();
+            TicketAssignment assignment = assignments.stream()
+                    .filter(a -> "RESOLVED".equals(a.getEndReason()))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(assignment.getEndedAt()).isNotNull();
+            assertThat(assignment.getEndedAt()).isEqualTo(ticket.getResolvedAt());
+            assertThat(assignment.getEndReason()).isEqualTo("RESOLVED");
+            assertThat(assignmentRepository.findByTicketIdAndEndedAtIsNull(ticketId)).isEmpty();
+
+            // Capacity released
+            long activeCount = assignmentRepository.countActiveAssignmentsByTechnicianId(f.technician.getId());
+            assertThat(activeCount).isEqualTo(initialActiveCount - 1);
+
+            // History written
+            List<TicketStatusHistory> histories = em.createQuery(
+                    "select h from TicketStatusHistory h where h.ticket.id = :id and h.transitionAction = :action",
+                    TicketStatusHistory.class)
+                    .setParameter("id", ticketId)
+                    .setParameter("action", TicketAction.RESOLVE)
+                    .getResultList();
+            assertThat(histories).hasSize(1);
+            assertThat(histories.get(0).getFromStatus()).isEqualTo(TicketStatus.IN_PROGRESS);
+            assertThat(histories.get(0).getToStatus()).isEqualTo(TicketStatus.RESOLVED);
+        });
+
+        // 4. Verify Ticket detail endpoint returns all 4 resolution fields
+        getTicketDetail(ticketId, f.technician)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resolutionOutcome").value(outcome))
+                .andExpect(jsonPath("$.resolutionSummary").value(summary))
+                .andExpect(jsonPath("$.resolvedAt").isNotEmpty())
+                .andExpect(jsonPath("$.closedAt").isEmpty());
+    }
+
+    @Test
+    void resolvePermissionsAndStateChecks() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        // Add a work log
+        addWorkLog(ticketId, f.technician, "{\"version\":" + version + ",\"logType\":\"REPAIR\",\"content\":\"Done\",\"startedAt\":\"2026-10-15T09:00:00Z\"}")
+                .andExpect(status().isCreated());
+        Long currentVersion = version + 1;
+
+        String validResolve = "{\"version\":" + currentVersion + ",\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Fixed properly\"}";
+
+        // Reporter cannot resolve -> 403
+        resolveTicket(ticketId, f.requester, validResolve).andExpect(status().isForbidden());
+
+        // Manager cannot resolve -> 403
+        resolveTicket(ticketId, f.manager, validResolve).andExpect(status().isForbidden());
+
+        // Unassigned technician cannot resolve -> 422
+        resolveTicket(ticketId, f.multi, validResolve).andExpect(status().isUnprocessableEntity());
+
+        // Ticket not in IN_PROGRESS status (e.g. assignedTicket is ASSIGNED) -> 422
+        resolveTicket(assignedTicket.getId(), f.technician, "{\"version\":" + assignedTicket.getVersion() + ",\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Fixed\"}")
+                .andExpect(status().isUnprocessableEntity());
+
+        // Stale version -> 409
+        resolveTicket(ticketId, f.technician, "{\"version\":" + (currentVersion + 10) + ",\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Fixed\"}")
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void ticketDetailReturnsNullForResolutionFieldsBeforeResolve() throws Exception {
+        getTicketDetail(inProgressTicket.getId(), f.technician)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resolutionOutcome").isEmpty())
+                .andExpect(jsonPath("$.resolutionSummary").isEmpty())
+                .andExpect(jsonPath("$.resolvedAt").isEmpty())
+                .andExpect(jsonPath("$.closedAt").isEmpty());
+    }
+
+    @Test
+    void concurrentResolveReturnsOneSuccessAndOneConflict() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = inProgressTicket.getVersion();
+
+        // Add log first
+        addWorkLog(ticketId, f.technician, "{\"version\":" + version + ",\"logType\":\"PROGRESS\",\"content\":\"Logged\",\"startedAt\":\"2026-10-15T09:00:00Z\"}")
+                .andExpect(status().isCreated());
+        Long newVersion = version + 1;
+
+        int threads = 2;
+        var startLatch = new CountDownLatch(1);
+        var doneLatch = new CountDownLatch(threads);
+        var successCount = new AtomicInteger(0);
+        var conflictCount = new AtomicInteger(0);
+        var executor = Executors.newFixedThreadPool(threads);
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    var res = resolveTicket(ticketId, f.technician, """
+                            {
+                                "version": %d,
+                                "resolutionOutcome": "FIXED",
+                                "resolutionSummary": "Concurrent resolve attempt"
+                            }
+                            """.formatted(newVersion)).andReturn();
+                    int code = res.getResponse().getStatus();
+                    if (code == 200) {
+                        successCount.incrementAndGet();
+                    } else if (code == 409 || code == 422) {
+                        conflictCount.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    conflictCount.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        assertThat(doneLatch.await(10, TimeUnit.SECONDS)).isTrue();
+        executor.shutdown();
+
+        assertThat(successCount.get()).isEqualTo(1);
+        assertThat(conflictCount.get()).isEqualTo(1);
+    }
+
+    @Test
+    void closeTicket_asOwner_success() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+
+        addWorkLog(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "logType": "RESOLUTION",
+                    "content": "Fixed issue completely",
+                    "startedAt": "2026-10-15T09:00:00Z"
+                }
+                """.formatted(version)).andExpect(status().isCreated());
+
+        resolveTicket(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "resolutionOutcome": "FIXED",
+                    "resolutionSummary": "Completed successfully"
+                }
+                """.formatted(version + 1)).andExpect(status().isOk());
+
+        Long resolvedVersion = version + 2;
+
+        closeTicket(ticketId, f.multi, """
+                {
+                    "version": %d
+                }
+                """.formatted(resolvedVersion))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(ticketId))
+                .andExpect(jsonPath("$.status").value("CLOSED"))
+                .andExpect(jsonPath("$.version").value(resolvedVersion + 1))
+                .andExpect(jsonPath("$.currentAssignment").doesNotExist());
+
+        tx(() -> {
+            Ticket ticket = em.find(Ticket.class, ticketId);
+            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CLOSED);
+            assertThat(ticket.getClosedAt()).isNotNull();
+
+            var history = em.createQuery(
+                    "select h from TicketStatusHistory h where h.ticket.id = :id order by h.id desc",
+                    TicketStatusHistory.class)
+                    .setParameter("id", ticketId)
+                    .getResultList();
+            assertThat(history).isNotEmpty();
+            TicketStatusHistory latest = history.get(0);
+            assertThat(latest.getTransitionAction()).isEqualTo(TicketAction.CLOSE);
+            assertThat(latest.getToStatus()).isEqualTo(TicketStatus.CLOSED);
+            assertThat(latest.getChangedBy().getId()).isEqualTo(f.multi.getId());
+        });
+    }
+
+    @Test
+    void closeTicket_asManager_forceClose_requiresReason() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+
+        addWorkLog(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "logType": "RESOLUTION",
+                    "content": "Fixed issue",
+                    "startedAt": "2026-10-15T09:00:00Z"
+                }
+                """.formatted(version)).andExpect(status().isCreated());
+
+        resolveTicket(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "resolutionOutcome": "FIXED",
+                    "resolutionSummary": "Completed"
+                }
+                """.formatted(version + 1)).andExpect(status().isOk());
+
+        Long resolvedVersion = version + 2;
+
+        closeTicket(ticketId, f.manager, """
+                {
+                    "version": %d
+                }
+                """.formatted(resolvedVersion)).andExpect(status().isUnprocessableEntity());
+
+        closeTicket(ticketId, f.manager, """
+                {
+                    "version": %d,
+                    "reason": "Force closed by manager after verification"
+                }
+                """.formatted(resolvedVersion))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CLOSED"));
+
+        tx(() -> {
+            Ticket ticket = em.find(Ticket.class, ticketId);
+            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CLOSED);
+
+            var history = em.createQuery(
+                    "select h from TicketStatusHistory h where h.ticket.id = :id order by h.id desc",
+                    TicketStatusHistory.class)
+                    .setParameter("id", ticketId)
+                    .getResultList();
+            assertThat(history).isNotEmpty();
+            TicketStatusHistory latest = history.get(0);
+            assertThat(latest.getTransitionAction()).isEqualTo(TicketAction.FORCE_CLOSE);
+            assertThat(latest.getReason()).isEqualTo("Force closed by manager after verification");
+        });
+    }
+
+    @Test
+    void closeTicket_staleVersion_returns409() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+
+        addWorkLog(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "logType": "RESOLUTION",
+                    "content": "Fixed issue",
+                    "startedAt": "2026-10-15T09:00:00Z"
+                }
+                """.formatted(version)).andExpect(status().isCreated());
+
+        resolveTicket(ticketId, f.technician, """
+                {
+                    "version": %d,
+                    "resolutionOutcome": "FIXED",
+                    "resolutionSummary": "Completed"
+                }
+                """.formatted(version + 1)).andExpect(status().isOk());
+
+        closeTicket(ticketId, f.multi, """
+                {
+                    "version": 999
+                }
+                """).andExpect(status().isConflict());
+    }
+
+    @Test
+    void closeTicket_notResolvedStatus_returns422() throws Exception {
+        Long ticketId = inProgressTicket.getId();
+        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+
+        closeTicket(ticketId, f.multi, """
+                {
+                    "version": %d
+                }
+                """.formatted(version)).andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void openApiIncludesAllWorkEndpoints() throws Exception {
         var doc = json.readTree(mvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsByteArray());
 
@@ -494,5 +1147,45 @@ public abstract class TechnicianWorkApiContract {
         assertThat(start.path("responses").has("400")).isTrue();
         assertThat(start.path("responses").has("409")).isTrue();
         assertThat(start.path("responses").has("422")).isTrue();
+
+        // Work logs GET endpoint
+        assertThat(doc.path("paths").has("/api/v1/tickets/{ticketId}/work-logs")).isTrue();
+        var workLogsGet = doc.path("paths").path("/api/v1/tickets/{ticketId}/work-logs").path("get");
+        assertThat(workLogsGet.path("responses").has("200")).isTrue();
+        assertThat(workLogsGet.path("responses").has("400")).isTrue();
+        assertThat(workLogsGet.path("responses").has("401")).isTrue();
+        assertThat(workLogsGet.path("responses").has("404")).isTrue();
+
+        // Work logs POST endpoint
+        var workLogsPost = doc.path("paths").path("/api/v1/tickets/{ticketId}/work-logs").path("post");
+        assertThat(workLogsPost.path("responses").has("201")).isTrue();
+        assertThat(workLogsPost.path("responses").has("400")).isTrue();
+        assertThat(workLogsPost.path("responses").has("401")).isTrue();
+        assertThat(workLogsPost.path("responses").has("403")).isTrue();
+        assertThat(workLogsPost.path("responses").has("404")).isTrue();
+        assertThat(workLogsPost.path("responses").has("409")).isTrue();
+        assertThat(workLogsPost.path("responses").has("422")).isTrue();
+
+        // Resolve endpoint
+        assertThat(doc.path("paths").has("/api/v1/tickets/{ticketId}/resolve")).isTrue();
+        var resolve = doc.path("paths").path("/api/v1/tickets/{ticketId}/resolve").path("post");
+        assertThat(resolve.path("responses").has("200")).isTrue();
+        assertThat(resolve.path("responses").has("400")).isTrue();
+        assertThat(resolve.path("responses").has("401")).isTrue();
+        assertThat(resolve.path("responses").has("403")).isTrue();
+        assertThat(resolve.path("responses").has("404")).isTrue();
+        assertThat(resolve.path("responses").has("409")).isTrue();
+        assertThat(resolve.path("responses").has("422")).isTrue();
+
+        // Close endpoint
+        assertThat(doc.path("paths").has("/api/v1/tickets/{ticketId}/close")).isTrue();
+        var close = doc.path("paths").path("/api/v1/tickets/{ticketId}/close").path("post");
+        assertThat(close.path("responses").has("200")).isTrue();
+        assertThat(close.path("responses").has("400")).isTrue();
+        assertThat(close.path("responses").has("401")).isTrue();
+        assertThat(close.path("responses").has("403")).isTrue();
+        assertThat(close.path("responses").has("404")).isTrue();
+        assertThat(close.path("responses").has("409")).isTrue();
+        assertThat(close.path("responses").has("422")).isTrue();
     }
 }

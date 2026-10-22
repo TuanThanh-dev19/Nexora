@@ -355,17 +355,23 @@ export function TechnicianWorkPanel({ ticket }) {
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState('')
   if (!user?.roles?.includes('TECHNICIAN')) return null
-  const available = isTicketWorkflowMockEnabled()
+  const available = true
   const canStart = canTechnicianWrite(ticket, user, 'ASSIGNED')
-  const canWork = available && canTechnicianWrite(ticket, user)
+  const canWork = canTechnicianWrite(ticket, user)
   const submit = async (action, payload) => {
     try {
       await mutation.mutateAsync({ action, payload })
       setDialog(null)
+      await refresh()
+      await logs.refetch()
       setNotice(
         action === 'start'
           ? 'Bắt đầu xử lý phiếu thành công.'
-          : 'Thao tác thành công trong bản mô phỏng; chưa lưu trên máy chủ.',
+          : action === 'addWorkLog'
+            ? 'Thêm nhật ký công việc thành công.'
+            : action === 'resolve'
+              ? 'Hoàn tất xử lý phiếu thành công.'
+              : 'Thao tác thành công.',
       )
     } catch {
       /* Feedback stays visible in the dialog. */
@@ -403,13 +409,6 @@ export function TechnicianWorkPanel({ ticket }) {
                 ? `${ticket.currentAssignment.technician.fullName} · ${formatTicketTime(ticket.currentAssignment.assignedAt)}`
                 : 'Không còn phân công hiện tại'}
           </p>
-          {ticket.status === 'IN_PROGRESS' && (
-            <Alert variant="info">
-              {available
-                ? 'Bản mô phỏng: công việc và ảnh chưa được lưu trên máy chủ.'
-                : 'Chức năng công việc chưa khả dụng; API sẽ được bổ sung sau.'}
-            </Alert>
-          )}
           {notice && (
             <Alert variant="success" role="status">
               {notice}
@@ -461,44 +460,42 @@ export function TechnicianWorkPanel({ ticket }) {
             )}
         </Card.Body>
       </Card>
-      {available && (
-        <Card className="ticket-section mb-3">
-          <Card.Body>
-            <h2 className="h5">Nhật ký công việc</h2>
-            {logs.isError ? (
-              <Alert variant="danger">
-                Không thể tải nhật ký.{' '}
-                <Button size="sm" onClick={() => logs.refetch()}>
-                  Thử lại
-                </Button>
-              </Alert>
-            ) : logs.isPending ? (
-              <p>Đang tải nhật ký...</p>
-            ) : !logs.data?.length ? (
-              <p className="text-secondary mb-0">Chưa có nhật ký.</p>
-            ) : (
-              <ol className="ticket-timeline">
-                {logs.data.map((log) => (
-                  <li key={log.id}>
-                    <strong>
-                      {WORK_LOG_TYPES.find(
-                        ([code]) => code === log.logType,
-                      )?.[1] ?? log.logType}
-                    </strong>
-                    <p className="mb-1 text-break">{log.content}</p>
-                    <small>
-                      {formatTicketTime(log.startedAt)} →{' '}
-                      {formatTicketTime(log.endedAt)} ·{' '}
-                      {log.minutesSpent ?? '—'} phút
-                    </small>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </Card.Body>
-        </Card>
-      )}
-      {canWork && <WorkImages mutation={mutation} upload={upload} />}
+      <Card className="ticket-section mb-3">
+        <Card.Body>
+          <h2 className="h5">Nhật ký công việc</h2>
+          {logs.isError ? (
+            <Alert variant="danger">
+              Không thể tải nhật ký.{' '}
+              <Button size="sm" onClick={() => logs.refetch()}>
+                Thử lại
+              </Button>
+            </Alert>
+          ) : logs.isPending ? (
+            <p>Đang tải nhật ký...</p>
+          ) : !logs.data?.length ? (
+            <p className="text-secondary mb-0">Chưa có nhật ký.</p>
+          ) : (
+            <ol className="ticket-timeline">
+              {logs.data.map((log) => (
+                <li key={log.id}>
+                  <strong>
+                    {WORK_LOG_TYPES.find(
+                      ([code]) => code === log.logType,
+                    )?.[1] ?? log.logType}
+                  </strong>
+                  <p className="mb-1 text-break">{log.content}</p>
+                  <small>
+                    {formatTicketTime(log.startedAt)} →{' '}
+                    {formatTicketTime(log.endedAt)} ·{' '}
+                    {log.minutesSpent ?? '—'} phút
+                  </small>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card.Body>
+      </Card>
+      {/* Ẩn control upload WORK_RESULT theo phạm vi demo: {canWork && <WorkImages mutation={mutation} upload={upload} />} */}
       {dialog?.name === 'start' && (
         <WorkDialog
           title="Bắt đầu xử lý"

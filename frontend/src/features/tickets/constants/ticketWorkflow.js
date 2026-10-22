@@ -125,3 +125,16 @@ export function workflowHistoryAction(action, status, ticket, user) {
     ? 'CANCEL_BEFORE_ASSIGNMENT'
     : 'CANCEL_AFTER_ASSIGNMENT'
 }
+
+export function getResolverTechnician(ticket) {
+  if (!ticket?.statusHistory?.length) return null
+  return (
+    ticket.statusHistory
+      .slice()
+      .reverse()
+      .find(
+        (entry) =>
+          entry.transitionAction === 'RESOLVE' || entry.toStatus === 'RESOLVED',
+      )?.changedBy?.fullName ?? null
+  )
+}
