@@ -1,162 +1,121 @@
-# Nexora architecture
+# Kiến trúc Nexora
 
-## Backend modules
+## 1. Tổng thể
 
-```text
-com.nexora
-├── config         Security, CORS, OpenAPI, persistence configuration
-├── common         Cross-cutting exceptions, health, pagination, storage
-├── auth           Login, access-token handling and current user
-├── user           User, role, permission and technician profile
-├── location       Campus, building, floor, room/area
-├── asset          Equipment type, equipment and status history
-├── category       Incident category, form versions and dynamic validation
-├── ticket         Report, assignment, workflow, work log and attachments
-├── notification   MongoDB notification documents and delivery state
-├── audit          Append-only MongoDB audit events
-├── migration      Idempotent legacy SQL-to-MongoDB backfill
-└── dashboard      Aggregated metrics and SLA reports
+Nexora là modular monolith: một Spring Boot REST API và một React SPA. Các module theo nghiệp vụ nằm trong cùng backend; không có microservice, message broker hoặc distributed transaction.
+
+```mermaid
+flowchart LR
+    U["REQUESTER / TECHNICIAN / MANAGER / ADMIN"] --> SPA["React SPA"]
+    SPA -->|"JSON hoặc multipart + Bearer JWT"| API["Spring Security + REST controllers"]
+    API --> S["Services: quyền, nghiệp vụ, transaction"]
+    S --> JPA["JPA / JDBC repositories"]
+    JPA --> SQL[("SQL Server: dữ liệu quan hệ")]
+    S --> FS["FileStorageService"]
+    FS --> FILE[("Filesystem riêng: ảnh")]
+    S --> DOC["Document services / sự kiện AFTER_COMMIT"]
+    DOC --> MONGO[("MongoDB: audit, comment, notification")]
 ```
 
-Feedback belongs to the ticket module in the MVP. Audit events, ticket comments,
-and notifications use Spring Data MongoDB. All strongly relational entities
-remain in SQL Server and use JPA/JDBC. Cross-database references are scalar SQL
-IDs validated by the service layer, never MongoDB `DBRef` values.
+MongoDB đã có document/repository/service; sơ đồ không khẳng định mọi sự kiện nghiệp vụ đều phát notification hoặc đã có API comment đang bật.
 
-Writes that describe an already committed SQL transaction are published as
-application events and persisted to MongoDB with an `AFTER_COMMIT` listener.
-MongoDB failures are logged explicitly and cannot roll back the completed SQL
-transaction.
+## 2. Tổ chức mã nguồn
 
-Inside each feature, add only the layers it needs:
+| Khu vực                                    | Trách nhiệm                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| backend/.../auth, user                     | Login, JWT, user/role và cấu hình kỹ thuật viên                   |
+| backend/.../category                       | Category, form versions, field/option và rule validation          |
+| backend/.../ticket                         | Tạo/đọc Ticket, assignment, workflow, log, attachments            |
+| backend/.../asset, location                | Thiết bị, địa điểm và lịch sử trạng thái                          |
+| backend/.../dashboard                      | Truy vấn tổng hợp theo phạm vi xem                                |
+| backend/.../common, config                 | Problem Details, pagination, storage, security, OpenAPI           |
+| backend/.../audit, notification, migration | Document persistence và legacy backfill                           |
+| frontend/src/app                           | Router, providers và route guards                                 |
+| frontend/src/features                      | API clients, hooks, pages, components, schemas của từng nghiệp vụ |
+| frontend/src/shared                        | HTTP client, session handling, layout và UI dùng chung            |
 
-```text
-ticket/
-├── controller/
-├── dto/request/
-├── dto/response/
-├── document/
-├── entity/
-├── repository/
-└── service/
+Trong backend, dùng controller/dto/entity/document/repository/service khi thực sự cần. Ticket giữ cấu trúc phẳng theo layer; không tạo thêm package workflow/comment lồng nhau chỉ để phân loại.
+
+Frontend: .jsx cho JSX, .js cho module thông thường. API module gửi request; TanStack Query quản lý dữ liệu server/cache; Context giữ phiên đăng nhập. Component không gọi Axios trực tiếp. Filter/page/sort đi qua URL search params khi màn hình hỗ trợ.
+
+## 3. Ranh giới trách nhiệm
+
+- Controller đọc/validate HTTP, gọi service và trả DTO.
+- Service kiểm quyền đối tượng, trạng thái, validation nghiệp vụ và transaction.
+- Repository truy vấn/lưu dữ liệu; không quyết định action người dùng được phép làm.
+- JPA entity giữ dữ liệu và các thao tác domain nhỏ; không serialize trực tiếp thành API.
+- Backend là nơi quyết định quyền cuối cùng. Route guard và client validation hỗ trợ UX.
+- open-in-view=false; mapping DTO sử dụng quan hệ lazy phải diễn ra trong transaction.
+- Tái sử dụng AppUser, Skill, Location, TechnicianProfile và các repository hiện có; không ánh xạ cùng bảng ở nhiều module.
+
+## 4. Luồng Ticket đang hoạt động
+
+```mermaid
+stateDiagram-v2
+    [*] --> SUBMITTED: REQUESTER tạo phiếu
+    SUBMITTED --> UNDER_REVIEW: MANAGER/ADMIN review
+    UNDER_REVIEW --> ASSIGNED: assign ứng viên hợp lệ
+    ASSIGNED --> IN_PROGRESS: current TECHNICIAN start
+    IN_PROGRESS --> RESOLVED: resolve sau work log
+    RESOLVED --> CLOSED: reporter có REQUESTER close
 ```
 
-Keep ticket packages flat by layer. MongoDB comment documents belong in `document/`,
-JPA entities and the `TicketStatus`/`TicketAction` enums in `entity/`, comment
-repositories and JPA specifications in `repository/`, and comment services and
-workflow policy classes directly in `service/`. Keep these responsibilities in
-separate classes without introducing nested comment or workflow packages.
+Work logs và ảnh kết quả được bổ sung trong IN_PROGRESS. Upload ảnh không chuyển trạng thái hoặc tăng version. Các enum/contract còn chứa REOPENED, REJECTED, CANCELLED và action khác, nhưng các action đang tắt trong demoScope không thuộc sơ đồ triển khai end-to-end này.
 
-Keep the application as a modular monolith for the eight-week MVP. Microservices, Kafka, Redis, and a separate state-machine framework are not required.
+## 5. Transaction và cập nhật đồng thời
 
-## Frontend modules
+Workflow nhận expected version; sai version trả 409. Service lấy khóa Ticket bằng findByIdForUpdate, kiểm rule, thay đổi trạng thái và lưu history trong cùng SQL transaction, flush rồi dựng response. JPA quản lý tăng version.
 
-```text
-src/
-├── app/
-│   ├── router.jsx          Route-to-page mapping
-│   ├── providers.jsx       Query and authentication providers
-│   ├── queryClient.js
-│   └── routes/             ProtectedRoute and RequireRole
-├── features/
-│   ├── auth/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── schemas/
-│   ├── tickets/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── constants/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   ├── assets/
-│   ├── categories/
-│   ├── dashboard/
-│   └── home/
-├── shared/
-│   ├── api/                Shared Axios client and error handling
-│   ├── components/         Cross-feature reusable UI
-│   ├── hooks/
-│   ├── layouts/
-│   ├── styles/
-│   ├── constants/
-│   └── utils/
-├── test/                   Shared test setup and mocks
-├── App.jsx
-└── main.jsx                Browser entry point
+Khi thao tác cần khóa cả Ticket và technician profile, giữ thứ tự Ticket → profile. Kiểm capacity/assignment khi ghi, không chỉ dựa vào danh sách ứng viên đọc trước đó. Không tự retry mutation.
+
+Tạo Ticket giữ khóa category dùng chung với publish cùng các reference locks cần thiết. Snapshot form/default skill/priority/SLA được xác định khi tạo; không lấy cấu hình mới để diễn giải lại Ticket cũ.
+
+## 6. Upload ảnh kết quả
+
+```mermaid
+sequenceDiagram
+    actor T as Technician
+    participant UI as React
+    participant C as Upload controller/reader
+    participant S as Upload service
+    participant DB as SQL Server
+    participant F as File storage
+    T->>UI: Chọn ảnh, xem preview, gửi
+    UI->>C: metadata + files
+    C->>S: files đã parse nghiêm ngặt
+    S->>DB: BEGIN và khóa Ticket
+    S->>S: ACTIVE, visibility, role, assignee, IN_PROGRESS
+    S->>S: Validate toàn bộ ảnh
+    loop Mỗi ảnh
+        S->>F: Store bằng UUID key
+        S->>S: Đăng ký cleanup khi rollback
+        S->>DB: Lưu WORK_RESULT metadata
+    end
+    S->>DB: Flush và COMMIT
+    S-->>UI: Metadata DTO
+    UI->>C: GET chi tiết qua REST API
 ```
 
-Rules:
+Nếu store/persistence lỗi, transaction rollback metadata và callback dọn file đã tạo. Cleanup best effort nếu việc xóa file cũng lỗi; đây không phải giao dịch filesystem/SQL nguyên tử ở cấp hạ tầng.
 
-- Pages and UI components do not call Axios directly.
-- Use `.jsx` for files that render JSX and `.js` for plain JavaScript modules. The frontend does not use TypeScript or TSX.
-- A feature keeps its API calls and query hooks within that feature.
-- A page represents a complete routed screen; `components` contains smaller reusable UI pieces.
-- TanStack Query owns server state; Context owns only small client state such as the authenticated user.
-- Filters, sorting, and pagination should be represented in URL search parameters.
-- Route guards improve UX, but Spring Security still enforces authorization.
+Đọc ảnh kiểm visibility của Ticket và attachment thuộc đúng Ticket; không có public/static mapping cho thư mục upload.
 
-## Recommended ticket workflow
+## 7. SQL Server và MongoDB
 
-```text
-SUBMITTED → UNDER_REVIEW → ASSIGNED → IN_PROGRESS → RESOLVED → CLOSED
-```
+SQL Server là nguồn chuẩn cho user, role, catalog, Ticket và workflow. MongoDB chứa audit_events, ticket_comments, notifications; SQL ID được tham chiếu bằng số Long, không dùng DBRef.
 
-The canonical SQL Server status set also includes `REOPENED`, `REJECTED`, and
-`CANCELLED`. Display labels remain separate from these stored/API codes. Ticket
-status and action vocabulary, transition rules, actor constraints, mandatory
-inputs, and expected side effects are defined by the pure Java contract in
-`com.nexora.ticket.service`, using the `TicketStatus` and `TicketAction` enums from
-`com.nexora.ticket.entity`. `SUBMIT` starts from the explicit `NEW_REQUEST`
-source rather than introducing a non-persisted ticket status.
+Audit mô tả SQL đã commit được ghi qua AFTER_COMMIT; lỗi MongoDB được log và không rollback SQL đã commit. Không dùng AFTER_COMMIT cho status history vì history phải nguyên tử với thay đổi Ticket.
 
-Workflow changes are action-driven. Later application services select an
-approved `TicketAction` and derive its target status from the contract; they do
-not accept an arbitrary target status. `CLOSED`, `REJECTED`, and `CANCELLED` are
-terminal in the MVP. Assignment changes, status-history writes, timestamps, and
-SLA calculation are documented by the contract as expected effects but remain
-the responsibility of later transactional services.
+## 8. Quyết định và quy ước bảo trì
 
-## Ticket supporting persistence
+| Quyết định                                   | Lý do / hệ quả                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------ |
+| Modular monolith                             | Dễ tích hợp và bảo vệ luồng Controller–Service–Repository trong nhóm nhỏ |
+| Immutable published form                     | Dữ liệu lịch sử vẫn đọc theo định nghĩa cũ                               |
+| Version + pessimistic lock                   | Phát hiện request cũ và tuần tự hóa kiểm tra quan hệ/trạng thái/capacity |
+| File key ngẫu nhiên, đọc có quyền            | Tách tên hiển thị khỏi đường dẫn lưu, tránh public file access           |
+| Không cascade từ child sang Ticket/user/form | Tránh thao tác attachment/history tác động ngoài phạm vi                 |
+| Feature-first frontend/backend               | Một phần việc có thể xuyên suốt API, UI và test                          |
+| Flyway duy nhất quản lý schema               | Các máy nâng cấp cùng lịch sử; migration đã áp dụng không được sửa       |
 
-`TicketFieldValue`, `TicketStatusHistory`, and `TicketAttachment` map the existing
-SQL Server child tables. Ticket has no child collections: query each child through
-its own repository. Associations are unidirectional and lazy, with no cascading
-persist or delete into Ticket, users, forms, or fields. Referenced rows must be
-persisted first. Flyway owns the composite Ticket/form/field foreign keys; the
-entities store a fixed `formVersionId` and reject cross-form field references.
-
-Dynamic answers use verbatim `NVARCHAR(MAX)` JSON strings: text/select/date/datetime
-are JSON strings, numbers remain numbers, booleans remain booleans, and multi-select
-uses an array of option-value strings. Persistence never parses or re-serializes
-them. SQL Server checks JSON syntax; later creation services validate field types,
-required values, options, and validation rules. Published/archived form data remains
-readable. `findByTicketIdOrderByFieldOrder` fetches field metadata and orders by
-`displayOrder ASC, field ID ASC` to break display-order ties.
-
-History uses the existing `TicketStatus` and `TicketAction` enums. Initial SUBMIT
-has a null source status; actions such as REASSIGN may keep the same status. History
-has no mutation methods and its columns are not updateable through JPA. Read it
-with `findByTicketIdOrderByChangedAtAscIdAsc`. Generic repository delete methods
-are not business operations: callers must treat history as append-only. Later
-workflow services must write history in the same SQL transaction as the Ticket
-update, never through an `AFTER_COMMIT` listener. Persistence itself does not
-automatically enforce that every Ticket update has a corresponding history row.
-
-Attachments store only an opaque storage key, original display filename, content
-type, byte count, uploader, and references/timestamp. They contain no binary data
-and perform no filesystem access. Original filenames are never paths. A dynamic
-IMAGE is a `REPORT_EVIDENCE` attachment linked to an IMAGE field; no scalar value
-row is required. Every attachment has the Ticket's form-version ID, even without
-a field. `WORK_RESULT` is supported; `COMMENT` is mapped for schema compatibility
-and remains P1. Attachment queries filter by Ticket and optionally type, then
-order by `createdAt ASC, ID ASC`. Services map entities to DTOs within a transaction
-when accessing lazy references because open-in-view is disabled.
-
-This foundation introduces no upload/download endpoint, creation service, workflow
-service, or schema migration. Existing FK `NO ACTION` behavior is preserved.
-
-## Dynamic category forms
-
-An administrator creates a category, edits a draft form version, validates it, and publishes it. Published versions are immutable. Each ticket stores the form version used when it was created, so later category changes do not invalidate historical reports.
+Chỉ thêm abstraction/dependency khi có nhu cầu cụ thể. Không tạo BaseService, generic upload framework hoặc state-machine library cho quy trình hiện tại. Pull request phải nêu hành vi thay đổi, validation và cập nhật tài liệu tương ứng; CI chạy backend verify, frontend lint/test/build.

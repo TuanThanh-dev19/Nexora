@@ -62,8 +62,13 @@ export function useTechnicianMutation(ticket) {
     },
     retry: false,
     onSuccess: refresh,
-    onError: (error) => {
-      if ([403, 404, 409, 422].includes(error?.response?.status)) void refresh()
+    onError: (error, { action }) => {
+      // Keep selected images until the technician explicitly reloads after an upload error.
+      if (
+        action !== 'uploadWorkResult' &&
+        [403, 404, 409, 422].includes(error?.response?.status)
+      )
+        void refresh()
     },
   })
   return { mutation, refresh }

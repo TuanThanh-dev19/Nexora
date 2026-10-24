@@ -19,6 +19,7 @@ import java.util.*;
 @Component
 public class TicketMultipartReader {
     private final ObjectReader reader;
+    private final ObjectReader metadataReader;
 
     @SuppressWarnings("deprecation")
     public TicketMultipartReader(ObjectMapper mapper) {
@@ -31,6 +32,7 @@ public class TicketMultipartReader {
                         .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
                         .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                         .readerFor(CreateTicketRequest.class);
+        metadataReader = reader.forType(JsonNode.class);
     }
 
     public Submission read(HttpServletRequest request) throws IOException, ServletException {
@@ -68,6 +70,32 @@ public class TicketMultipartReader {
     }
 
     public record Submission(CreateTicketRequest ticket, List<MultipartFile> files) {}
+
+    public List<MultipartFile> readWorkResult(HttpServletRequest request)
+            throws IOException, ServletException {
+        var parts = request.getParts();
+        var metadata = parts.stream().filter(p -> p.getName().equals("metadata")).toList();
+        if (metadata.size() != 1
+                || parts.stream().anyMatch(p -> !Set.of("metadata", "files").contains(p.getName())))
+            throw TicketSubmissionException.invalid(
+                    "metadata", "Supply exactly one metadata part and repeated files parts.");
+        // The browser sends metadata as a JSON string, without an application/json part header.
+        try (var input = metadata.getFirst().getInputStream()) {
+            JsonNode value = metadataReader.readValue(input);
+            if (value == null || !value.isObject() || value.size() != 1
+                    || !value.path("attachmentType").isTextual()
+                    || !value.path("attachmentType").textValue().equals("WORK_RESULT"))
+                throw TicketSubmissionException.invalid(
+                        "metadata", "Metadata must contain only attachmentType: WORK_RESULT.");
+        } catch (com.fasterxml.jackson.core.JacksonException ex) {
+            throw TicketSubmissionException.invalid("metadata", "Invalid metadata JSON.");
+        }
+        return parts.stream()
+                .filter(p -> p.getName().equals("files"))
+                .map(PartFile::new)
+                .map(f -> (MultipartFile) f)
+                .toList();
+    }
 
     private record PartFile(Part part) implements MultipartFile {
         public String getName() {

@@ -27,7 +27,6 @@ import {
   useTicketComments,
   useTicketFeedback,
 } from '../hooks/useTicketCollaboration'
-import { useTechnicianMutation } from '../hooks/useTechnicianWork'
 import { useTicketWorkflow } from '../hooks/useTicketWorkflow'
 import { createTicketWorkflowMock } from '../mocks/ticketWorkflowHandlers'
 import { renderTicketApp } from '../testsupport/renderTicketApp'
@@ -185,7 +184,7 @@ describe('real API demo scope', () => {
       ).not.toBeInTheDocument()
       expect(
         screen.queryByRole('heading', { name: 'Ảnh kết quả', exact: true }),
-      ).not.toBeInTheDocument()
+      ).toBeInTheDocument()
       expect(comments).not.toHaveBeenCalled()
       expect(feedback).not.toHaveBeenCalled()
       expect(upload).not.toHaveBeenCalled()
@@ -211,7 +210,6 @@ describe('real API demo scope', () => {
       'feedback',
       'addComment',
       'addFeedback',
-      'uploadWorkResult',
       'reject',
       'cancel',
       'reassign',
@@ -222,7 +220,6 @@ describe('real API demo scope', () => {
       () => ({
         comments: useTicketComments(ticket, 0),
         feedback: useTicketFeedback(ticket),
-        technician: useTechnicianMutation(ticket),
         workflow: useTicketWorkflow(),
       }),
       {
@@ -245,12 +242,6 @@ describe('real API demo scope', () => {
       ).rejects.toThrow()
       await expect(
         result.current.feedback.mutation.mutateAsync({ rating: 5 }),
-      ).rejects.toThrow()
-      await expect(
-        result.current.technician.mutation.mutateAsync({
-          action: 'uploadWorkResult',
-          files: [],
-        }),
       ).rejects.toThrow()
       for (const action of [
         'reject',

@@ -13,7 +13,7 @@ export const demoScope = {
     unassign: false,
     reopen: false,
     forceClose: false,
-    uploadWorkResult: false,
+    uploadWorkResult: true,
   },
   features: {
     myWork: true,

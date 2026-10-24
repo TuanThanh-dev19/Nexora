@@ -113,7 +113,8 @@ public class LocalFileStorageService implements FileStorageService {
         while ((bytesRead = input.read(buffer)) != -1) {
             total += bytesRead;
             if (total > FileStorageValidator.MAX_FILE_SIZE) {
-                throw new InvalidFileException("File exceeds the maximum size of 5 MiB.");
+                throw new InvalidFileException(InvalidFileException.Reason.TOO_LARGE,
+                        "File exceeds the maximum size of 5 MiB.");
             }
             output.write(buffer, 0, bytesRead);
         }
