@@ -106,6 +106,18 @@ class LocalFileStorageServiceTest {
     }
 
     @Test
+    void streamingLimitRetainsTooLargeReasonAndCleansTemporaryFile() throws IOException {
+        var upload = new MockMultipartFile("files", "large.png", "image/png", new byte[5242881]) {
+            @Override
+            public long getSize() { return 1; }
+        };
+        assertThatThrownBy(() -> service().store(upload))
+                .isInstanceOfSatisfying(InvalidFileException.class,
+                        exception -> assertThat(exception.getReason()).isEqualTo(InvalidFileException.Reason.TOO_LARGE));
+        try (var files = Files.list(storageRoot)) { assertThat(files).isEmpty(); }
+    }
+
+    @Test
     void duplicateOriginalFilenamesNeverOverwriteEachOther() throws IOException {
         LocalFileStorageService service = service();
         MockMultipartFile first = new MockMultipartFile("file", "same.png", "image/png", PNG);

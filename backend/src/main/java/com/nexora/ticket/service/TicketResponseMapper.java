@@ -58,16 +58,20 @@ public class TicketResponseMapper {
                 .map(entry -> new HistoryEntry(entry.getId(), entry.getFromStatus(), entry.getToStatus(),
                         entry.getTransitionAction(), entry.getReason(), user(entry.getChangedBy()), entry.getChangedAt())).toList();
         List<AttachmentMetadata> attachmentMetadata = attachments.stream()
-                .map(attachment -> new AttachmentMetadata(attachment.getId(),
-                        attachment.getFieldDefinition() == null ? null : attachment.getFieldDefinition().getId(),
-                        attachment.getAttachmentType(), attachment.getOriginalName(), attachment.getContentType(),
-                        attachment.getSizeBytes(), user(attachment.getUploadedBy()), attachment.getCreatedAt())).toList();
+                .map(this::attachment).toList();
 
         return new TicketDetailResponse(summary.id(), summary.ticketNumber(), summary.title(), summary.status(),
                 summary.priority(), summary.category(), summary.location(), summary.asset(), summary.reporter(),
                 summary.slaDueAt(), summary.createdAt(), summary.updatedAt(), ticket.getDescription(), ticket.getVersion(),
                 storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment,
                 ticket.getResolutionOutcome(), ticket.getResolutionSummary(), ticket.getResolvedAt(), ticket.getClosedAt());
+    }
+
+    public AttachmentMetadata attachment(TicketAttachment attachment) {
+        return new AttachmentMetadata(attachment.getId(),
+                attachment.getFieldDefinition() == null ? null : attachment.getFieldDefinition().getId(),
+                attachment.getAttachmentType(), attachment.getOriginalName(), attachment.getContentType(),
+                attachment.getSizeBytes(), user(attachment.getUploadedBy()), attachment.getCreatedAt());
     }
 
     public com.nexora.ticket.dto.response.WorkLogResponse workLog(com.nexora.ticket.entity.WorkLog log) {

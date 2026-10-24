@@ -1,12 +1,34 @@
-# Shared API contracts
+# Hợp đồng REST API
 
-Business endpoints use the `/api/v1` base path. Successful non-list responses use their own response DTO and are not wrapped in a generic envelope.
+## 1. Nguồn và quy ước
 
-## RFC 9457 errors
+Base path: `/api/v1`. Endpoint dưới đây tồn tại trong controller hiện tại; không liệt kê mock route như API đã hoàn chỉnh. Schema request/response chi tiết được sinh từ annotations/DTO tại [Swagger](http://localhost:8080/swagger-ui.html) và [OpenAPI JSON](http://localhost:8080/v3/api-docs).
 
-Errors use `application/problem+json` and Spring `ProblemDetail`. The `type` URI is a stable machine-readable identifier; clients must not branch on the human-readable `title` or `detail`.
+- JSON cho phần lớn request; multipart cho tạo Ticket/upload ảnh.
+- Bearer JWT cho business API; login và health là public.
+- ID nghiệp vụ dùng số nguyên; Ticket ID/path yêu cầu số nguyên dương.
+- DTO thành công không có generic wrapper. Endpoint phân trang dùng envelope riêng.
+- UTC/offset ISO-8601 cho timestamp. Dashboard xác định tuần theo Asia/Bangkok.
+- Không trả password hash, storage key/path nội bộ, stacktrace hoặc URL ảnh công khai.
 
-Validation example:
+## 2. Authentication và phạm vi quyền
+
+`POST /auth/login` nhận email/password, trả accessToken, tokenType, expiresIn và user. `GET /auth/me` tải user/role hiện tại; user thiếu hoặc không ACTIVE bị từ chối.
+
+Frontend giữ token trong sessionStorage và gắn Authorization. Ticket business services kiểm identity và quyền theo dữ liệu hiện tại. Nhiều role không bỏ qua rule reporter/current assignee/state.
+
+| Người xem       | Phạm vi Ticket                          |
+| --------------- | --------------------------------------- |
+| REQUESTER       | reporter là chính mình                  |
+| TECHNICIAN      | Có phân công hiện tại hoặc lịch sử      |
+| MANAGER / ADMIN | Tất cả                                  |
+| Nhiều role      | Hợp các phạm vi, không nhân đôi kết quả |
+
+Invisible và missing Ticket dùng cùng 404. Có quyền xem không đồng nghĩa có quyền ghi.
+
+## 3. Lỗi và phân trang
+
+Lỗi dùng application/problem+json với type, title, status, detail, instance; fieldErrors được thêm khi có lỗi trường.
 
 ```json
 {
@@ -15,360 +37,182 @@ Validation example:
   "status": 400,
   "detail": "One or more request fields are invalid.",
   "instance": "/api/v1/tickets",
-  "fieldErrors": {
-    "title": "must not be blank"
-  }
+  "fieldErrors": { "title": "must not be blank" }
 }
 ```
 
-Shared problem types:
+| Status | Ý nghĩa                                                              |
+| ------ | -------------------------------------------------------------------- |
+| 400    | Path/query/JSON/metadata/value/count hoặc signature ảnh không hợp lệ |
+| 401    | Chưa xác thực, token/identity không hợp lệ                           |
+| 403    | Đã thấy tài nguyên nhưng thiếu quyền thao tác                        |
+| 404    | Không tồn tại hoặc Ticket không được phép thấy                       |
+| 409    | Expected version/revision cũ hoặc reference conflict                 |
+| 413    | Vượt giới hạn file/request                                           |
+| 415    | Content-Type/MIME không hỗ trợ                                       |
+| 422    | Vi phạm rule trạng thái/eligibility/cấu hình form                    |
+| 500    | Lỗi lưu trữ/persistence hoặc lỗi server được xử lý an toàn           |
 
-| Condition | Status | Type suffix |
-| --- | ---: | --- |
-| Invalid fields | 400 | `validation-failed` |
-| Unreadable JSON | 400 | `malformed-request` |
-| Invalid page or size | 400 | `invalid-pagination` |
-| Unknown sort | 400 | `unsupported-sort` |
-| Unknown filter | 400 | `unsupported-filter` |
-| No authentication | 401 | `unauthenticated` |
-| No permission | 403 | `access-denied` |
-| Missing resource | 404 | `resource-not-found` |
-| Stale entity version | 409 | `stale-write` |
-| Business rule rejection | 422 | `business-rule-violation` |
+Client phân nhánh theo status/type; không phân tích nội dung thông báo. Với upload, trường hợp mất assignment là 403; không áp dụng máy móc mapping 422 của các action cũ.
 
-Error responses never include stack traces, SQL messages, JWT parser details, or exception class names.
+Phân trang từ page=0, size mặc định 20, tối đa 100. sort=field,asc hoặc field,desc theo allowlist của từng endpoint; unknown filter/sort, enum sai và duplicate params bị xử lý theo contract của endpoint. Một số reference endpoints trả mảng, không ép vào envelope.
 
-## Pagination, sorting, and filters
+```json
+{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }
+```
 
-Pages are zero-based. The default page size is `20`; the maximum is `100`. List endpoints return:
+## 4. Danh mục API thực tế
+
+Các path trong bảng được thêm sau /api/v1. Quyền đọc riêng của technician detail còn kiểm đúng hồ sơ của mình trong service.
+
+| Nhóm               | Method và path                                                                                            | Quyền / mục đích                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Auth               | POST /auth/login; GET /auth/me                                                                            | Login public; me có xác thực                             |
+| User               | GET/POST /admin/users; GET /admin/users/{id}; PATCH /admin/users/{id}/status; PUT /admin/users/{id}/roles | ADMIN                                                    |
+| Location           | GET /locations; GET /locations/{id}; GET /locations/{id}/eligible-assets                                  | Reference có xác thực                                    |
+| Location admin     | POST /admin/locations; PUT /admin/locations/{id}                                                          | ADMIN                                                    |
+| Equipment type     | GET /equipment-types; POST /admin/equipment-types; PUT /admin/equipment-types/{id}                        | Đọc reference; ADMIN ghi                                 |
+| Asset              | GET/POST /assets; GET/PUT /assets/{id}; GET /assets/{id}/status-history; POST /assets/{id}/status         | MANAGER/ADMIN                                            |
+| Technician         | GET /technicians; GET /technicians/{id}; PUT /technicians/{id}, /{id}/skills, /{id}/service-areas         | MANAGER/ADMIN; TECHNICIAN đọc hồ sơ mình theo service    |
+| Skills / SLA       | GET /skills; GET /sla-policies                                                                            | Reference có xác thực                                    |
+| Category reference | GET /categories; GET /categories/{id}/published-form                                                      | Chỉ category active và form published theo contract      |
+| Category admin     | GET/POST /admin/categories; PUT /admin/categories/{id}                                                    | ADMIN                                                    |
+| Form admin         | GET /admin/categories/{id}/form-versions; POST /admin/categories/{id}/form-versions/drafts                | ADMIN                                                    |
+| Form content       | GET/PUT /admin/form-versions/{id}; POST /admin/form-versions/{id}/publish hoặc /archive                   | ADMIN                                                    |
+| Admin skills       | GET /admin/skills                                                                                         | ADMIN, default-skill selector                            |
+| Ticket             | GET/POST /tickets; GET /tickets/{id}                                                                      | Đọc theo visibility; tạo cần REQUESTER                   |
+| Workflow           | POST /tickets/{id}/review, /assign, /start, /resolve, /close                                              | Rule tại phần 7                                          |
+| Candidates         | GET /tickets/{id}/eligible-technicians                                                                    | MANAGER/ADMIN                                            |
+| My Work            | GET /technicians/me/assigned-tickets                                                                      | TECHNICIAN, assignment hiện tại                          |
+| Work logs          | GET/POST /tickets/{id}/work-logs                                                                          | Đọc theo visibility; current TECHNICIAN ghi              |
+| Result upload      | POST /tickets/{id}/attachments                                                                            | Current TECHNICIAN, IN_PROGRESS                          |
+| Image read         | GET /tickets/{id}/attachments/{attachmentId}/content                                                      | Visibility của Ticket, đúng attachment/Ticket            |
+| Dashboard          | GET /dashboard/summary                                                                                    | Có xác thực và role hỗ trợ, scope theo Ticket visibility |
+| Public health      | GET /public/health                                                                                        | Public                                                   |
+
+## 5. Category và form version
+
+Admin tạo draft, lưu toàn bộ cấu trúc, publish hoặc archive. PUT draft thay toàn bộ settings/fields/options trong transaction; draft field/option IDs có thể đổi, client dùng response mới.
+
+Published/archived không sửa cấu trúc. Publish archive bản published cũ trước khi publish bản mới; thất bại rollback cả hai. Mỗi category tối đa một bản published.
+
+- revision bắt buộc khi save/publish/archive; missing → 400, stale → 409.
+- Mỗi thay đổi draft kể cả chỉ field/option làm tăng revision.
+- Tối đa 100 fields và 200 options/field.
+- Key/option unique không phân biệt hoa thường, phù hợp SQL Server collation.
+- Draft có thể chưa đầy đủ; publish yêu cầu category active, default skill/SLA active, asset/equipment policy tương thích và SELECT có option active.
+- Category active chưa có published form: reference form trả 422. Category missing/inactive: 404.
+- Reference form bỏ field/option inactive; admin read vẫn có chúng. Thứ tự displayOrder rồi ID.
+
+validationRules là JSON object theo schemaVersion=1, không phải chuỗi JSON. Unknown/duplicate key, kiểu sai và rule không tương thích phải bị từ chối.
+
+| Field type       | Rules                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| TEXT / TEXTAREA  | minLength, maxLength (integer ≥0); pattern là regex hợp lệ, tối đa 500 ký tự               |
+| NUMBER           | min, max hữu hạn; step >0                                                                  |
+| DATE             | min/max ngày ISO YYYY-MM-DD                                                                |
+| DATETIME         | min/max có offset hoặc Z, so sánh theo instant                                             |
+| MULTI_SELECT     | minItems/maxItems integer ≥0                                                               |
+| IMAGE            | minFiles ≥0; maxFiles/maxSizeBytes >0; allowedTypes chỉ JPEG/PNG; không vượt global limits |
+| SELECT / BOOLEAN | Object rỗng                                                                                |
+
+Min không lớn hơn max. Publication kiểm tổng IMAGE minimum không vượt 5. Cấu hình published cũ không tương thích không bị tự sửa; phải tạo/publish draft đã sửa.
+
+## 6. Tạo và đọc Ticket
+
+### Multipart tạo Ticket
+
+POST /tickets nhận đúng một part ticket có Content-Type application/json và 0–5 part files. Các mảng dynamicValues và attachments bắt buộc, kể cả rỗng. Unknown property, duplicate JSON key, trailing token hoặc scalar coercion đều bị từ chối.
+
+Các field client được gửi: categoryId, formVersionId, locationId, assetId (tùy chọn), title, description, dynamicValues, attachments. Server xác định reporter, status, priority, required skill, số Ticket và SLA.
 
 ```json
 {
-  "content": [],
-  "page": 0,
-  "size": 20,
-  "totalElements": 0,
-  "totalPages": 0
+  "categoryId": 3,
+  "formVersionId": 8,
+  "locationId": 12,
+  "title": "Máy chiếu không hoạt động",
+  "description": "Mô tả sự cố cần kiểm tra.",
+  "dynamicValues": [],
+  "attachments": []
 }
 ```
 
-Controllers create `Pageable` values with `PageRequestFactory` and publish an explicit map of allowed API sort names to entity properties. A sort uses `sort=field,asc` or `sort=field,desc`; unknown fields and directions are rejected instead of being passed to JPA. Controllers validate enum-like filter parameters with `RequestParameterValidator.requireAllowedFilter` before querying.
+Ví dụ này chỉ hợp lệ với form không yêu cầu field/evidence bổ sung. [Ví dụ có field và ảnh](examples/create-ticket.json) cần thay ID/key theo form thật.
 
-## Optimistic concurrency
+- Location luôn bắt buộc; title trim, nonblank, tối đa 200 UTF-16 code units; description trim/nonblank.
+- Asset đúng policy category, đúng địa điểm theo query hiện tại và có trạng thái eligible.
+- Mỗi file map đúng một lần bằng fileIndex 0-based; fieldKey tùy chọn phải là IMAGE active. General evidence không có fieldKey.
+- Field thường dùng đúng kiểu JSON; IMAGE không có scalar answer.
+- Optional null/blank/empty array được bỏ khỏi values; NUMBER 0 và BOOLEAN false là giá trị.
+- Text không rỗng giữ nguyên whitespace; NUMBER step kiểm bằng BigDecimal với gốc min hoặc 0; DATE giữ ngày lịch; DATETIME phải có offset.
+- Form khác category → 400; stale/non-published form → 409 form-version-changed; cấu hình legacy không tương thích → 422 form-configuration-incompatible.
+- Tạo Ticket, values, REPORT_EVIDENCE và SUBMIT history cùng transaction; thất bại dọn file của request.
+- Response 201: {id,ticketNumber,status:"SUBMITTED",version:0}, kèm Location header.
 
-Every request DTO that updates or deletes an existing entity implements `VersionedRequest` and exposes a required, non-negative `version` field. Services compare that expected version with the persisted entity version. A mismatch raises `StaleWriteException`; JPA optimistic-lock exceptions are mapped to the same HTTP `409` problem without exposing persistence details.
+Sequence SQL cấp số Ticket, năm hiển thị theo Asia/Bangkok. Sequence có thể có khoảng trống khi rollback; không tính MAX(id)+1 hoặc reset mỗi năm.
 
-## Ticket read contract (GitHub #35)
+### Đọc
 
-`GET /api/v1/tickets` and `GET /api/v1/tickets/{ticketId}` require a valid access
-token and an ACTIVE current database user. Roles are reloaded for every request;
-JWT role claims do not grant additional visibility. REQUESTER sees own reports,
-TECHNICIAN sees current or historical assignments, MANAGER/ADMIN see all. Multiple
-roles grant the union. Both content and count queries apply this scope in SQL.
-Missing and invisible detail requests return the same `resource-not-found` 404.
+GET /tickets có pagination, status, priority, locationId và allowlist sort theo controller; sort mặc định createdAt,desc, ID phá hòa. GET /tickets/{id} trả stored form, giá trị JSON, history, attachments, currentAssignment và resolution fields.
 
-List parameters occur at most once; unknown names, blank values, unsupported
-values, and duplicate parameters return 400. Defaults: `page=0`, `size=20`,
-`sort=createdAt,desc`. Size is 1–100. Supported sort properties are `createdAt`,
-`updatedAt`, and `ticketNumber`; direction is asc/desc (case-insensitive), and a
-missing direction means ASC. The internal tie-breaker is always `id ASC`.
-Supported filters are canonical `status`, canonical `priority`, and a positive
-64-bit `locationId` (exact location, no descendants). Filters combine with AND.
-Out-of-range pages and valid filters with no matches return 200 and empty content.
-The offset `page * size` must fit a signed 32-bit integer, as required by JPA;
-unrepresentable offsets return `invalid-pagination` 400 rather than a server error.
+currentAssignment=null khi không còn phân công; không tự suy ra current assignment từ lịch sử. Historical forms/answers vẫn được đọc sau khi category publish phiên bản mới.
 
-Every summary has `id`, `ticketNumber`, `title`, `status`, `priority`,
-`category: {id, code, name}`, `location: {id, code, name}`,
-`asset: {id, assetCode} | null`, `reporter: {id, fullName}`,
-`slaDueAt | null`, `createdAt`, and `updatedAt`. The list uses the shared
-`content/page/size/totalElements/totalPages` envelope.
+## 7. Workflow, work log và concurrency
 
-Detail has the same summary properties plus:
+| POST action | Actor                 | Body chính                                                    | Điều kiện / kết quả                                                           |
+| ----------- | --------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| review      | MANAGER/ADMIN         | version                                                       | SUBMITTED → UNDER_REVIEW                                                      |
+| assign      | MANAGER/ADMIN         | version, technicianId                                         | Trạng thái hợp lệ theo contract; ứng viên còn eligible; tạo active assignment |
+| start       | Current TECHNICIAN    | version                                                       | ASSIGNED → IN_PROGRESS; acceptedAt và history                                 |
+| work-logs   | Current TECHNICIAN    | version, logType, content, startedAt, endedAt?, minutesSpent? | IN_PROGRESS; tạo log, tăng Ticket version; response 201 có ticketVersion      |
+| resolve     | Current TECHNICIAN    | version, resolutionOutcome, resolutionSummary                 | IN_PROGRESS, ít nhất 1 log; kết thúc assignment; set resolvedAt; history      |
+| close       | Reporter có REQUESTER | version, reason?                                              | RESOLVED, không có active assignment; set closedAt; CLOSE history             |
 
-- `description` and optimistic-lock `version`;
-- `formVersion: {id, versionNumber, formStatus, fields}` from the version stored
-  on the Ticket, including archived versions;
-- fields with `id`, `fieldKey`, `label`, `fieldType`, `required`, `displayOrder`,
-  and `options: [{value, label}]`; inactive options remain available for history;
-- `dynamicValues: [{fieldDefinitionId, valueJson}]`, preserving verbatim JSON
-  strings (including numeric precision); IMAGE values use linked attachments;
-- `statusHistory: [{id, fromStatus, toStatus, transitionAction, reason,
-  changedBy: {id, fullName}, changedAt}]`, ordered by time then ID ascending;
-- `attachments: [{id, fieldDefinitionId, attachmentType, originalName,
-  contentType, sizeBytes, uploadedBy: {id, fullName}, createdAt}]`, ordered by
-  time then ID ascending, for REPORT_EVIDENCE and WORK_RESULT only.
+Workflow dùng expected version không âm; sai version → 409, phải reload và xác nhận lại. JPA tăng version sau thay đổi. Không tự retry request ghi.
 
-Fields order by display order then ID ascending; options order by display order
-then ID ascending within each field. Collections are always arrays; nullable
-references remain null. Timestamps retain ISO-8601 offsets. No storage key,
-filesystem path, binary, comment attachment, password, or download URL is exposed.
-These endpoints perform no writes or workflow actions. OpenAPI publishes both
-response schemas and the query parameter allowlists.
+Work log types: DIAGNOSIS, PROGRESS, REPAIR, RESOLUTION, NO_FAULT_FOUND. content nonblank; startedAt có offset; endedAt không trước startedAt; minutesSpent nếu có là integer dương. GET work logs trả mảng theo createdAt/ID tăng dần.
 
-## Manager ticket workflow UI/mock contract (#52)
+Resolution outcomes: FIXED, TEMPORARY_FIX, NO_FAULT_FOUND, UNRESOLVED. Summary nonblank theo DTO bounds. Close reason tùy chọn, tối đa 500 ký tự. Close không thay resolution timestamp/outcome/summary.
 
-Review, eligibility and assignment now have real backend implementations and work
-with MSW disabled. The broader table below also preserves deferred UI/mock
-contracts: reject/cancel/reassign/unassign are hidden by `demoScope.js` and their
-presence here is not an implemented-backend claim. Real assign accepts only
-`{version,technicianId}`; eligibility mismatches are blocked, with no override.
+Eligibility kiểm user/role/status, availability, capacity, skill và cây service area. Ghi assignment kiểm lại dưới khóa; không tin kết quả candidates đọc trước đó. Khi cần khóa cả Ticket và profile, thứ tự là Ticket → profile.
 
-### Actions and versions
+## 8. Ảnh và nội dung file
 
-Only MANAGER/ADMIN controls are implemented here, using the existing
-`TicketWorkflowContract` and approved DEC-009/DEC-021 rules. No generic status patch
-or client-supplied target status is accepted.
+POST /tickets/{id}/attachments dùng multipart/form-data:
 
-| POST suffix under `/api/v1/tickets/{ticketId}` | JSON body | Allowed source → target |
-| --- | --- | --- |
-| `/review` | `{version}` | SUBMITTED → UNDER_REVIEW |
-| `/reject` | `{version,reason}` | SUBMITTED/UNDER_REVIEW → REJECTED |
-| `/cancel` | `{version,reason}` | SUBMITTED/UNDER_REVIEW/ASSIGNED/IN_PROGRESS/REOPENED → CANCELLED |
-| `/assign` | `{version,technicianId,overrideReason?}` | UNDER_REVIEW/REOPENED → ASSIGNED |
-| `/reassign` | `{version,technicianId,reason,overrideReason?}` | ASSIGNED/IN_PROGRESS → ASSIGNED |
-| `/unassign` | `{version,reason}` | ASSIGNED/IN_PROGRESS → UNDER_REVIEW |
+- Một metadata part là chuỗi JSON đúng `{"attachmentType":"WORK_RESULT"}`, không cần part header application/json.
+- 1–5 files parts; unknown parts/properties, metadata trùng, duplicate key, trailing JSON hoặc type khác → 400.
+- Actor ACTIVE + TECHNICIAN + current assignee; kiểm visibility trước quyền/state. Visible unauthorized/former assignee → 403; current assignee ngoài IN_PROGRESS → 422.
+- JPEG/PNG, 1 byte–5 MiB/ảnh; MIME khớp signature. Empty/signature/count sai → 400; quá size → 413; MIME không hỗ trợ → 415.
+- Tổng request tối đa 30 MiB; filename metadata nonblank, tối đa 255 ký tự, không làm đường dẫn.
+- Server xác định Ticket/uploader/formVersion/time. WORK_RESULT không gắn fieldDefinition.
+- Khóa Ticket giữ đến commit; lưu toàn bộ hoặc rollback metadata/dọn files; storage/persistence failure → 500.
+- Response 201 là danh sách metadata mới. Không nhận expected version và không đổi status/version/updatedAt/history/resolution/work logs.
+- Ảnh kết quả tùy chọn cho resolve/close.
 
-`version` is the required non-negative **ticket** version, including zero, captured
-when the confirmation dialog opens. It is never the technician profile version.
-`technicianId` is the user ID shared with `technician_profiles.technician_id`.
-Reasons are non-blank and limited to 500 characters for this UI/mock contract, so
-they fit both history and assignment end reasons. Override reasons are non-blank
-when needed and limited to 1,000 characters. Input is trimmed, never truncated.
-Later backend owners must implement/confirm these documented request limits.
+Shape metadata dùng chung:
 
-The common mock action result is `{id,status,version,currentAssignment}`. Each
-success increments version, updates `updatedAt`, appends canonical status history,
-and changes assignment records together. `/cancel` writes
-`CANCEL_BEFORE_ASSIGNMENT` from SUBMITTED/UNDER_REVIEW and
-`CANCEL_AFTER_ASSIGNMENT` otherwise. Reassignment may have identical history source
-and target statuses; it still ends the old assignment and creates a new one with
-`acceptedAt: null`. Cancellation ends an active assignment when present.
-
-### Current assignment
-
-Real and mock detail include `currentAssignment: null | Assignment`. The UI
-displays "assignment data unavailable" for older responses that omit it and
-"unassigned" only for explicit null. Assignee identity is not inferred from history.
-
-```json
-{
-  "id": 171,
-  "ticketId": 11,
-  "technician": {"technicianId": 21, "fullName": "Nguyễn An"},
-  "assignedBy": {"id": 5, "fullName": "Quản lý demo"},
-  "assignedAt": "2026-10-09T08:00:00+07:00",
-  "acceptedAt": null,
-  "endedAt": null,
-  "endReason": null,
-  "overrideReason": null
-}
+```text
+{id, fieldDefinitionId, attachmentType, originalName, contentType,
+ sizeBytes, uploadedBy:{id,fullName}, createdAt}
 ```
 
-### Candidate query and eligibility DTO
+GET content chỉ phục vụ REPORT_EVIDENCE/WORK_RESULT JPEG/PNG thuộc đúng Ticket mà actor thấy. Response có bytes, MIME và Content-Disposition; filename download được làm sạch. UI tạo blob URL và revoke khi đóng preview; không dùng URL công khai. Không có API xóa/thay ảnh trong phạm vi hiện tại.
 
-`GET /api/v1/tickets/{ticketId}/eligible-technicians` uses only `page`, `size`,
-`query`, and `eligibility`. Pagination uses the shared zero-based envelope and
-size 1–100 (default 20). `query` is an optional non-blank, case-insensitive substring
-of full name/email. Optional `eligibility` is `ELIGIBLE`, `OVERRIDE_REQUIRED`, or
-`BLOCKED`; omission means all candidates. Blank, duplicate, or unknown parameters
-are rejected with 400. The dialog resets page/selection when search or filters
-change. Candidates include overrideable mismatches; the endpoint name does not
-mean all returned rows can be assigned without an override.
+## 9. Dashboard
 
-Each `content` item has:
+GET /dashboard/summary không nhận query params. Trả số nguyên không âm và generatedAt có offset:
 
-```json
-{
-  "technicianId": 24,
-  "fullName": "Phạm Dũng",
-  "email": "technician24@example.test",
-  "userStatus": "ACTIVE",
-  "hasTechnicianRole": true,
-  "hasProfile": true,
-  "available": true,
-  "activeTicketCount": 1,
-  "maxActiveTickets": 1,
-  "skills": [{"id": 1, "name": "Thiết bị trình chiếu"}],
-  "serviceAreas": [{"id": 2, "name": "Phòng 201"}],
-  "eligibilityReasons": [{"code": "CAPACITY_REACHED", "overridable": true}]
-}
-```
+| Metric            | Định nghĩa                                                                  |
+| ----------------- | --------------------------------------------------------------------------- |
+| openTickets       | SUBMITTED, UNDER_REVIEW, ASSIGNED, IN_PROGRESS, REOPENED                    |
+| inProgressTickets | IN_PROGRESS                                                                 |
+| slaAtRiskTickets  | Ticket đang hoạt động đã trễ hoặc đến hạn trong hai giờ tới                 |
+| resolvedThisWeek  | resolvedAt trong tuần ISO hiện tại tại Asia/Bangkok, kể cả Ticket đã CLOSED |
 
-Profile-less rows have nullable capacity and empty skill/service-area arrays.
-Hard-blocked rows are shown disabled for explanation. `UNAVAILABLE`,
-`CAPACITY_REACHED`, `SKILL_MISMATCH`, and `COVERAGE_MISMATCH` require a documented
-override. `USER_INACTIVE`, `MISSING_TECHNICIAN_ROLE`,
-`MISSING_TECHNICIAN_PROFILE`, unknown reason codes, or `overridable: false` cannot
-be bypassed. The identity flags also block selection even if reason metadata is
-incorrectly permissive.
+Scope dùng visibility và không đếm đôi khi actor có nhiều role. resolvedThisWeek không dựa vào updatedAt/closedAt. Database failure không bị chuyển thành bốn số 0.
 
-Eligibility is supplied by this ticket-specific query. Technician profile/list
-APIs serve administration and do not replace it. The UI does not calculate skill
-matches, location ancestry, or capacity. Mock workload counts derive from fixture
-assignments with `endedAt: null`; skill/coverage matches are fixture scenarios,
-not a backend eligibility engine.
+## 10. Phạm vi chưa bật
 
-### Errors and refresh
-
-Mocks use the existing RFC 9457 problem shape: 400 for invalid fields/query,
-401 for unavailable authentication, 403 for permission, 404 for unavailable
-tickets, 409 `stale-write` for expected-version conflicts, and 422
-`business-rule-violation` for invalid transitions/hard eligibility blockers or a
-mismatch without the required override. Field problems can include `fieldErrors`.
-Clients branch on status/type, never translated error text.
-
-After success the frontend invalidates the viewer's ticket list/detail/candidate
-queries and refetches active reads. It does not synthesize missing history from
-the action result. A 422 refreshes candidates so changed capacity/eligibility is
-visible. A 409 locks submission and offers explicit reload, closing/resetting the
-dialog before a new confirmation. Mutations are never retried automatically.
-Candidate/action failures stay local; read denial still uses the existing safe
-detail error behavior and session/cache cleanup.
-
-Mock tests verify presentation and fixture consistency only, not backend
-authorization, SQL transactions, or concurrency guarantees. Backend integration
-must confirm these proposed DTOs/query fields before enabling real workflow.
-
-## Technician work contract
-
-My Work, start, work-log reads/writes and resolve have real backend implementations
-and work with MSW disabled. WORK_RESULT upload remains deferred and is blocked in
-the demo UI and mutation hook. The preserved development/test mocks are optional.
-
-- `GET /technicians/me/assigned-tickets`: `page`, `size`, `sort`, `status`,
-  `priority`, `locationId`. Pagination and filter validation follow the ticket
-  read contract. Sorts: `createdAt`, `updatedAt`, `ticketNumber`, each asc/desc;
-  default `createdAt,desc`, ties by `id ASC`. Status is limited to `ASSIGNED` and
-  `IN_PROGRESS`. Each summary has the existing ticket summary fields plus the
-  documented `currentAssignment` object. Only `endedAt: null` assignments for
-  the authenticated technician are returned, including the count.
-- Detail uses the existing proposed additive `currentAssignment` field. Omission
-  means unknown, `null` means no active assignment. Ticket visibility alone never
-  authorizes a write.
-- `POST /tickets/{id}/start` takes `{version}` and returns
-  `{id,status,version,currentAssignment}`. Only the active assignee can move
-  `ASSIGNED` to `IN_PROGRESS`; the assignment gains `acceptedAt`.
-- `GET /tickets/{id}/work-logs` returns an array ordered by `createdAt ASC, id
-  ASC`. A visible ticket can be read, including by a historical assignee. Items
-  are `{id,ticketId,technician:{id,fullName},logType,content,startedAt,endedAt,
-  minutesSpent,createdAt}`.
-- `POST /tickets/{id}/work-logs` takes `{version,logType,content,startedAt,
-  endedAt,minutesSpent}`. The active assignee can add a log only in `IN_PROGRESS`.
-  Allowed types: `DIAGNOSIS`, `PROGRESS`, `REPAIR`, `RESOLUTION`,
-  `NO_FAULT_FOUND`. Content is nonblank. `startedAt` is a valid offset-bearing
-  timestamp; `endedAt` and `minutesSpent` may be null. End must not precede
-  start; supplied minutes must be a positive integer. The response is 201 with
-  the log DTO plus `ticketVersion`, which increments on success in this mock.
-- `POST /tickets/{id}/attachments` is multipart with a `metadata` JSON string
-  `{attachmentType:"WORK_RESULT"}` and up to five `files` parts. Only the active
-  assignee in `IN_PROGRESS` can upload JPEG/PNG images of at most 5 MiB each.
-  The mock accepts or rejects the whole request and returns an array of metadata
-  matching ticket detail; it does not publish file URLs. Upload does not change
-  the ticket version in the mock.
-- `POST /tickets/{id}/resolve` takes `{version,resolutionOutcome,
-  resolutionSummary}` and returns `{id,status,version,currentAssignment}`.
-  Only the active assignee in `IN_PROGRESS` with at least one saved work log can
-  resolve. The summary is nonblank. MVP outcomes are `FIXED`, `TEMPORARY_FIX`,
-  `NO_FAULT_FOUND`, `UNRESOLVED`. Resolve ends the assignment and records history.
-
-Writes return RFC 9457 problems: 400 malformed/invalid input, 401 unauthenticated,
-403 non-Technician actor, 404 invisible ticket, 409 stale ticket version, and 422
-invalid state, lost active assignment, or missing resolve prerequisites. A conflict
-requires reload and fresh confirmation. Mock mutations are never persisted on the
-server. The backend must independently enforce authorization and all rules.
-
-For the browser demo, the first two authenticated Technician IDs encountered are
-bound to the two fixture technicians when their IDs differ. This is only an
-in-memory fixture adjustment; `/auth/me` still provides the real actor.
-
-## Ticket Detail collaboration UI/mock (#60)
-
-Attachment content and reporter close have real backend implementations. Reopen,
-comments and feedback remain deferred UI/mock contracts and are hidden in the
-demo. Their query/mutation hooks are disabled independently of MSW flags.
-
-### Close, reopen and Requester cancellation
-
-`POST /tickets/{id}/close` accepts only `{version,reason?}` and returns
-`{id,status:"CLOSED",version,currentAssignment:null}`. The ACTIVE actor must be
-the reporter and have REQUESTER, including mixed-role reporters. Manager/Admin
-alone never authorizes close. `version` is a required nonnegative integer; reason
-is string/null, trimmed, blank becomes null, maximum 500 characters after trim.
-
-After input/current-user validation, close checks visibility (safe 404), permission
-(403), expected version (409 `stale-write`), then state/assignment consistency
-(422). Only RESOLVED with no active assignment can close. Ticket/closedAt/version
-and CLOSE history commit in one SQL transaction; resolvedAt, outcome and summary
-are preserved. CLOSED is terminal in the demo and remains counted as resolved
-within its original resolution week. A replay with the old version returns 409
-without duplicate history. No force/status/reporter fields are accepted.
-
-The deferred mock `POST /tickets/{id}/reopen` accepts `{version,reason}` from RESOLVED for an owning
-Requester or Manager/Admin. It records REOPEN, clears resolved time and recalculates
-SLA from the stored form policy. CLOSED, REJECTED and CANCELLED stay terminal.
-Requester cancellation uses the existing `/cancel` endpoint, only for owned
-SUBMITTED/UNDER_REVIEW tickets. Manager/Admin cancellation states remain unchanged.
-Reasons use the existing 500-character limit; version zero remains valid.
-
-### Attachment content
-
-`GET /tickets/{id}/attachments/{attachmentId}/content` returns JPEG/PNG bytes with
-Content-Type, Content-Length and Content-Disposition. It uses ticket visibility,
-including historical Technician visibility. Missing content and inaccessible
-tickets return safe 404; authorization errors may return 403.
-
-The Axios Authorization client requests ArrayBuffer and constructs a Blob. This
-preserves binary bytes because the installed MSW XHR interceptor converts blob
-responses through text. The preview modal owns its object URL and releases it on
-close/unmount or blob replacement; closing cancels unfinished reads. Download
-uses that same blob URL and the metadata filename, never a JWT query parameter.
-Uploaded WORK_RESULT bytes remain in the mock store for subsequent content reads.
-
-### Comments
-
-`GET /tickets/{id}/comments?page=0&size=20` uses the shared pagination envelope,
-zero-based page and size 1–100 (default 20). Only page/size are accepted. Results
-sort by createdAt ascending, then opaque comment ID ascending. Visibility is
-applied before pagination and totals. The DTO is:
-
-```json
-{
-  "id": "opaque-comment-id",
-  "author": { "id": 4, "fullName": "Người báo" },
-  "content": "Nội dung bình luận",
-  "visibility": "PUBLIC",
-  "createdAt": "2026-10-09T08:00:00Z",
-  "editedAt": null
-}
-```
-
-`POST /tickets/{id}/comments` accepts `{content,visibility}` and returns 201 DTO.
-`PUT /tickets/{id}/comments/{commentId}` accepts `{content}` and returns 200 DTO;
-visibility cannot be changed during editing. Content is trimmed and has 1–2000
-characters, matching existing persistence validation (`content` maps to `body`).
-This provisional contract has no comment version field and never uses ticket
-version for comment editing. Comment writes do not increment ticket version.
-
-DEC-006/027 apply: PUBLIC is readable within ticket visibility; INTERNAL requires
-Technician/Manager/Admin capability. Requester-only responses contain no INTERNAL
-records or counts. Nonterminal creation requires ownership for Requester or current
-assignment for Technician; Manager/Admin may create on any nonterminal visible
-ticket. Authors may edit their own visible comments while nonterminal, including
-historical Technicians. No delete endpoint or comment attachment is included.
-
-### Feedback
-
-`GET /tickets/{id}/feedback` returns 200 DTO or JSON null when absent. Failure is
-never treated as absence. `POST /tickets/{id}/feedback` accepts `{rating,comment?}`
-and returns 201 `{id,rating,comment,createdAt}`. Rating is an integer 1–5; optional
-comment is trimmed and limited to 1000 characters, matching the SQL schema.
-Only the owning reporter with REQUESTER capability may submit on CLOSED; one
-record per ticket, immutable. A duplicate submission returns 409 `feedback-exists`
-and the UI reloads the existing record. No feedback update/delete API is included.
-
-All subresource reads apply ticket visibility first. Errors follow the shared
-problem contract: validation 400, session 401, permissions 403, safe missing 404,
-conflict 409 and business rules 422. Each section owns its loading/error/retry state;
-401 still invokes shared session cleanup. Query caches include viewer ID/roles.
-Mock tests demonstrate presentation/contracts, not backend security or persistence.
+Reject/cancel/reassign/unassign/reopen/force-close, comments và feedback đang tắt trong demoScope. Mock handlers/DTO/schema cho các phần đó không phải cam kết API/UI thật. Chỉ bổ sung endpoint vào danh mục chính khi controller, service và kiểm thử tích hợp đã có bằng chứng.

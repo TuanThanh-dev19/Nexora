@@ -276,7 +276,7 @@ function WorkImages({ mutation, upload }) {
     event.target.value = ''
   }
   const send = async () => {
-    if (blocked) return
+    if (blocked || mutation.isPending) return
     const next = validateWorkImages(files)
     setError(next)
     if (next) return
@@ -293,8 +293,8 @@ function WorkImages({ mutation, upload }) {
       <Card.Body>
         <h2 className="h5">Ảnh kết quả</h2>
         <p className="small text-secondary">
-          JPEG/PNG, tối đa 5 ảnh, mỗi ảnh tối đa 5 MiB. Dữ liệu demo chỉ nằm
-          trong bản mô phỏng.
+          JPEG/PNG, tối đa 5 ảnh, mỗi ảnh tối đa 5 MiB. Ảnh không bắt buộc để
+          hoàn tất xử lý hoặc đóng phiếu.
         </p>
         <Form.Group controlId="work-images">
           <Form.Label>Chọn ảnh</Form.Label>
@@ -341,7 +341,7 @@ function WorkImages({ mutation, upload }) {
             mutation.isPending || blocked || !files.length || Boolean(error)
           }
         >
-          {mutation.isPending ? 'Đang tải ảnh...' : 'Tải ảnh mô phỏng'}
+          {mutation.isPending ? 'Đang tải ảnh...' : 'Tải ảnh kết quả'}
         </Button>
       </Card.Body>
     </Card>
@@ -378,9 +378,10 @@ export function TechnicianWorkPanel({ ticket }) {
     }
   }
   const upload = async (files) => {
+    setNotice('')
     try {
       await mutation.mutateAsync({ action: 'uploadWorkResult', files })
-      setNotice('Ảnh đã tải trong bản mô phỏng; chưa lưu trên máy chủ.')
+      setNotice('Đã lưu ảnh kết quả.')
       return true
     } catch {
       return false
