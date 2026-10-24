@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import { useAuth } from '../../auth/context/useAuth'
 import { ticketApi } from '../api/ticketApi'
 import {
@@ -13,9 +13,7 @@ export function useTicketWorkflow() {
   const client = useQueryClient()
   const enabled = isAuthenticated && !isChecking
   const isActionEnabled = (action) =>
-    enabled &&
-    (['review', 'assign', 'close'].includes(action) ||
-      isTicketWorkflowMockEnabled())
+    enabled && demoScope.actions[action] === true
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({
@@ -63,7 +61,12 @@ export function useEligibleTechnicians(ticketId, params, open) {
     ],
     queryFn: ({ signal }) =>
       ticketApi.eligibleTechnicians(ticketId, params, signal),
-    enabled: open && isAuthenticated && !isChecking && canManageTickets(user),
+    enabled:
+      demoScope.actions.assign &&
+      open &&
+      isAuthenticated &&
+      !isChecking &&
+      canManageTickets(user),
     staleTime: 0,
     retry: retryTicketQuery,
   })

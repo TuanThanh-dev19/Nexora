@@ -222,7 +222,7 @@ describe('collaboration HTTP contract', () => {
       403,
     )
   })
-  it('closes normally for owners, requires a force-close reason for managers and respects mixed roles', async () => {
+  it('closes only for reporters with Requester, including mixed roles', async () => {
     await ticketApi.close(15, { version: ticket(15).version })
     expect(ticket(15)).toMatchObject({
       status: 'CLOSED',
@@ -232,12 +232,15 @@ describe('collaboration HTTP contract', () => {
     expect(ticket(15).statusHistory.at(-1).transitionAction).toBe('CLOSE')
     mock.reset()
     actor = manager
-    await failure(ticketApi.close(15, { version: ticket(15).version }), 400)
-    await ticketApi.close(15, {
-      version: ticket(15).version,
-      reason: 'Xác nhận kết quả',
-    })
-    expect(ticket(15).statusHistory.at(-1).transitionAction).toBe('FORCE_CLOSE')
+    await failure(ticketApi.close(15, { version: ticket(15).version }), 403)
+    await failure(
+      ticketApi.close(15, {
+        version: ticket(15).version,
+        reason: 'Xác nhận kết quả',
+      }),
+      403,
+    )
+    expect(ticket(15).status).toBe('RESOLVED')
     mock.reset()
     actor = { ...owner, roles: ['REQUESTER', 'ADMIN'] }
     await ticketApi.close(15, { version: ticket(15).version })

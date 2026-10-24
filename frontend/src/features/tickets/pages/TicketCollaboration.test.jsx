@@ -28,6 +28,19 @@ import {
 import { ticketApi } from '../api/ticketApi'
 import { createTicketWorkflowMock } from '../mocks/ticketWorkflowHandlers'
 import { renderTicketApp } from '../testsupport/renderTicketApp'
+import { demoScope } from '../../../shared/config/demoScope'
+
+// Comments/feedback stay covered in isolation while the demo keeps them off.
+vi.mock('../../../shared/config/demoScope', async (importOriginal) => {
+  const { demoScope } = await importOriginal()
+  return {
+    demoScope: {
+      ...demoScope,
+      actions: { ...demoScope.actions, reopen: true },
+      features: { ...demoScope.features, comments: true, feedback: true },
+    },
+  }
+})
 
 const owner = {
   id: 4,
@@ -41,6 +54,8 @@ const server = setupServer(...mock.handlers)
 const clients = []
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
+  demoScope.features.comments = true
+  demoScope.features.feedback = true
   actor = owner
   mock.reset()
   mock.store.feedback = []
@@ -308,7 +323,7 @@ describe('Ticket Detail collaboration', () => {
     await userEvent.click(
       dialog.getByRole('button', { name: 'Xác nhận đóng phiếu' }),
     )
-    await screen.findByText('Đóng phiếu thành công trong bản mô phỏng.')
+    await screen.findByText('Đóng phiếu thành công.')
     expect(close).toHaveBeenCalledExactlyOnceWith(15, { version: 4 })
     expect(
       await section('Đánh giá').findByRole('button', { name: 'Gửi đánh giá' }),
@@ -317,23 +332,13 @@ describe('Ticket Detail collaboration', () => {
       screen.queryByRole('button', { name: 'Mở lại phiếu', exact: true }),
     ).not.toBeInTheDocument()
   })
-  it('requires force-close reason and locks reopen on 409 until reload/reconfirmation', async () => {
+  it('hides manager close and locks deferred reopen on 409 until reload', async () => {
     actor = { id: 5, fullName: 'Quản lý', status: 'ACTIVE', roles: ['MANAGER'] }
     await mount(15)
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Đóng phiếu', exact: true }),
-    )
-    let dialog = within(await screen.findByRole('dialog'))
-    await userEvent.click(
-      dialog.getByRole('button', { name: 'Xác nhận đóng phiếu' }),
-    )
-    expect(dialog.getByText('Vui lòng nhập lý do.')).toBeInTheDocument()
-    await userEvent.click(
-      dialog.getByRole('button', { name: 'Đóng', exact: true }),
-    )
-    await waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    )
+    expect(
+      screen.queryByRole('button', { name: 'Đóng phiếu', exact: true }),
+    ).not.toBeInTheDocument()
+    let dialog
     await userEvent.click(
       screen.getByRole('button', { name: 'Mở lại phiếu', exact: true }),
     )
@@ -535,6 +540,8 @@ describe('Ticket Detail collaboration', () => {
   it.each([false, true])(
     'keeps real images available without enabling other collaboration (production=%s)',
     async (production) => {
+      demoScope.features.comments = false
+      demoScope.features.feedback = false
       if (production) vi.stubEnv('DEV', false)
       else vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
       const comments = vi.spyOn(ticketApi, 'comments')
@@ -545,12 +552,14 @@ describe('Ticket Detail collaboration', () => {
         screen.getByRole('button', { name: 'Xem ảnh minh-chứng.png' }),
       ).toBeEnabled()
       expect(
-        screen.getByRole('button', { name: 'Hủy phiếu', exact: true }),
-      ).toBeDisabled()
+        screen.queryByRole('button', { name: 'Hủy phiếu', exact: true }),
+      ).not.toBeInTheDocument()
       expect(
-        section('Bình luận').getByText(/chưa khả dụng/),
-      ).toBeInTheDocument()
-      expect(section('Đánh giá').getByText(/chưa khả dụng/)).toBeInTheDocument()
+        screen.queryByRole('heading', { name: 'Bình luận' }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { name: 'Đánh giá' }),
+      ).not.toBeInTheDocument()
       expect(comments).not.toHaveBeenCalled()
       expect(feedback).not.toHaveBeenCalled()
       expect(image).not.toHaveBeenCalled()

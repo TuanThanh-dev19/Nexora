@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router'
 import { FiEye } from 'react-icons/fi'
 import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
 import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import { useAuth } from '../../auth/context/useAuth'
 import { TicketActionPanel } from '../components/TicketActionPanel'
 import { TechnicianWorkPanel } from '../components/TechnicianWorkPanel'
@@ -100,7 +101,8 @@ export function TicketDetailPage() {
                               : 'Kỹ thuật viên',
                             ticket.currentAssignment?.technician.fullName ??
                               (['RESOLVED', 'CLOSED'].includes(ticket.status)
-                                ? (getResolverTechnician(ticket) ?? 'Đã hoàn thành')
+                                ? (getResolverTechnician(ticket) ??
+                                  'Đã hoàn thành')
                                 : 'Chưa phân công'),
                           ],
                         ]
@@ -125,9 +127,16 @@ export function TicketDetailPage() {
               key={`${ticket.id}-${ticketViewerKey(user).join('-')}`}
               ticket={ticket}
             />
-            <TechnicianWorkPanel ticket={ticket} />
-            {(ticket.resolutionOutcome || ticket.resolvedAt || ticket.resolutionSummary) && (
-              <Card className="ticket-section mb-3" data-testid="resolution-section">
+            {demoScope.features.workLogs && (
+              <TechnicianWorkPanel ticket={ticket} />
+            )}
+            {(ticket.resolutionOutcome ||
+              ticket.resolvedAt ||
+              ticket.resolutionSummary) && (
+              <Card
+                className="ticket-section mb-3"
+                data-testid="resolution-section"
+              >
                 <Card.Body>
                   <h2 className="h5">Kết quả xử lý</h2>
                   <Row as="dl" className="mb-0 ticket-metadata">
@@ -137,7 +146,9 @@ export function TicketDetailPage() {
                         <Badge bg="success">
                           {RESOLUTION_OUTCOMES.find(
                             ([code]) => code === ticket.resolutionOutcome,
-                          )?.[1] ?? ticket.resolutionOutcome ?? '—'}
+                          )?.[1] ??
+                            ticket.resolutionOutcome ??
+                            '—'}
                         </Badge>
                       </dd>
                     </Col>
@@ -161,7 +172,10 @@ export function TicketDetailPage() {
                   {ticket.resolutionSummary && (
                     <div className="mt-3">
                       <dt className="fw-semibold">Tóm tắt kết quả</dt>
-                      <dd className="mb-0 text-break" style={{ whiteSpace: 'pre-wrap' }}>
+                      <dd
+                        className="mb-0 text-break"
+                        style={{ whiteSpace: 'pre-wrap' }}
+                      >
                         {ticket.resolutionSummary}
                       </dd>
                     </div>
@@ -192,19 +206,25 @@ export function TicketDetailPage() {
                 <TicketStatusHistory history={ticket.statusHistory} />
               </div>
             </div>
-            <TicketAttachments
-              key={`attachments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
-              ticketId={ticket.id}
-              attachments={ticket.attachments}
-            />
-            <TicketComments
-              key={`comments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
-              ticket={ticket}
-            />
-            <TicketFeedback
-              key={`feedback-${ticket.id}-${ticketViewerKey(user).join('-')}`}
-              ticket={ticket}
-            />
+            {demoScope.features.attachmentRead && (
+              <TicketAttachments
+                key={`attachments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+                ticketId={ticket.id}
+                attachments={ticket.attachments}
+              />
+            )}
+            {demoScope.features.comments && (
+              <TicketComments
+                key={`comments-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+                ticket={ticket}
+              />
+            )}
+            {demoScope.features.feedback && (
+              <TicketFeedback
+                key={`feedback-${ticket.id}-${ticketViewerKey(user).join('-')}`}
+                ticket={ticket}
+              />
+            )}
           </>
         )
       )}

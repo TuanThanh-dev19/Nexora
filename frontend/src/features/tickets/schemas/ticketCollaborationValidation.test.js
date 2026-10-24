@@ -52,7 +52,7 @@ describe('collaboration policy', () => {
       ).toEqual([])
     },
   )
-  it('uses owner close for mixed roles and force-close for other managers', () => {
+  it('uses reporter close for mixed roles and denies close to other managers', () => {
     const mixed = { ...owner, roles: ['ADMIN', 'REQUESTER'] }
     const resolved = { ...ticket, status: 'RESOLVED' }
     expect(availableTicketActions(resolved, mixed)).toEqual(['close', 'reopen'])
@@ -60,10 +60,7 @@ describe('collaboration policy', () => {
     expect(workflowHistoryAction('close', 'RESOLVED', resolved, mixed)).toBe(
       'CLOSE',
     )
-    expect(workflowRequiresReason('close', resolved, manager)).toBe(true)
-    expect(workflowHistoryAction('close', 'RESOLVED', resolved, manager)).toBe(
-      'FORCE_CLOSE',
-    )
+    expect(availableTicketActions(resolved, manager)).not.toContain('close')
   })
   it('separates historical visibility, current-assignment commenting and own editing', () => {
     const assigned = {

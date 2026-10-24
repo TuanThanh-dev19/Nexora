@@ -1,10 +1,82 @@
 # Testing and local demo data
 
+## Real demo Ticket Flow and reporter close — 23 October 2026
+
+`frontend/src/shared/config/demoScope.js` declares the supported demo actions and
+features independently of MSW. Review/assign, My Work/start/work logs/resolve,
+close, authorized image reads and Dashboard work with mock flags off.
+Reject/cancel/reassign/unassign/reopen/force-close, comments/feedback and WORK_RESULT
+upload remain hidden and their hooks cannot issue requests. Existing admin route
+guards are unchanged. Older preview notes below describe retained isolated mocks,
+not the current demo scope.
+
+For the real journey, start the databases/backend and sign in with ACTIVE test
+accounts prepared by the [local account guide](LOCAL_ACCOUNTS_GUIDE.md).
+Set `VITE_TICKET_WORKFLOW_MOCK`, `VITE_DASHBOARD_MOCK`, `VITE_ADMIN_USER_MOCK` and
+`VITE_TECHNICIAN_MOCK` to `false`, then restart Vite.
+
+1. Requester creates a ticket using a published form and an active location.
+2. Manager/Admin reviews and assigns an eligible, available Technician whose
+   skills/service area/capacity cover that ticket.
+3. That Technician opens My Work, starts, saves a work log and resolves.
+4. The reporter opens the RESOLVED detail, confirms close with an optional reason
+   and checks CLOSED, closedAt and CLOSE history. Refresh and revisit the list.
+5. Check that resolution timestamp/outcome/summary did not change and Dashboard
+   still counts the ticket in its resolution week.
+6. Inspect the network: no comments, feedback or result-image upload requests.
+   Verify management routes retain their existing allowed/denied role behavior.
+
+Close permission is ACTIVE + REQUESTER + reporter identity. A reporter with extra
+roles can close; a different Manager/Admin cannot. An invisible ticket returns
+404 before permission/version/state details. For a visible unauthorized actor,
+403 takes precedence over stale version/state. A stale reporter confirmation
+returns 409; reload closes the dialog and a new confirmation is required.
+RESOLVED with an active assignment returns 422 without silently ending it.
+
+From `backend`:
+
+```powershell
+.\mvnw.cmd '-Dtest=TechnicianWorkApiIntegrationTest' test
+$env:RUN_SQLSERVER_IT='true'
+try { .\mvnw.cmd '-Dtest=TechnicianWorkSqlServerIntegrationTest' test }
+finally { Remove-Item Env:RUN_SQLSERVER_IT }
+.\mvnw.cmd verify
+```
+
+The 96-test contract passed on both H2 and SQL Server Testcontainers. Close tests
+include real work-log/resolve prerequisites, reporter role unions, strict parsing,
+500/501-character bounds, visibility/error ordering, one-success/one-409 concurrent
+requests, replay without duplicate history, assignment inconsistency and history
+failure rollback. Dashboard's existing close/resolved-count regression is retained.
+
+From `frontend`, run `npm run test`, `npm run lint`, `npm run build`.
+`TicketDemoScope.test.jsx` covers default scope with MSW flags on/off, direct
+disabled-hook invocation, reporter role union, pending lock, captured version,
+409 reload/reconfirmation and list/Dashboard invalidation. Deferred component
+tests explicitly mock only scope configuration to retain future coverage;
+they do not broaden runtime scope. UI HTTP fixtures do not prove real persistence.
+Build with mock flags true as well: compiled production JavaScript must contain
+no browser MSW bootstrap, fixture globals or preview routes/components.
+
+Verification on 23 October: frontend 581/581; backend `verify` 842 executed tests
+passed, 131 environment-gated tests skipped; separately enabled SQL Server contract
+96/96. Production build/lint passed (existing unused test imports and bundle-size
+advisory remain). The real browser journey above completed against an isolated
+SQL Server database, using the production build. Ticket version 5 → 6, one CLOSE,
+persisted closedAt, preserved resolution fields and resolvedThisWeek=1 were checked
+through both UI and real API reads; replay=409, Admin close=403, preview route=404.
+Zero deferred query/mutation calls are asserted by the default-scope frontend tests.
+
+Local setup limitation: initial Admin bootstrap on the freshly migrated smoke
+database failed with SQL Server's `Unexpected row count: -1` on `user_roles`.
+Restarting against the migrated database completed bootstrap and the full journey.
+This issue does not change bootstrap or migration infrastructure.
+
 ## Real Ticket review and assignment
 
 With `VITE_TICKET_WORKFLOW_MOCK=false`, Manager/Admin can review a persisted
-SUBMITTED Ticket and assign an eligible Technician. Other unfinished workflow
-actions remain disabled. Development previews can still opt into the mock.
+SUBMITTED Ticket and assign an eligible Technician. Deferred workflow
+actions remain hidden. Development previews can still opt into the mock transport.
 The existing detail endpoint includes `currentAssignment`, explicitly null when
 no assignment has `endedAt=null`; historical visibility is unchanged.
 
@@ -59,22 +131,22 @@ Docker are running; it does not change assertions or timeouts.
 
 ## Technician work UI mock (#53)
 
-The current-assignment query and technician actions are available only with
-`VITE_TICKET_WORKFLOW_MOCK=true` on the Vite development server. Sign in with a
+The retained mock transport is selected with `VITE_TICKET_WORKFLOW_MOCK=true`
+on the Vite development server; the same supported actions use real APIs when
+it is off. Sign in with a
 real Technician account, then open `/my-work`. The browser mock uses real
 `/auth/me` identity and binds the first two Technician accounts to its demo
-assignments. The first has an `ASSIGNED` ticket: start it, add a work log, select
-JPEG/PNG result images, then resolve. The second has an `IN_PROGRESS` ticket.
+assignments. The first has an `ASSIGNED` ticket: start it, add a work log, then
+resolve. WORK_RESULT upload is hidden in the demo. The second has an `IN_PROGRESS` ticket.
 Resolved and reassigned tickets remain visible through `/tickets` history but are
 not in `/my-work` after their assignment ends. `window.ticketWorkflowMock.reset()`
 resets the fixtures; `failNextAction(409)` or `failNextAction(403)` demonstrates
-stale version or assignment loss. All mock success feedback explicitly says that
-the operation was simulated.
+stale version or assignment loss. A development transport banner distinguishes
+in-memory fixtures; action success messages use the normal wording.
 
-With the flag off, or in a production build, `/my-work` and technician controls
-report unavailable future APIs while real ticket reads remain usable. The
-frontend tests cover the mock contract and UI; backend persistence and
-authorization tests belong to the later API issues.
+With the flag off, or in a production build, supported actions call real APIs.
+Frontend tests cover client behavior; backend contract suites verify authorization
+and persistence.
 
 Tests must be deterministic, independent, and safe to run in any order. Shared fixtures live under `backend/src/test/java/com/nexora/testsupport`; feature-specific data remains with its feature tests.
 
@@ -249,9 +321,9 @@ From `frontend`, run `npm run lint`, `npm run test`, and `npm run build`.
 
 ## Manager review and assignment UI/mock (#52)
 
-The UI/mock contract is documented in `docs/API_CONVENTIONS.md`. The backend
-workflow/eligibility endpoints and current-assignment detail extension remain
-future work. Existing real detail reads do not depend on them.
+The UI/mock contract is documented in `docs/API_CONVENTIONS.md`. Review/eligibility/
+assign and the current-assignment detail extension now have real APIs. Broader
+deferred actions remain tested in isolation and hidden in the demo.
 
 From `frontend`, run the focused tests:
 
@@ -307,10 +379,10 @@ can be demonstrated by submitting an eligible selection after capacity changes i
 the HTTP/UI tests; normal mismatch selection exposes required override input.
 Reloading the page also resets the in-memory fixtures. There is no persistence.
 
-`npm run preview` serves a production build: workflow stays unavailable even if
-the mock flag is true. Production never starts/imports the browser mock module.
-Verify that the real detail/history remain readable and no future candidate/action
-request is made. Responsive table/modal styling uses existing React Bootstrap
+`npm run preview` serves a production build: supported workflow calls real APIs
+even if build-time mock flags are true. Production never starts/imports the browser
+mock module. Verify real detail/history and supported actions, with no deferred
+action requests. Responsive table/modal styling uses existing React Bootstrap
 components; browser/mobile visual QA should also be performed with real login.
 
 ## Ticket Detail collaboration UI/mock (#60)
@@ -325,10 +397,9 @@ The binding lasts until mock reset/page reload. Pure Requester responses exclude
 INTERNAL comments; users with multiple roles use their union of permissions.
 
 Demo ticket 10 has PUBLIC/INTERNAL comments and a valid PNG attachment. Tickets
-15 (RESOLVED) and 17 (CLOSED) also have image content; 17 starts with immutable
-feedback. Close 15 as its reporter to demonstrate a new keyboard-accessible rating
-and optional comment. Manager/Admin closing another reporter's ticket requires a
-reason; an eligible owner with additional roles closes normally.
+15 (RESOLVED) and 17 (CLOSED) also have image content. Comments, feedback and reopen
+are retained for isolated component tests only. Manager/Admin cannot close another
+reporter's ticket; a reporter with REQUESTER and additional roles closes normally.
 
 Preview opens a modal with a Download control. Image URLs belong to the modal and
 are revoked on close/unmount/replacement. The mock retains uploaded WORK_RESULT

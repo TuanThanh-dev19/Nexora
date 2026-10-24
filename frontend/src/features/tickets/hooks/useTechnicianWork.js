@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import { useAuth } from '../../auth/context/useAuth'
 import { ticketApi } from '../api/ticketApi'
 import { canTechnicianWrite } from '../constants/technicianWork'
@@ -7,11 +7,12 @@ import { retryTicketQuery, ticketViewerKey } from './ticketQueryOptions'
 
 export function useAssignedTickets(search) {
   const { user, isAuthenticated, isChecking } = useAuth()
-  const available = true
+  const available = demoScope.features.myWork
   const query = useQuery({
     queryKey: ['tickets', ...ticketViewerKey(user), 'assigned', search],
     queryFn: ({ signal }) => ticketApi.assignedToMe(search, signal),
     enabled:
+      available &&
       isAuthenticated &&
       !isChecking &&
       user?.roles?.includes('TECHNICIAN'),
@@ -27,6 +28,7 @@ export function useWorkLogs(ticketId) {
     queryKey: ['tickets', ...ticketViewerKey(user), 'work-logs', ticketId],
     queryFn: ({ signal }) => ticketApi.workLogs(ticketId, signal),
     enabled:
+      demoScope.features.workLogs &&
       isAuthenticated &&
       !isChecking &&
       Boolean(ticketId),
@@ -36,7 +38,7 @@ export function useWorkLogs(ticketId) {
 }
 
 export function useTechnicianMutation(ticket) {
-  const { user } = useAuth()
+  const { user, isAuthenticated, isChecking } = useAuth()
   const client = useQueryClient()
   const refresh = () =>
     Promise.all([
@@ -47,7 +49,12 @@ export function useTechnicianMutation(ticket) {
   const mutation = useMutation({
     mutationFn: ({ action, payload, files }) => {
       const source = action === 'start' ? 'ASSIGNED' : 'IN_PROGRESS'
-      if (!canTechnicianWrite(ticket, user, source))
+      if (
+        !isAuthenticated ||
+        isChecking ||
+        demoScope.actions[action] !== true ||
+        !canTechnicianWrite(ticket, user, source)
+      )
         throw new Error('Thao tác chưa khả dụng cho phiếu này.')
       if (action === 'uploadWorkResult')
         return ticketApi.uploadWorkResult(ticket.id, files)

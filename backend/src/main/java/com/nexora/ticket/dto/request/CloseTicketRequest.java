@@ -11,4 +11,4 @@ import jakarta.validation.constraints.Size;
 public record CloseTicketRequest(
         @NotNull(message = "Ticket version is required.")
         @PositiveOrZero(message = "Ticket version must be non-negative.") Long version,
-        @Size(max = 1000, message = "Reason cannot exceed 1000 characters.") String reason) {}
+        @Size(max = 500, message = "Reason cannot exceed 500 characters.") String reason) {}

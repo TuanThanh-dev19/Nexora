@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Alert, Button, Card, Form, Modal, Stack } from 'react-bootstrap'
-import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import { useAuth } from '../../auth/context/useAuth'
 import {
   WORK_LOG_TYPES,
@@ -355,8 +355,8 @@ export function TechnicianWorkPanel({ ticket }) {
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState('')
   if (!user?.roles?.includes('TECHNICIAN')) return null
-  const available = true
-  const canStart = canTechnicianWrite(ticket, user, 'ASSIGNED')
+  const canStart =
+    demoScope.actions.start && canTechnicianWrite(ticket, user, 'ASSIGNED')
   const canWork = canTechnicianWrite(ticket, user)
   const submit = async (action, payload) => {
     try {
@@ -423,7 +423,7 @@ export function TechnicianWorkPanel({ ticket }) {
             </Alert>
           )}
           <Stack direction="horizontal" gap={2} className="flex-wrap">
-            {ticket.status === 'ASSIGNED' && (
+            {demoScope.actions.start && ticket.status === 'ASSIGNED' && (
               <Button
                 disabled={!canStart || mutation.isPending}
                 onClick={() => open('start')}
@@ -433,20 +433,24 @@ export function TechnicianWorkPanel({ ticket }) {
             )}
             {ticket.status === 'IN_PROGRESS' && (
               <>
-                <Button
-                  disabled={!canWork || mutation.isPending}
-                  onClick={() => open('log')}
-                >
-                  Thêm nhật ký
-                </Button>
-                <Button
-                  disabled={
-                    !canWork || mutation.isPending || !logs.data?.length
-                  }
-                  onClick={() => open('resolve')}
-                >
-                  Hoàn tất xử lý
-                </Button>
+                {demoScope.actions.addWorkLog && (
+                  <Button
+                    disabled={!canWork || mutation.isPending}
+                    onClick={() => open('log')}
+                  >
+                    Thêm nhật ký
+                  </Button>
+                )}
+                {demoScope.actions.resolve && (
+                  <Button
+                    disabled={
+                      !canWork || mutation.isPending || !logs.data?.length
+                    }
+                    onClick={() => open('resolve')}
+                  >
+                    Hoàn tất xử lý
+                  </Button>
+                )}
               </>
             )}
           </Stack>
@@ -486,8 +490,8 @@ export function TechnicianWorkPanel({ ticket }) {
                   <p className="mb-1 text-break">{log.content}</p>
                   <small>
                     {formatTicketTime(log.startedAt)} →{' '}
-                    {formatTicketTime(log.endedAt)} ·{' '}
-                    {log.minutesSpent ?? '—'} phút
+                    {formatTicketTime(log.endedAt)} · {log.minutesSpent ?? '—'}{' '}
+                    phút
                   </small>
                 </li>
               ))}
@@ -495,7 +499,9 @@ export function TechnicianWorkPanel({ ticket }) {
           )}
         </Card.Body>
       </Card>
-      {/* Ẩn control upload WORK_RESULT theo phạm vi demo: {canWork && <WorkImages mutation={mutation} upload={upload} />} */}
+      {demoScope.actions.uploadWorkResult && canWork && (
+        <WorkImages mutation={mutation} upload={upload} />
+      )}
       {dialog?.name === 'start' && (
         <WorkDialog
           title="Bắt đầu xử lý"
