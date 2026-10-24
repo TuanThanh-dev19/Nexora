@@ -104,6 +104,7 @@ export function availableTicketActions(ticket, user) {
   return Object.keys(TICKET_WORKFLOW_ACTIONS).filter((action) => {
     if (!TICKET_WORKFLOW_ACTIONS[action].statuses.includes(ticket?.status))
       return false
+    if (action === 'close') return owner
     if (manager) return true
     if (!owner) return false
     if (action === 'cancel')
@@ -112,14 +113,11 @@ export function availableTicketActions(ticket, user) {
   })
 }
 
-export function workflowRequiresReason(action, ticket, user) {
-  return action === 'close'
-    ? !isTicketOwner(ticket, user)
-    : Boolean(TICKET_WORKFLOW_ACTIONS[action]?.requiresReason)
+export function workflowRequiresReason(action) {
+  return Boolean(TICKET_WORKFLOW_ACTIONS[action]?.requiresReason)
 }
 
-export function workflowHistoryAction(action, status, ticket, user) {
-  if (action === 'close' && !isTicketOwner(ticket, user)) return 'FORCE_CLOSE'
+export function workflowHistoryAction(action, status) {
   if (action !== 'cancel') return TICKET_WORKFLOW_ACTIONS[action].historyAction
   return [STATUS.SUBMITTED, STATUS.UNDER_REVIEW].includes(status)
     ? 'CANCEL_BEFORE_ASSIGNMENT'

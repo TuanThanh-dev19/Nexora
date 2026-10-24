@@ -23,7 +23,7 @@ describe('manager workflow presentation', () => {
     ['REOPENED', ['cancel', 'assign']],
     ['ASSIGNED', ['cancel', 'reassign', 'unassign']],
     ['IN_PROGRESS', ['cancel', 'reassign', 'unassign']],
-    ['RESOLVED', ['close', 'reopen']],
+    ['RESOLVED', ['reopen']],
     ['CLOSED', []],
     ['REJECTED', []],
     ['CANCELLED', []],

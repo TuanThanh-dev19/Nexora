@@ -411,42 +411,28 @@ public class TicketAssignmentService {
 
     public TicketActionResultResponse close(Jwt jwt, Long ticketId, CloseTicketRequest request) {
         CurrentUserResponse viewer = getViewer(jwt);
-        Set<RoleCode> roles = getRoles(viewer);
+        Set<RoleCode> roles = viewer.roles().stream().map(RoleCode::valueOf).collect(Collectors.toSet());
 
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("The requested ticket is unavailable."));
 
-        boolean isVisible = roles.contains(RoleCode.ADMIN) || roles.contains(RoleCode.MANAGER)
-                || assignmentRepository.existsByTicketIdAndTechnicianId(ticketId, viewer.id())
-                || (roles.contains(RoleCode.REQUESTER) && ticket.getReporter().getId().equals(viewer.id()));
-        if (!isVisible) {
+        if (!ticketRepository.exists(TicketSpecifications.visibleTo(viewer.id(), roles)
+                .and(TicketSpecifications.id(ticketId)))) {
             throw new ResourceNotFoundException("The requested ticket is unavailable.");
+        }
+
+        if (!roles.contains(RoleCode.REQUESTER) || !ticket.getReporter().getId().equals(viewer.id())) {
+            throw new AccessDeniedException("Only the reporter with REQUESTER role can close the ticket.");
         }
 
         if (!Objects.equals(ticket.getVersion(), request.version())) {
             throw new StaleWriteException();
         }
 
-        if (ticket.getStatus() != TicketStatus.RESOLVED) {
-            throw new BusinessRuleException("Ticket must be in RESOLVED status to close.");
+        TicketWorkflowContract.requireTransition(ticket.getStatus(), TicketAction.CLOSE);
+        if (assignmentRepository.existsByTicketIdAndEndedAtIsNull(ticketId)) {
+            throw new BusinessRuleException("A resolved ticket cannot have an active assignment.");
         }
-
-        boolean isOwner = ticket.getReporter().getId().equals(viewer.id()) && roles.contains(RoleCode.REQUESTER);
-        boolean isManagerOrAdmin = roles.contains(RoleCode.MANAGER) || roles.contains(RoleCode.ADMIN);
-
-        TicketAction action;
-        if (isOwner) {
-            action = TicketAction.CLOSE;
-        } else if (isManagerOrAdmin) {
-            action = TicketAction.FORCE_CLOSE;
-            if (request.reason() == null || request.reason().trim().isEmpty()) {
-                throw new BusinessRuleException("A non-blank reason is required to force-close a ticket.");
-            }
-        } else {
-            throw new AccessDeniedException("Only the ticket owner or a manager can close the ticket.");
-        }
-
-        TicketWorkflowContract.requireTransition(ticket.getStatus(), action);
 
         AppUser actor = userRepository.findById(viewer.id())
                 .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
@@ -461,7 +447,7 @@ public class TicketAssignmentService {
                 : null;
 
         statusHistoryRepository.save(new TicketStatusHistory(ticket, from, TicketStatus.CLOSED,
-                action, reason, actor, now));
+                TicketAction.CLOSE, reason, actor, now));
 
         ticketRepository.flush();
 

@@ -1,5 +1,46 @@
 # UI MVP coverage / acceptance — issue #62
 
+## Demo Ticket Flow checkpoint — 23 October 2026
+
+Branch: `feature/ticket-close-demo-scope`. This checkpoint supersedes the Ticket
+and Dashboard availability claims in the historical snapshot below. It does not
+declare the full MVP or #62 complete.
+
+| Demo area | Current scope |
+| --- | --- |
+| Review / eligibility / assign | Real clients and backend APIs; Manager/Admin guards retained |
+| My Work / start / work logs / resolve | Real clients and backend APIs; current-assignee rules retained |
+| Reporter close | Real POST API; ACTIVE reporter with REQUESTER, including mixed roles; RESOLVED only, no active assignment |
+| Detail / history / resolution / closedAt | Persisted reads; close preserves resolution fields and adds one CLOSE entry |
+| Image preview/download | Real authorized binary read API; existing URL cleanup retained |
+| Dashboard | Real summary API; close invalidates summary and preserves the weekly resolved metric |
+| Reject / cancel / reassign / unassign / reopen / force-close | Hidden in demo; deferred source components/contracts retained |
+| Comments / feedback / WORK_RESULT upload | Hidden; query/mutation hooks blocked, including when MSW flags are on |
+| Administration / Category / Location / Asset / Technician routes | Existing role guards retained; this checkpoint does not re-accept those owners' features |
+
+`frontend/src/shared/config/demoScope.js` is the single availability configuration.
+MSW flags select development transports and never grant feature availability.
+Default demo behavior is tested separately from explicitly enabled deferred
+component tests. Run the real flow with every mock flag off; instructions and
+verification boundaries are in [TESTING.md](TESTING.md).
+
+Verification: the 96-test technician-work/close contract passed on H2 and on SQL
+Server Testcontainers, covering persistence, mixed roles, replay, concurrency and
+rollback. Frontend regression: 581/581 tests passed. Backend `verify`: 842 executed
+tests passed, 131 environment-gated tests skipped. The separately enabled SQL
+Server contract passed 96/96. Lint and the production build passed; pre-existing
+unused test imports and the bundle-size advisory remain.
+
+A production-browser smoke test against an isolated SQL Server database completed
+real login, create, review, eligibility/assign, My Work/start, work log, resolve,
+reporter close, refresh, list and Dashboard. Version changed 5 → 6; exactly one
+CLOSE entry and closedAt persisted; resolution fields and weekly resolved count
+were unchanged. Replay returned 409 and Admin close returned 403. The production
+preview route returned 404 even with all mock flags set during build. No broader
+MVP acceptance is implied.
+
+## Historical navigation checkpoint
+
 Branch: `feature/56-ui-navigation-quality`, based on updated `develop`.
 This delivers the shared navigation/session fixes and integrates the verified
 Dashboard UI from PR #67. **Full MVP acceptance still depends on the other

@@ -978,153 +978,235 @@ public abstract class TechnicianWorkApiContract {
         assertThat(conflictCount.get()).isEqualTo(1);
     }
 
-    @Test
-    void closeTicket_asOwner_success() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"REQUESTER", "TECHNICIAN", "MANAGER", "ADMIN"})
+    void closeTicket_reporterAndMixedRoles_preserveResolutionAndHistory(String extraRole) throws Exception {
         Long ticketId = inProgressTicket.getId();
-        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
-
+        Long version = inProgressTicket.getVersion();
         addWorkLog(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "logType": "RESOLUTION",
-                    "content": "Fixed issue completely",
-                    "startedAt": "2026-10-15T09:00:00Z"
-                }
+                {"version":%d,"logType":"RESOLUTION","content":"Fixed issue","startedAt":"2026-10-15T09:00:00Z"}
                 """.formatted(version)).andExpect(status().isCreated());
-
         resolveTicket(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "resolutionOutcome": "FIXED",
-                    "resolutionSummary": "Completed successfully"
-                }
+                {"version":%d,"resolutionOutcome":"FIXED","resolutionSummary":"Completed successfully"}
                 """.formatted(version + 1)).andExpect(status().isOk());
+        // The fixture reporter already has REQUESTER + TECHNICIAN. Exercise the other role unions too.
+        if (extraRole.equals("MANAGER") || extraRole.equals("ADMIN")) {
+            tx(() -> em.createNativeQuery("insert into dbo.user_roles (user_id, role_id, assigned_at) "
+                    + "select :userId, id, :time from dbo.roles where code = :role")
+                    .setParameter("userId", f.multi.getId()).setParameter("time", TicketReadFixtures.TIME)
+                    .setParameter("role", extraRole).executeUpdate());
+        } else if (extraRole.equals("REQUESTER")) {
+            tx(() -> em.createNativeQuery("delete from dbo.user_roles where user_id = :userId "
+                    + "and role_id in (select id from dbo.roles where code = 'TECHNICIAN')")
+                    .setParameter("userId", f.multi.getId()).executeUpdate());
+        }
+        try {
+            JsonNode before = json.readTree(getTicketDetail(ticketId, f.multi).andReturn().getResponse().getContentAsByteArray());
+            long resolvedVersion = before.path("version").asLong();
+            closeTicket(ticketId, f.multi, """
+                    {"version":%d,"reason":"  Đã kiểm tra, thiết bị hoạt động trở lại.  "}
+                    """.formatted(resolvedVersion))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(ticketId))
+                    .andExpect(jsonPath("$.status").value("CLOSED"))
+                    .andExpect(jsonPath("$.version").value(resolvedVersion + 1))
+                    .andExpect(jsonPath("$.currentAssignment").isEmpty());
+            JsonNode after = json.readTree(getTicketDetail(ticketId, f.multi).andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("CLOSED"))
+                    .andExpect(jsonPath("$.closedAt").isNotEmpty())
+                    .andReturn().getResponse().getContentAsByteArray());
+            for (String field : List.of("resolvedAt", "resolutionOutcome", "resolutionSummary")) {
+                assertThat(after.get(field)).as(field).isEqualTo(before.get(field));
+            }
+            JsonNode latest = after.path("statusHistory").get(after.path("statusHistory").size() - 1);
+            assertThat(latest.path("transitionAction").asText()).isEqualTo("CLOSE");
+            assertThat(latest.path("reason").asText()).isEqualTo("Đã kiểm tra, thiết bị hoạt động trở lại.");
+            assertThat(latest.path("changedBy").path("id").asLong()).isEqualTo(f.multi.getId());
+            assertThat(latest.path("changedAt")).isEqualTo(after.path("closedAt"));
+            closeTicket(ticketId, f.multi, "{\"version\":" + resolvedVersion + "}")
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.type").value("https://nexora.app/problems/stale-write"));
+            assertThat(historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(ticketId)).hasSize(2);
+        } finally {
+            // Added roles are outside TicketReadFixtures' owned rows.
+            if (extraRole.equals("MANAGER") || extraRole.equals("ADMIN")) {
+                tx(() -> em.createNativeQuery("delete from dbo.user_roles where user_id = :userId "
+                        + "and role_id in (select id from dbo.roles where code = :role)")
+                        .setParameter("userId", f.multi.getId()).setParameter("role", extraRole).executeUpdate());
+            }
+        }
+    }
 
-        Long resolvedVersion = version + 2;
-
-        closeTicket(ticketId, f.multi, """
-                {
-                    "version": %d
-                }
-                """.formatted(resolvedVersion))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(ticketId))
-                .andExpect(jsonPath("$.status").value("CLOSED"))
-                .andExpect(jsonPath("$.version").value(resolvedVersion + 1))
-                .andExpect(jsonPath("$.currentAssignment").doesNotExist());
-
-        tx(() -> {
-            Ticket ticket = em.find(Ticket.class, ticketId);
-            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CLOSED);
-            assertThat(ticket.getClosedAt()).isNotNull();
-
-            var history = em.createQuery(
-                    "select h from TicketStatusHistory h where h.ticket.id = :id order by h.id desc",
-                    TicketStatusHistory.class)
-                    .setParameter("id", ticketId)
-                    .getResultList();
-            assertThat(history).isNotEmpty();
-            TicketStatusHistory latest = history.get(0);
-            assertThat(latest.getTransitionAction()).isEqualTo(TicketAction.CLOSE);
-            assertThat(latest.getToStatus()).isEqualTo(TicketStatus.CLOSED);
-            assertThat(latest.getChangedBy().getId()).isEqualTo(f.multi.getId());
+    private Long resolvedOwnTicket() {
+        return tx(() -> {
+            Ticket ticket = em.find(Ticket.class, f.own.getId());
+            ticket.resolve(ResolutionOutcome.FIXED, "Saved resolution", TicketReadFixtures.TIME);
+            em.flush();
+            return ticket.getVersion();
         });
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"", ",\"reason\":null", ",\"reason\":\"   \"", ",\"reason\":\"  checked  \""})
+    void closeTicket_normalizesOptionalReason(String reasonField) throws Exception {
+        Long version = resolvedOwnTicket();
+        closeTicket(f.own.getId(), f.requester, "{\"version\":" + version + reasonField + "}")
+                .andExpect(status().isOk());
+        var entries = historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(f.own.getId());
+        assertThat(entries.getLast().getReason()).isEqualTo(reasonField.contains("checked") ? "checked" : null);
+    }
+
     @Test
-    void closeTicket_asManager_forceClose_requiresReason() throws Exception {
-        Long ticketId = inProgressTicket.getId();
-        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+    void closeTicket_accepts500CharactersAfterTrim() throws Exception {
+        Long version = resolvedOwnTicket();
+        closeTicket(f.own.getId(), f.requester, "{\"version\":" + version + ",\"reason\":\"  " + "a".repeat(500) + "  \"}")
+                .andExpect(status().isOk());
+        assertThat(historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(f.own.getId()).getLast().getReason())
+                .hasSize(500);
+    }
 
-        addWorkLog(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "logType": "RESOLUTION",
-                    "content": "Fixed issue",
-                    "startedAt": "2026-10-15T09:00:00Z"
-                }
-                """.formatted(version)).andExpect(status().isCreated());
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{}", "null", "[]", "{", "{\"version\":null}", "{\"version\":-1}",
+            "{\"version\":0.5}", "{\"version\":\"0\"}", "{\"version\":true}",
+            "{\"version\":0,\"reason\":4}", "{\"version\":0,\"reason\":{}}",
+            "{\"version\":0,\"status\":\"CLOSED\"}", "{\"version\":0,\"reporterId\":1}",
+            "{\"version\":0,\"force\":true}", "{\"version\":0} {}"
+    })
+    void closeTicket_rejectsInvalidPayload(String body) throws Exception {
+        closeTicket(f.own.getId(), f.requester, body).andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+    }
 
-        resolveTicket(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "resolutionOutcome": "FIXED",
-                    "resolutionSummary": "Completed"
-                }
-                """.formatted(version + 1)).andExpect(status().isOk());
+    @Test
+    void closeTicket_rejectsLongReasonAndInvalidPath() throws Exception {
+        closeTicket(f.own.getId(), f.requester, "{\"version\":0,\"reason\":\"" + "a".repeat(501) + "\"}")
+                .andExpect(status().isBadRequest());
+        for (String id : List.of("0", "-1", "abc", "1.5")) {
+            mvc.perform(post("/api/v1/tickets/" + id + "/close").with(jwt().jwt(token(f.requester)))
+                    .contentType(MediaType.APPLICATION_JSON).content("{\"version\":0}"))
+                    .andExpect(status().isBadRequest());
+        }
+    }
 
-        Long resolvedVersion = version + 2;
+    @Test
+    void closeTicket_visibilityAndPermissionPrecedeVersionAndState() throws Exception {
+        for (AppUser actor : List.of(f.manager, f.admin, f.technician)) {
+            // Technician can see the historical assignment; none of these users is the reporter.
+            closeTicket(inProgressTicket.getId(), actor, "{\"version\":999,\"reason\":\"force\"}")
+                    .andExpect(status().isForbidden())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        }
+        for (AppUser actor : List.of(f.other, f.noRole)) {
+            closeTicket(f.own.getId(), actor, "{\"version\":999}").andExpect(status().isNotFound());
+        }
+        closeTicket(Long.MAX_VALUE, f.requester, "{\"version\":999}").andExpect(status().isNotFound());
+        // Historical assignment alone grants no visibility once TECHNICIAN has been revoked.
+        tx(() -> em.createNativeQuery("delete from dbo.user_roles where user_id = :userId")
+                .setParameter("userId", f.technician.getId()).executeUpdate());
+        closeTicket(inProgressTicket.getId(), f.technician, "{\"version\":999}").andExpect(status().isNotFound());
+    }
 
-        closeTicket(ticketId, f.manager, """
-                {
-                    "version": %d
-                }
-                """.formatted(resolvedVersion)).andExpect(status().isUnprocessableEntity());
-
-        closeTicket(ticketId, f.manager, """
-                {
-                    "version": %d,
-                    "reason": "Force closed by manager after verification"
-                }
-                """.formatted(resolvedVersion))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CLOSED"));
-
+    @Test
+    void closeTicket_reporterWithoutRequesterIsForbiddenWhenVisible() throws Exception {
+        tx(() -> em.createNativeQuery("delete from dbo.user_roles where user_id = :userId "
+                + "and role_id in (select id from dbo.roles where code = 'REQUESTER')")
+                .setParameter("userId", f.multi.getId()).executeUpdate());
+        // Give this TECHNICIAN reporter visibility through an ended assignment.
         tx(() -> {
-            Ticket ticket = em.find(Ticket.class, ticketId);
-            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CLOSED);
-
-            var history = em.createQuery(
-                    "select h from TicketStatusHistory h where h.ticket.id = :id order by h.id desc",
-                    TicketStatusHistory.class)
-                    .setParameter("id", ticketId)
-                    .getResultList();
-            assertThat(history).isNotEmpty();
-            TicketStatusHistory latest = history.get(0);
-            assertThat(latest.getTransitionAction()).isEqualTo(TicketAction.FORCE_CLOSE);
-            assertThat(latest.getReason()).isEqualTo("Force closed by manager after verification");
+            var assignment = new TicketAssignment(inProgressTicket.getId(), f.multi.getId(), f.manager.getId(), TicketReadFixtures.TIME);
+            assignment.end(TicketReadFixtures.TIME.plusHours(1), "Finished");
+            em.persist(assignment);
         });
+        closeTicket(inProgressTicket.getId(), f.multi, "{\"version\":999}").andExpect(status().isForbidden());
     }
 
     @Test
-    void closeTicket_staleVersion_returns409() throws Exception {
-        Long ticketId = inProgressTicket.getId();
-        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+    void closeTicket_rejectsInvalidCurrentUser() throws Exception {
+        closeTicket(f.own.getId(), null, "{\"version\":0}").andExpect(status().isUnauthorized());
+        tx(() -> em.find(AppUser.class, f.requester.getId()).changeStatus(com.nexora.user.entity.UserStatus.DISABLED));
+        closeTicket(f.own.getId(), f.requester, "{\"version\":0}").andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/tickets/{id}/close", f.own.getId())
+                .with(jwt().jwt(Jwt.withTokenValue("test").header("alg", "HS256").subject("not-a-user").build()))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"version\":0}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/tickets/{id}/close", f.own.getId())
+                .with(jwt().jwt(Jwt.withTokenValue("test").header("alg", "HS256").subject(Long.MAX_VALUE + "").build()))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"version\":0}"))
+                .andExpect(status().isUnauthorized());
+    }
 
-        addWorkLog(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "logType": "RESOLUTION",
-                    "content": "Fixed issue",
-                    "startedAt": "2026-10-15T09:00:00Z"
-                }
-                """.formatted(version)).andExpect(status().isCreated());
-
-        resolveTicket(ticketId, f.technician, """
-                {
-                    "version": %d,
-                    "resolutionOutcome": "FIXED",
-                    "resolutionSummary": "Completed"
-                }
-                """.formatted(version + 1)).andExpect(status().isOk());
-
-        closeTicket(ticketId, f.multi, """
-                {
-                    "version": 999
-                }
-                """).andExpect(status().isConflict());
+    @ParameterizedTest
+    @ValueSource(strings = {"SUBMITTED", "IN_PROGRESS", "CLOSED"})
+    void closeTicket_requiresResolvedWithCurrentVersion(String state) throws Exception {
+        Long version = tx(() -> {
+            Ticket ticket = em.find(Ticket.class, f.own.getId());
+            ticket.changeStatus(TicketStatus.valueOf(state));
+            em.flush();
+            return ticket.getVersion();
+        });
+        closeTicket(f.own.getId(), f.requester, "{\"version\":" + version + "}")
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void closeTicket_notResolvedStatus_returns422() throws Exception {
-        Long ticketId = inProgressTicket.getId();
-        Long version = tx(() -> em.find(Ticket.class, ticketId).getVersion());
+    void closeTicket_rejectsInconsistentAssignmentWithoutEndingIt() throws Exception {
+        Long version = tx(() -> {
+            Ticket ticket = em.find(Ticket.class, inProgressTicket.getId());
+            ticket.resolve(ResolutionOutcome.FIXED, "Inconsistent fixture", TicketReadFixtures.TIME);
+            em.flush();
+            return ticket.getVersion();
+        });
+        closeTicket(inProgressTicket.getId(), f.multi, "{\"version\":" + version + "}")
+                .andExpect(status().isUnprocessableEntity());
+        assertThat(assignmentRepository.existsByTicketIdAndEndedAtIsNull(inProgressTicket.getId())).isTrue();
+        tx(() -> assertThat(em.find(Ticket.class, inProgressTicket.getId()).getClosedAt()).isNull());
+    }
 
-        closeTicket(ticketId, f.multi, """
-                {
-                    "version": %d
-                }
-                """.formatted(version)).andExpect(status().isUnprocessableEntity());
+    @Test
+    void closeTicket_historyFailureRollsBackAllChanges() {
+        Long version = resolvedOwnTicket();
+        var before = historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(f.own.getId());
+        doThrow(new DataIntegrityViolationException("Simulated close history failure"))
+                .when(historyRepository).save(any(TicketStatusHistory.class));
+        assertThatThrownBy(() -> closeTicket(f.own.getId(), f.requester, "{\"version\":" + version + "}"))
+                .hasRootCauseInstanceOf(DataIntegrityViolationException.class);
+        tx(() -> {
+            Ticket ticket = em.find(Ticket.class, f.own.getId());
+            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.RESOLVED);
+            assertThat(ticket.getClosedAt()).isNull();
+            assertThat(ticket.getVersion()).isEqualTo(version);
+            assertThat(ticket.getResolvedAt()).isEqualTo(TicketReadFixtures.TIME);
+        });
+        assertThat(historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(f.own.getId())).hasSize(before.size());
+    }
+
+    @Test
+    void closeTicket_concurrentRequestsProduceExactlyOneSuccessAndOneStaleWrite() throws Exception {
+        Long version = resolvedOwnTicket();
+        var ready = new CountDownLatch(2);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Integer> request = () -> {
+                ready.countDown();
+                assertThat(start.await(10, TimeUnit.SECONDS)).isTrue();
+                return closeTicket(f.own.getId(), f.requester, "{\"version\":" + version + "}")
+                        .andReturn().getResponse().getStatus();
+            };
+            var first = executor.submit(request);
+            var second = executor.submit(request);
+            try {
+                assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+                start.countDown();
+                assertThat(List.of(first.get(20, TimeUnit.SECONDS), second.get(20, TimeUnit.SECONDS)))
+                        .containsExactlyInAnyOrder(200, 409);
+            } finally {
+                start.countDown();
+            }
+        }
+        tx(() -> assertThat(em.find(Ticket.class, f.own.getId()).getVersion()).isEqualTo(version + 1));
+        assertThat(historyRepository.findByTicketIdOrderByChangedAtAscIdAsc(f.own.getId()).stream()
+                .filter(h -> h.getTransitionAction() == TicketAction.CLOSE).count()).isEqualTo(1);
     }
 
     @Test

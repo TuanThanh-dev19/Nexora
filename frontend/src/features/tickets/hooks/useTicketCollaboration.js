@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../auth/context/useAuth'
-import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import { ticketApi } from '../api/ticketApi'
 import { ticketViewerKey, retryTicketQuery } from './ticketQueryOptions'
 import {
@@ -12,7 +12,7 @@ import {
 export function useTicketComments(ticket, page) {
   const { user, isAuthenticated, isChecking } = useAuth()
   const client = useQueryClient()
-  const available = isTicketWorkflowMockEnabled()
+  const available = demoScope.features.comments
   const enabled = available && isAuthenticated && !isChecking
   const key = [
     'tickets',
@@ -47,7 +47,7 @@ export function useTicketComments(ticket, page) {
 export function useTicketFeedback(ticket) {
   const { user, isAuthenticated, isChecking } = useAuth()
   const client = useQueryClient()
-  const available = isTicketWorkflowMockEnabled()
+  const available = demoScope.features.feedback
   const enabled = available && isAuthenticated && !isChecking
   const key = [
     'tickets',

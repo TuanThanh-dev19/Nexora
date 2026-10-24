@@ -22,12 +22,21 @@ import { ticketApi } from '../api/ticketApi'
 import { createTicketWorkflowMock } from '../mocks/ticketWorkflowHandlers'
 import { WORKFLOW_MOCK_MANAGER } from '../mocks/ticketWorkflowFixtures'
 import { renderTicketApp } from '../testsupport/renderTicketApp'
+import { demoScope } from '../../../shared/config/demoScope'
+
+// Preserve the deferred components' tests without enabling them in the demo.
+vi.mock('../../../shared/config/demoScope', async (importOriginal) => {
+  const { demoScope } = await importOriginal()
+  return { demoScope: { ...demoScope, actions: { ...demoScope.actions } } }
+})
 
 const mock = createTicketWorkflowMock()
 const server = setupServer(...mock.handlers)
 const clients = []
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
+  for (const action of ['reject', 'cancel', 'reassign', 'unassign', 'reopen'])
+    demoScope.actions[action] = true
   mock.reset()
   vi.stubEnv('DEV', true)
   vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'true')
@@ -54,7 +63,7 @@ async function openDialog(label) {
   return within(await screen.findByRole('dialog'))
 }
 async function waitForSuccess(label) {
-  await screen.findByText(`${label} thành công trong bản mô phỏng.`)
+  await screen.findByText(`${label} thành công.`)
   await waitFor(() =>
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
   )
@@ -64,14 +73,22 @@ describe('manager ticket workflow UI', () => {
   it.each([false, true])(
     'reviews and assigns with the workflow mock disabled (production=%s)',
     async (production) => {
+      for (const action of [
+        'reject',
+        'cancel',
+        'reassign',
+        'unassign',
+        'reopen',
+      ])
+        demoScope.actions[action] = false
       if (production) vi.stubEnv('DEV', false)
       else vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', 'false')
       const review = vi.spyOn(ticketApi, 'review')
       const assign = vi.spyOn(ticketApi, 'assign')
       await mount()
       expect(
-        screen.getByRole('button', { name: 'Từ chối', exact: true }),
-      ).toBeDisabled()
+        screen.queryByRole('button', { name: 'Từ chối', exact: true }),
+      ).not.toBeInTheDocument()
       const confirmation = await openDialog('Bắt đầu xem xét')
       await userEvent.click(
         confirmation.getByRole('button', { name: 'Xác nhận bắt đầu xem xét' }),
@@ -92,8 +109,8 @@ describe('manager ticket workflow UI', () => {
         technicianId: 21,
       })
       expect(
-        screen.getByRole('button', { name: 'Phân công lại', exact: true }),
-      ).toBeDisabled()
+        screen.queryByRole('button', { name: 'Phân công lại', exact: true }),
+      ).not.toBeInTheDocument()
       expect(
         screen.getByRole('heading', { name: 'Lịch sử trạng thái' }),
       ).toBeInTheDocument()

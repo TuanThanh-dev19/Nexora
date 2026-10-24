@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Alert, Button, Card, Stack } from 'react-bootstrap'
 import { useAuth } from '../../auth/context/useAuth'
 import { isTicketWorkflowMockEnabled } from '../../../shared/config/env'
+import { demoScope } from '../../../shared/config/demoScope'
 import {
   availableTicketActions,
   canManageTickets,
@@ -20,7 +21,9 @@ export function TicketActionPanel({ ticket }) {
   const [dialog, setDialog] = useState(null)
   const [notice, setNotice] = useState('')
   if (!canManageTickets(user) && !isTicketOwner(ticket, user)) return null
-  const actions = availableTicketActions(ticket, user)
+  const actions = availableTicketActions(ticket, user).filter(
+    (action) => demoScope.actions[action] === true,
+  )
   const open = (action) => {
     mutation.reset()
     setNotice('')
@@ -35,9 +38,7 @@ export function TicketActionPanel({ ticket }) {
         ticket: dialog.ticket,
         payload,
       })
-      setNotice(
-        `${TICKET_WORKFLOW_ACTIONS[dialog.action].label} thành công${isTicketWorkflowMockEnabled() ? ' trong bản mô phỏng' : ''}.`,
-      )
+      setNotice(`${TICKET_WORKFLOW_ACTIONS[dialog.action].label} thành công.`)
       setDialog(null)
     } catch {
       // Mutation feedback stays in the dialog, preserving its inputs.
@@ -67,9 +68,9 @@ export function TicketActionPanel({ ticket }) {
             ? 'Dữ liệu phân công chưa được hỗ trợ'
             : (ticket.currentAssignment?.technician.fullName ??
               (['RESOLVED', 'CLOSED'].includes(ticket.status)
-                ? (getResolverTechnician(ticket)
-                    ? `${getResolverTechnician(ticket)} (Đã hoàn thành)`
-                    : 'Đã hoàn thành xử lý')
+                ? getResolverTechnician(ticket)
+                  ? `${getResolverTechnician(ticket)} (Đã hoàn thành)`
+                  : 'Đã hoàn thành xử lý'
                 : 'Chưa phân công'))}
         </p>
         <Alert variant="info">

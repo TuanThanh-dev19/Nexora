@@ -889,10 +889,7 @@ export function createTicketWorkflowMock({
         ])
         if (query.error) return query.error
         const filter = query.params.get('eligibility')
-        if (
-          filter &&
-          !['ELIGIBLE', 'BLOCKED'].includes(filter)
-        )
+        if (filter && !['ELIGIBLE', 'BLOCKED'].includes(filter))
           return problem(
             400,
             'unsupported-filter',
@@ -907,10 +904,7 @@ export function createTicketWorkflowMock({
             `${candidate.fullName} ${candidate.email}`
               .toLocaleLowerCase()
               .includes(search) &&
-            (!filter ||
-              (filter === 'BLOCKED'
-                ? state.blocked
-                : !state.blocked))
+            (!filter || (filter === 'BLOCKED' ? state.blocked : !state.blocked))
           )
         })
         return pageResponse(content, query.page, query.size)
@@ -931,6 +925,12 @@ export function createTicketWorkflowMock({
               404,
               'resource-not-found',
               'Không thể truy cập phiếu.',
+            )
+          if (action === 'close' && !isTicketOwner(ticket, auth.actor))
+            return problem(
+              403,
+              'access-denied',
+              'Chỉ người báo có quyền Requester được đóng phiếu.',
             )
           if (
             !canManageTickets(auth.actor) &&
@@ -1055,7 +1055,10 @@ export function createTicketWorkflowMock({
               'business-rule-violation',
               'Thao tác không phù hợp trạng thái phiếu.',
             )
-          if (assignmentAction && (!candidate || candidateEligibility(candidate).blocked))
+          if (
+            assignmentAction &&
+            (!candidate || candidateEligibility(candidate).blocked)
+          )
             return problem(
               422,
               'business-rule-violation',

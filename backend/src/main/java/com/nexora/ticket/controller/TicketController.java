@@ -275,20 +275,22 @@ public class TicketController {
 
     @PostMapping(value = "/{ticketId}/close", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Close a resolved ticket",
-            description = "Transitions a ticket from RESOLVED to CLOSED. Ticket owners (REQUESTER) can close directly; managers/admins can force-close with a required non-blank reason. Sets closedAt and records status history.")
+            description = "Accepts only a required nonnegative integer version and an optional reason (trimmed, at most 500 characters; blank becomes null). "
+                    + "Only the ACTIVE reporter with REQUESTER role can close RESOLVED tickets, including mixed-role reporters. No force-close. "
+                    + "Checks visibility before permission, version and state. Commits closedAt, version and CLOSE history together, preserving resolution data.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ticket successfully closed"),
             @ApiResponse(responseCode = "400", description = "Invalid request payload or unsupported fields", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden if caller is not the owner or a manager/admin", content = @Content(
+            @ApiResponse(responseCode = "403", description = "Visible ticket but caller is not its reporter with REQUESTER role", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Ticket not found or inaccessible", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "409", description = "Stale ticket version conflict", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "422", description = "Ticket is not in RESOLVED status or missing required force-close reason", content = @Content(
+            @ApiResponse(responseCode = "422", description = "Ticket is not RESOLVED or still has an inconsistent active assignment", content = @Content(
                     mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     })
     public TicketActionResultResponse close(

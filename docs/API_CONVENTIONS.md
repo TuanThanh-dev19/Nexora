@@ -108,10 +108,11 @@ response schemas and the query parameter allowlists.
 
 ## Manager ticket workflow UI/mock contract (#52)
 
-This section fixes the frontend/demo contract for the later backend milestone.
-**The workflow endpoints and detail assignment extension are not implemented in
-the backend by this issue.** Existing real ticket reads retain the contract above.
-Production keeps workflow controls unavailable and never substitutes fixture data.
+Review, eligibility and assignment now have real backend implementations and work
+with MSW disabled. The broader table below also preserves deferred UI/mock
+contracts: reject/cancel/reassign/unassign are hidden by `demoScope.js` and their
+presence here is not an implemented-backend claim. Real assign accepts only
+`{version,technicianId}`; eligibility mismatches are blocked, with no override.
 
 ### Actions and versions
 
@@ -144,10 +145,10 @@ and changes assignment records together. `/cancel` writes
 and target statuses; it still ends the old assignment and creates a new one with
 `acceptedAt: null`. Cancellation ends an active assignment when present.
 
-### Current assignment: future additive detail field
+### Current assignment
 
-The mock detail includes `currentAssignment: null | Assignment`. Real detail today
-omits this field; the UI displays "assignment data unavailable" for omission and
+Real and mock detail include `currentAssignment: null | Assignment`. The UI
+displays "assignment data unavailable" for older responses that omit it and
 "unassigned" only for explicit null. Assignee identity is not inferred from history.
 
 ```json
@@ -229,11 +230,11 @@ Mock tests verify presentation and fixture consistency only, not backend
 authorization, SQL transactions, or concurrency guarantees. Backend integration
 must confirm these proposed DTOs/query fields before enabling real workflow.
 
-## Technician work UI/mock contract (#53, proposed)
+## Technician work contract
 
-These endpoints are implemented by the development/test mock only. Backend owners
-must confirm this contract before the UI can call real write endpoints. Production
-continues to use real ticket reads and reports technician work as unavailable.
+My Work, start, work-log reads/writes and resolve have real backend implementations
+and work with MSW disabled. WORK_RESULT upload remains deferred and is blocked in
+the demo UI and mutation hook. The preserved development/test mocks are optional.
 
 - `GET /technicians/me/assigned-tickets`: `page`, `size`, `sort`, `status`,
   `priority`, `locationId`. Pagination and filter validation follow the ticket
@@ -283,21 +284,27 @@ in-memory fixture adjustment; `/auth/me` still provides the real actor.
 
 ## Ticket Detail collaboration UI/mock (#60)
 
-This extends the existing UI/mock contracts. Attachment content, close/reopen,
-comments and feedback endpoints remain future backend work. Real list/detail reads
-keep their current DTO. `VITE_TICKET_WORKFLOW_MOCK=true` enables development/test
-scenarios only; production displays unavailable sections without simulated writes.
+Attachment content and reporter close have real backend implementations. Reopen,
+comments and feedback remain deferred UI/mock contracts and are hidden in the
+demo. Their query/mutation hooks are disabled independently of MSW flags.
 
 ### Close, reopen and Requester cancellation
 
-`POST /tickets/{id}/close` accepts `{version,reason?}` from RESOLVED and returns the
-existing action result. An owning REQUESTER closes normally (`CLOSE`), including
-when they also have Manager/Admin roles. Other Manager/Admin actors force-close
-(`FORCE_CLOSE`) with a nonblank reason. This owner-first rule resolves the shared
-endpoint for mixed roles and presents one Close control. Later backend integration
-must confirm and enforce this contract.
+`POST /tickets/{id}/close` accepts only `{version,reason?}` and returns
+`{id,status:"CLOSED",version,currentAssignment:null}`. The ACTIVE actor must be
+the reporter and have REQUESTER, including mixed-role reporters. Manager/Admin
+alone never authorizes close. `version` is a required nonnegative integer; reason
+is string/null, trimmed, blank becomes null, maximum 500 characters after trim.
 
-`POST /tickets/{id}/reopen` accepts `{version,reason}` from RESOLVED for an owning
+After input/current-user validation, close checks visibility (safe 404), permission
+(403), expected version (409 `stale-write`), then state/assignment consistency
+(422). Only RESOLVED with no active assignment can close. Ticket/closedAt/version
+and CLOSE history commit in one SQL transaction; resolvedAt, outcome and summary
+are preserved. CLOSED is terminal in the demo and remains counted as resolved
+within its original resolution week. A replay with the old version returns 409
+without duplicate history. No force/status/reporter fields are accepted.
+
+The deferred mock `POST /tickets/{id}/reopen` accepts `{version,reason}` from RESOLVED for an owning
 Requester or Manager/Admin. It records REOPEN, clears resolved time and recalculates
 SLA from the stored form policy. CLOSED, REJECTED and CANCELLED stay terminal.
 Requester cancellation uses the existing `/cancel` endpoint, only for owned

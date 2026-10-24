@@ -82,7 +82,7 @@ public final class TicketActionRequestReader {
         public CloseTicketRequest deserialize(JsonParser parser, DeserializationContext context) throws IOException {
             JsonNode body = body(parser, ALLOWED);
             Long version = version(parser, body, "version");
-            String reason = optionalTrimmedString(parser, body, "reason", 1000);
+            String reason = optionalTrimmedString(parser, body, "reason", 500);
             return new CloseTicketRequest(version, reason);
         }
     }
