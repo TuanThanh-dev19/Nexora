@@ -31,6 +31,7 @@ export function readTicketSearchParams(search) {
     status: search.get('status') ?? '',
     priority: search.get('priority') ?? '',
     locationId: search.get('locationId') ?? '',
+    keyword: search.get('keyword') ?? '',
   }
 }
 

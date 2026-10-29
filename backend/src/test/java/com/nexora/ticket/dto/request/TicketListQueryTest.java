@@ -8,6 +8,22 @@ import org.springframework.util.LinkedMultiValueMap;
 import com.nexora.common.exception.*;
 
 class TicketListQueryTest {
+    @Test void keywordIsTrimmedBoundedAndCannotRepeat() {
+        var params = new LinkedMultiValueMap<String,String>();
+        assertThat(TicketListQuery.from(params).keyword()).isNull();
+        params.set("keyword","\u00a0\uFEFF");
+        assertThat(TicketListQuery.from(params).keyword()).isNull();
+        params.set("keyword","  \t\n ");
+        assertThat(TicketListQuery.from(params).keyword()).isNull();
+        params.set("keyword","  Máy CHIẾU %_[]!  ");
+        assertThat(TicketListQuery.from(params).keyword()).isEqualTo("Máy CHIẾU %_[]!");
+        params.set("keyword","  "+"x".repeat(200)+"  ");
+        assertThat(TicketListQuery.from(params).keyword()).hasSize(200);
+        params.set("keyword","x".repeat(201));
+        assertThatThrownBy(()->TicketListQuery.from(params)).isInstanceOf(UnsupportedFilterException.class);
+        params.set("keyword","");params.add("keyword","");
+        assertThatThrownBy(()->TicketListQuery.from(params)).isInstanceOf(UnsupportedFilterException.class);
+    }
     @Test
     void defaultsAndDeterministicSortUseSharedContract() {
         var query = TicketListQuery.from(new LinkedMultiValueMap<>());
@@ -19,7 +35,7 @@ class TicketListQueryTest {
     @CsvSource({"page,-1", "page,no", "page,2147483648", "page,2147483647", "size,0", "size,101", "size,1.5",
             "sort,unknown", "sort,'createdAt,sideways'", "sort,'createdAt,desc,extra'",
             "status,submitted", "priority,CRITICAL", "locationId,0", "locationId,-1",
-            "locationId,9223372036854775808", "keyword,test"})
+            "locationId,9223372036854775808", "unknown,test"})
     void rejectsInvalidAndUnknownParameters(String key, String value) {
         var params = new LinkedMultiValueMap<String, String>(); params.add(key, value);
         assertThatThrownBy(() -> TicketListQuery.from(params)).isInstanceOfAny(

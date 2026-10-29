@@ -52,7 +52,7 @@ class TicketControllerMvcTest {
     }
     @ParameterizedTest
     @ValueSource(strings = {"?sort=title,asc", "?priority=CRITICAL", "?page=-1", "?page=2147483647", "?size=101", "?locationId=0",
-            "?status=", "?keyword=test", "?page=0&page=1", "?sort=createdAt,desc&sort=updatedAt,asc"})
+            "?status=", "?unknown=test", "?page=0&page=1", "?sort=createdAt,desc&sort=updatedAt,asc"})
     void invalidListParametersAre400AndDoNotQuery(String query) throws Exception {
         mvc.perform(get("/api/v1/tickets" + query).with(jwt())).andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON));

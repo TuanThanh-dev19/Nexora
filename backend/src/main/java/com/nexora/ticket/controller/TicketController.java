@@ -63,7 +63,8 @@ public class TicketController {
     @Operation(summary = "List visible tickets", description = "Zero-based page; size 1–100. Sort allowlist: "
             + "createdAt, updatedAt, ticketNumber. One sort only, default createdAt,desc; id ASC breaks ties. "
             + "Filters combine with AND; locationId matches exactly. Page offset must fit a signed 32-bit integer. "
-            + "Unknown/duplicate/blank parameters return 400. "
+            + "Keyword is trimmed, blank means no search, maximum 200 characters; case-insensitive literal substring of ticketNumber OR title. "
+            + "LIKE wildcards are escaped. Visibility AND filters AND keyword are applied before pagination. Unknown/duplicate parameters and blank non-keyword filters return 400. "
             + "Visibility and total count use current database roles, including historical technician assignments.")
     @ApiResponse(responseCode = "200", description = "Visible tickets in the shared pagination envelope")
     @Parameters({
@@ -72,7 +73,8 @@ public class TicketController {
             @Parameter(name = "sort", schema = @Schema(type = "string", defaultValue = "createdAt,desc")),
             @Parameter(name = "status", schema = @Schema(implementation = com.nexora.ticket.entity.TicketStatus.class)),
             @Parameter(name = "priority", schema = @Schema(implementation = com.nexora.common.domain.Priority.class)),
-            @Parameter(name = "locationId", schema = @Schema(type = "integer", format = "int64", minimum = "1"))
+            @Parameter(name = "locationId", schema = @Schema(type = "integer", format = "int64", minimum = "1")),
+            @Parameter(name = "keyword", description = "Literal substring of ticket number or title; trimmed, blank ignored. No repeated parameter.", schema = @Schema(type = "string"))
     })
     public PageResponse<TicketSummaryResponse> list(@AuthenticationPrincipal Jwt jwt,
             @Parameter(hidden = true) @RequestParam MultiValueMap<String, String> parameters) {

@@ -37,6 +37,13 @@ public final class TicketSpecifications {
             if (filters.status() != null) predicates.add(cb.equal(root.get("status"), filters.status()));
             if (filters.priority() != null) predicates.add(cb.equal(root.get("priority"), filters.priority()));
             if (filters.locationId() != null) predicates.add(cb.equal(root.get("location").get("id"), filters.locationId()));
+            if (filters.keyword() != null) {
+                // Explicit escape is shared by H2 and SQL Server, including SQL Server bracket patterns.
+                String pattern = "%" + filters.keyword().toLowerCase(java.util.Locale.ROOT)
+                        .replace("!", "!!").replace("%", "!%").replace("_", "!_").replace("[", "![").replace("]", "!]") + "%";
+                predicates.add(cb.or(cb.like(cb.lower(root.get("ticketNumber")), pattern, '!'),
+                        cb.like(cb.lower(root.get("title")), pattern, '!')));
+            }
             return cb.and(predicates.toArray(Predicate[]::new));
         };
     }

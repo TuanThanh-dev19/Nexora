@@ -154,7 +154,11 @@ Sequence SQL cấp số Ticket, năm hiển thị theo Asia/Bangkok. Sequence c�
 
 ### Đọc
 
-GET /tickets có pagination, status, priority, locationId và allowlist sort theo controller; sort mặc định createdAt,desc, ID phá hòa. GET /tickets/{id} trả stored form, giá trị JSON, history, attachments, currentAssignment và resolution fields.
+GET /tickets có pagination, status, priority, locationId, keyword và allowlist sort theo controller; sort mặc định createdAt,desc, ID phá hòa. GET /tickets/{id} trả stored form, giá trị JSON, history, attachments, currentAssignment và resolution fields.
+
+`keyword` xuất hiện tối đa một lần, được trim; thiếu/rỗng/chỉ whitespace tương đương không tìm kiếm. Tối đa 200 ký tự UTF-16 sau trim; quá dài hoặc lặp trả 400 theo contract UnsupportedFilter hiện có. Tìm literal substring không phân biệt hoa/thường trên ticketNumber HOẶC title, gồm tiếng Việt có dấu. Không yêu cầu tìm không dấu. `%`, `_`, `[`, `]`, `!` được escape (`!` là ký tự escape SQL LIKE); dấu gạch chéo ngược được tìm nguyên vẹn. Criteria API bind tham số, không nối input thành SQL.
+
+Điều kiện: visibility AND status/priority/location AND (number matches OR title matches), trước pagination/count. Quyền hợp nhiều role, assignment hiện tại/lịch sử, sort allowlist và ID phá hòa giữ nguyên. Ví dụ: `GET /tickets?keyword=M%C3%A1y%20chi%E1%BA%BFu&status=SUBMITTED&priority=HIGH&page=0&size=20&sort=createdAt,desc`.
 
 currentAssignment=null khi không còn phân công; không tự suy ra current assignment từ lịch sử. Historical forms/answers vẫn được đọc sau khi category publish phiên bản mới.
 

@@ -20,10 +20,10 @@ import com.nexora.common.validation.RequestParameterValidator;
 import com.nexora.ticket.entity.TicketStatus;
 
 /** Strict public query contract. No arbitrary parameter reaches JPA. */
-public record TicketListQuery(Pageable pageable, TicketStatus status, Priority priority, Long locationId) {
+public record TicketListQuery(Pageable pageable, TicketStatus status, Priority priority, Long locationId, String keyword) {
     public static final Map<String, String> SORT_ALLOWLIST = Map.of(
             "createdAt", "createdAt", "updatedAt", "updatedAt", "ticketNumber", "ticketNumber");
-    private static final Set<String> PARAMETERS = Set.of("page", "size", "sort", "status", "priority", "locationId");
+    private static final Set<String> PARAMETERS = Set.of("page", "size", "sort", "status", "priority", "locationId", "keyword");
 
     public static TicketListQuery from(MultiValueMap<String, String> parameters) {
         parameters.forEach((key, values) -> {
@@ -51,7 +51,14 @@ public record TicketListQuery(Pageable pageable, TicketStatus status, Priority p
         return new TicketListQuery(request,
                 enumFilter("status", parameters.getFirst("status"), TicketStatus.class),
                 enumFilter("priority", parameters.getFirst("priority"), Priority.class),
-                location(parameters.getFirst("locationId")));
+                location(parameters.getFirst("locationId")), keyword(parameters.getFirst("keyword")));
+    }
+
+    private static String keyword(String value) {
+        if (value == null) return null;
+        String trimmed = value.replaceAll("^[\\s\\p{Z}\\uFEFF]+|[\\s\\p{Z}\\uFEFF]+$", "");
+        if (trimmed.length() > 200) throw new UnsupportedFilterException("Keyword must contain at most 200 characters after trimming.");
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static Integer integer(String value) {
