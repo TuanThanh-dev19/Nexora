@@ -197,3 +197,12 @@ Kết quả smoke: Ticket IN_PROGRESS giữ version 2 sau upload; resolve/close 
 - Part 4.1–4.2 của đề SBA301 do người dùng cung cấp trong yêu cầu chuẩn hóa tài liệu. Nhóm bổ sung tên/phiên bản tài liệu môn học chính thức.
 - Các cấu hình, migrations và tests của repository là nguồn kiểm chứng hành vi đã triển khai.
 - [Spring Boot reference](https://docs.spring.io/spring-boot/3.5/), [React documentation](https://react.dev/learn), [SQL Server documentation](https://learn.microsoft.com/en-us/sql/sql-server/), [MongoDB documentation](https://www.mongodb.com/docs/), [Testcontainers for Java](https://java.testcontainers.org/).
+
+
+## Mở rộng NEX-054 (#95): Search and Filter Tickets
+
+Tại danh sách Ticket, nhập “Tìm theo mã hoặc tiêu đề”, nhấn Enter hoặc Tìm kiếm. Từ khóa mới đưa page về 0 và giữ status/priority/location/sort. Từ khóa áp dụng nằm trong URL để refresh/chia sẻ; trang chi tiết chuyển tiếp listSearch để quay lại đúng kết quả. Đặt lại bộ lọc xóa cả keyword. Khi request mới đang tải, không dùng bảng kết quả từ từ khóa trước; query key theo viewer và toàn bộ URL cùng AbortSignal ngăn response cũ ghi đè.
+
+Demo: tìm một phần mã; tìm tiêu đề tiếng Việt khác hoa/thường kết hợp trạng thái/ưu tiên; chuyển trang → chi tiết → quay lại; tìm chuỗi không tồn tại hiển thị 0 phiếu. Requester không tìm thấy mã chính xác của người khác; Technician chỉ thấy phạm vi assignment hiện tại/lịch sử; tài khoản nhiều role giữ hợp quyền. My Work không có tìm kiếm mới. Tìm mô tả, tìm không dấu, full-text và gợi ý tự động ngoài phạm vi.
+
+Contract và cách escape LIKE: [API_CONVENTIONS.md](API_CONVENTIONS.md). Các ca tìm Unicode, wildcard, quyền, kết hợp bộ lọc/phân trang chạy cùng TicketReadApiContract trên H2 và SQL Server; UI test URL/Enter/reset/chi tiết/quay lại và request race.

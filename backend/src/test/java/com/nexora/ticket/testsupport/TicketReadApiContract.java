@@ -24,6 +24,51 @@ import jakarta.persistence.EntityManager;
 
 /** The same HTTP/SQL contract runs on fast H2 and real SQL Server. No enclosing test transaction. */
 public abstract class TicketReadApiContract {
+    private JsonNode search(AppUser viewer, String keyword) throws Exception {
+        return json.readTree(mvc.perform(get("/api/v1/tickets").param("keyword",keyword)
+                .with(jwt().jwt(j->j.subject(viewer.getId().toString())))).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+    }
+
+    @Test void keywordSearchRespectsEveryRoleUnionAndEmptyKeyword() throws Exception {
+        for(var viewer:List.of(f.requester,f.other,f.technician,f.manager,f.admin,f.multi)) {
+            assertThat(ids(search(viewer,"  "))).containsExactlyElementsOf(ids(list(viewer)));
+            assertThat(ids(search(viewer,"rD-"))).containsAll(ids(list(viewer)));
+        }
+        assertThat(ids(search(f.requester,f.hidden.getTicketNumber()))).isEmpty();
+        assertThat(ids(search(f.technician,f.own.getTicketNumber()))).isEmpty();
+        assertThat(ids(search(f.multi,f.historical.getTicketNumber()))).containsExactly(f.historical.getId());
+        assertThat(ids(search(f.multi,f.current.getTicketNumber()))).containsExactly(f.current.getId());
+        assertThat(ids(search(f.technician,f.historical.getTicketNumber()))).containsExactly(f.historical.getId());
+        assertThat(ids(search(f.manager,f.hidden.getTicketNumber()))).containsExactly(f.hidden.getId());
+        assertThat(search(f.requester,"no-ticket-exists").path("totalElements").asLong()).isZero();
+        for(var viewer:List.of(f.requester,f.manager))
+            mvc.perform(get("/api/v1/tickets").param("keyword","x".repeat(201)).with(jwt().jwt(j->j.subject(viewer.getId().toString()))))
+                    .andExpect(status().isBadRequest()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        mvc.perform(get("/api/v1/tickets").param("keyword","", "").with(jwt().jwt(j->j.subject(f.manager.getId().toString())))).andExpect(status().isBadRequest());
+    }
+
+    @Test void literalWildcardUnicodeAndInjectionLikeInputNeverExpandMatches() throws Exception {
+        new TransactionTemplate(transactions).executeWithoutResult(s -> {
+            em.createQuery("update Ticket t set t.title=:title where t.id=:id").setParameter("title","Máy CHIẾU 100%_[]!\\ đang hỏng").setParameter("id",f.own.getId()).executeUpdate();
+            em.createQuery("update Ticket t set t.title=:title where t.id=:id").setParameter("title","Máy chiếu 100XYZ đang hỏng").setParameter("id",f.current.getId()).executeUpdate();
+        });
+        for(String keyword:List.of("%","_","[","]","!","\\","%_[]!\\","  máy chiếu 100%  "))
+            assertThat(ids(search(f.manager,keyword))).containsExactly(f.own.getId());
+        assertThat(ids(search(f.requester,"MÁY chiếu"))).containsExactly(f.own.getId());
+        assertThat(ids(search(f.manager,"Máy CHIẾU 100%_[]!\\ đang hỏng"))).containsExactly(f.own.getId());
+        assertThat(ids(search(f.manager,"' OR 1=1 --"))).isEmpty();
+    }
+
+    @Test void keywordCombinesWithAllFiltersBeforeStablePaginationAndCounts() throws Exception {
+        var request=get("/api/v1/tickets").param("keyword","sỰ cỐ").param("status","SUBMITTED").param("priority","HIGH")
+                .param("locationId",f.location.getId().toString()).param("sort","ticketNumber,asc").param("size","1").param("page","1")
+                .with(jwt().jwt(j->j.subject(f.manager.getId().toString())));
+        mvc.perform(request).andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(f.current.getId()))
+                .andExpect(jsonPath("$.totalElements").value(2)).andExpect(jsonPath("$.totalPages").value(2));
+        mvc.perform(get("/api/v1/tickets").param("keyword",f.own.getTicketNumber()).param("priority","LOW")
+                .with(jwt().jwt(j->j.subject(f.manager.getId().toString())))).andExpect(jsonPath("$.totalElements").value(0));
+        assertThat(search(f.multi,"sự cố").path("totalElements").asLong()).isEqualTo(2);
+    }
     @Autowired protected MockMvc mvc;
     @Autowired protected EntityManager em;
     @Autowired protected PlatformTransactionManager transactions;
@@ -55,7 +100,7 @@ public abstract class TicketReadApiContract {
         var list = document.path("paths").path("/api/v1/tickets").path("get");
         var names = new java.util.ArrayList<String>();
         list.path("parameters").forEach(parameter -> names.add(parameter.path("name").asText()));
-        assertThat(names).containsExactlyInAnyOrder("page", "size", "sort", "status", "priority", "locationId");
+        assertThat(names).containsExactlyInAnyOrder("page", "size", "sort", "status", "priority", "locationId", "keyword");
         assertThat(list.path("description").asText()).contains("createdAt", "ticketNumber", "400");
         assertThat(list.path("responses").path("200").path("content").path("application/json")
                 .path("schema").path("$ref").asText()).contains("PageResponse");

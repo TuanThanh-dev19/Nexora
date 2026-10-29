@@ -14,6 +14,7 @@ import { PRIORITY_LABELS } from '../../../shared/constants/priorities'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { LoadingSpinner } from '../../../shared/components/LoadingSpinner'
 import { TicketFilters } from '../components/TicketFilters'
+import { TicketKeywordSearch } from '../components/TicketKeywordSearch'
 import { TicketStatusBadge } from '../components/TicketStatusBadge'
 import { TicketErrorState } from '../components/TicketErrorState'
 import { useTickets } from '../hooks/useTickets'
@@ -51,6 +52,11 @@ export function TicketListPage() {
       </div>
       <Card className="ticket-list-card">
         <Card.Body className="ticket-list-body">
+          <TicketKeywordSearch
+            key={requestSearch}
+            keyword={params.keyword}
+            onSearch={(keyword) => update({ keyword })}
+          />
           <TicketFilters {...params} onChange={update} onReset={reset}>
             <Col xs={6} xl={3}>
               <Form.Label htmlFor="ticket-sort">Sắp xếp</Form.Label>

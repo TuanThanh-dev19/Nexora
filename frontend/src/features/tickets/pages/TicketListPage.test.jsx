@@ -5,9 +5,19 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { HttpResponse, delay, http } from 'msw'
 import { setupServer } from 'msw/node'
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
+import { ticketApi } from '../api/ticketApi'
 import { renderTicketApp } from '../testsupport/renderTicketApp'
 import { page, summary } from '../testsupport/ticketFixtures'
 
@@ -16,10 +26,144 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   cleanup()
   server.resetHandlers()
+  vi.restoreAllMocks()
 })
 afterAll(() => server.close())
 
 describe('TicketListPage', () => {
+  it('submits with Enter or button, trims keyword, resets page and preserves filters/sort', async () => {
+    const requests = []
+    server.use(
+      http.get('*/api/v1/tickets', ({ request }) => {
+        requests.push(Object.fromEntries(new URL(request.url).searchParams))
+        return HttpResponse.json(page())
+      }),
+    )
+    renderTicketApp(
+      '/tickets?page=3&status=SUBMITTED&priority=HIGH&sort=ticketNumber,asc',
+    )
+    await screen.findByText(summary.ticketNumber)
+    const user = userEvent.setup()
+    await user.type(
+      screen.getByLabelText('Tìm theo mã hoặc tiêu đề'),
+      '  Máy chiếu  ',
+    )
+    expect(requests).toHaveLength(1)
+    await user.keyboard('{Enter}')
+    await waitFor(() =>
+      expect(requests.at(-1)).toMatchObject({
+        keyword: 'Máy chiếu',
+        page: '0',
+        status: 'SUBMITTED',
+        priority: 'HIGH',
+        sort: 'ticketNumber,asc',
+      }),
+    )
+    await user.clear(screen.getByLabelText('Tìm theo mã hoặc tiêu đề'))
+    await user.type(
+      screen.getByLabelText('Tìm theo mã hoặc tiêu đề'),
+      'NX-2026',
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Tìm kiếm', exact: true }),
+    )
+    await waitFor(() => expect(requests.at(-1).keyword).toBe('NX-2026'))
+    await user.click(
+      screen.getByRole('button', { name: 'Đặt lại bộ lọc', exact: true }),
+    )
+    await waitFor(() => expect(requests.at(-1)).toEqual({}))
+    expect(screen.getByLabelText('Tìm theo mã hoặc tiêu đề')).toHaveValue('')
+  })
+  it('restores keyword from a shared URL and back from detail', async () => {
+    server.use(
+      http.get('*/api/v1/tickets', () => HttpResponse.json(page())),
+      http.get('*/api/v1/tickets/10', () =>
+        HttpResponse.json({}, { status: 404 }),
+      ),
+    )
+    renderTicketApp('/tickets?keyword=Máy+chiếu&priority=HIGH&page=1')
+    expect(screen.getByLabelText('Tìm theo mã hoặc tiêu đề')).toHaveValue(
+      'Máy chiếu',
+    )
+    fireEvent.click(
+      await screen.findByRole('link', { name: summary.ticketNumber }),
+    )
+    const back = screen.getByRole('link', { name: '← Danh sách phiếu' })
+    expect(back.getAttribute('href')).toContain('keyword=Máy+chiếu')
+    fireEvent.click(back)
+    expect(
+      await screen.findByLabelText('Tìm theo mã hoặc tiêu đề'),
+    ).toHaveValue('Máy chiếu')
+    expect(screen.getByLabelText('Mức ưu tiên')).toHaveValue('HIGH')
+  })
+  it('cancels a slow old search and never presents its rows as the new results', async () => {
+    let oldSignal, release
+    const originalSearch = ticketApi.search
+    vi.spyOn(ticketApi, 'search').mockImplementation((search, signal) => {
+      if (new URLSearchParams(search).get('keyword') === 'slow')
+        oldSignal = signal
+      return originalSearch(search, signal)
+    })
+    server.use(
+      http.get('*/api/v1/tickets', async ({ request }) => {
+        const keyword = new URL(request.url).searchParams.get('keyword')
+        if (keyword === 'slow') {
+          await new Promise((r) => {
+            release = r
+          })
+          return HttpResponse.json(page())
+        }
+        if (keyword === 'new')
+          return HttpResponse.json(
+            page([], { totalElements: 0, totalPages: 0 }),
+          )
+        return HttpResponse.json(page())
+      }),
+    )
+    renderTicketApp()
+    await screen.findByText(summary.ticketNumber)
+    fireEvent.change(screen.getByLabelText('Tìm theo mã hoặc tiêu đề'), {
+      target: { value: 'slow' },
+    })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tìm kiếm', exact: true }),
+    )
+    await waitFor(() => expect(release).toBeDefined())
+    expect(screen.queryByText(summary.ticketNumber)).not.toBeInTheDocument()
+    expect(screen.getByText('Đang tải phiếu yêu cầu...')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Tìm theo mã hoặc tiêu đề'), {
+      target: { value: 'new' },
+    })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tìm kiếm', exact: true }),
+    )
+    await screen.findByText('Không có phiếu yêu cầu phù hợp.')
+    await waitFor(() => expect(oldSignal.aborted).toBe(true))
+    release()
+    expect(screen.queryByText(summary.ticketNumber)).not.toBeInTheDocument()
+    expect(
+      within(screen.getByLabelText('Phân trang')).getByText(/0 phiếu/),
+    ).toBeInTheDocument()
+  })
+  it('rejects an overlong keyword locally without replacing applied search results', async () => {
+    const requests = []
+    server.use(
+      http.get('*/api/v1/tickets', ({ request }) => {
+        requests.push(request.url)
+        return HttpResponse.json(page())
+      }),
+    )
+    renderTicketApp()
+    await screen.findByText(summary.ticketNumber)
+    fireEvent.change(screen.getByLabelText('Tìm theo mã hoặc tiêu đề'), {
+      target: { value: 'x'.repeat(201) },
+    })
+    expect(
+      screen.getByRole('button', { name: 'Tìm kiếm', exact: true }),
+    ).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent('200 ký tự')
+    expect(requests).toHaveLength(1)
+  })
   it('renders loading followed by real API data and no workflow buttons', async () => {
     server.use(
       http.get('*/api/v1/tickets', async () => {
@@ -135,7 +279,7 @@ describe('TicketListPage', () => {
       }),
     )
     const initial =
-      '/tickets?page=1&size=20&sort=updatedAt,desc&status=SUBMITTED&priority=HIGH&locationId=2'
+      '/tickets?page=1&size=20&sort=updatedAt,desc&status=SUBMITTED&priority=HIGH&locationId=2&keyword=chiếu'
     renderTicketApp(initial)
     await screen.findByText(summary.ticketNumber)
     expect(screen.getByLabelText('Trạng thái')).toHaveValue('SUBMITTED')
@@ -147,9 +291,12 @@ describe('TicketListPage', () => {
       status: 'SUBMITTED',
       priority: 'HIGH',
       locationId: '2',
+      keyword: 'chiếu',
     })
     fireEvent.click(screen.getByRole('button', { name: 'Trang sau' }))
-    await waitFor(() => expect(requests.at(-1).page).toBe('2'))
+    await waitFor(() =>
+      expect(requests.at(-1)).toMatchObject({ page: '2', keyword: 'chiếu' }),
+    )
     fireEvent.change(screen.getByLabelText('Mức ưu tiên'), {
       target: { value: 'URGENT' },
     })
@@ -178,13 +325,13 @@ describe('TicketListPage', () => {
     )
   })
   it.each([
-    'keyword=unsupported',
+    'unknown=unsupported',
     'page=0&page=1',
     'priority=',
     'size=101',
     'sort=title,asc',
     'locationId=9223372036854775808',
-    'locationId=9007199254740993&keyword=unsupported',
+    'locationId=9007199254740993&unknown=unsupported',
   ])(
     'sends %s unchanged, renders backend 400 and resets explicitly',
     async (search) => {
@@ -227,13 +374,13 @@ describe('TicketListPage', () => {
   )
   it('shows a network failure for an invalid URL when no backend response arrives', async () => {
     server.use(http.get('*/api/v1/tickets', () => HttpResponse.error()))
-    renderTicketApp('/tickets?keyword=unsupported')
+    renderTicketApp('/tickets?unknown=unsupported')
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Không thể kết nối máy chủ',
     )
     expect(screen.queryByText(/Tham số không hợp lệ/)).toBeNull()
     expect(screen.getByLabelText('URL hiện tại')).toHaveTextContent(
-      'keyword=unsupported',
+      'unknown=unsupported',
     )
   })
   it('keeps the list search when navigating to detail and back', async () => {

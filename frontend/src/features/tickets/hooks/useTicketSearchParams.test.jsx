@@ -16,6 +16,7 @@ describe('ticket search controls and URL', () => {
       status: '',
       priority: '',
       locationId: '',
+      keyword: '',
     })
   })
   it('reads filters as strings and normalizes sort only for display', () => {
@@ -28,6 +29,7 @@ describe('ticket search controls and URL', () => {
       status: 'REOPENED',
       priority: 'URGENT',
       locationId: '9223372036854775807',
+      keyword: '',
     })
     expect(search.get('sort')).toBe(' ticketNumber , ASC ')
     expect(
