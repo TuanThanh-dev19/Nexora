@@ -25,6 +25,7 @@ import { CreateAssetPage } from '../features/assets/pages/CreateAssetPage'
 import { AssetDetailPage } from '../features/assets/pages/AssetDetailPage'
 import { TechnicianListPage } from '../features/technicians/pages/TechnicianListPage'
 import { TechnicianDetailPage } from '../features/technicians/pages/TechnicianDetailPage'
+import { TicketReportPage } from '../features/reports/pages/TicketReportPage'
 import { isDashboardMockEnabled } from '../shared/config/env'
 
 export const appRoutes = [
@@ -101,6 +102,10 @@ export const appRoutes = [
               {
                 path: 'technicians/:technicianId',
                 element: <TechnicianDetailPage />,
+              },
+              {
+                path: 'reports/tickets',
+                element: <TicketReportPage />,
               },
             ],
           },

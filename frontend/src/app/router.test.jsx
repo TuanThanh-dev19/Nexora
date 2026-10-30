@@ -57,6 +57,7 @@ it.each([
   ['/administration/equipment-types', ['ADMIN'], 'Loại thiết bị'],
   ['/technicians', ['MANAGER'], 'Kỹ thuật viên'],
   ['/technicians/me', ['TECHNICIAN'], 'Hồ sơ kỹ thuật của tôi'],
+  ['/reports/tickets', ['MANAGER'], 'Báo cáo Ticket'],
 ])('renders full management UI for %s', (path, roles, title) => {
   open(path, roles)
   expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
@@ -68,6 +69,7 @@ it.each([
   '/technicians',
   '/assets',
   '/assets/new',
+  '/reports/tickets',
   '/administration/locations',
   '/administration/equipment-types',
 ])('denies unsupported roles in place for %s', (path) => {

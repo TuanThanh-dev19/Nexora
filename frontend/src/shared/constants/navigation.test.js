@@ -22,5 +22,6 @@ it('manager sees workforce/assets but not admin-only catalog/users', () => {
     '/tickets',
     '/technicians',
     '/assets',
+    '/reports/tickets',
   ])
 })
