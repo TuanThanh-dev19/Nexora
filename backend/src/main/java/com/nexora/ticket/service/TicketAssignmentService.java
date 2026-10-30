@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.nexora.notification.event.TicketAssignedNotificationEvent;
+import com.nexora.notification.event.TicketResolvedNotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -73,6 +76,7 @@ public class TicketAssignmentService {
     private final TechnicianEligibilityService eligibilityService;
     private final TicketResponseMapper mapper;
     private final WorkLogRepository workLogRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @org.springframework.beans.factory.annotation.Autowired
     public TicketAssignmentService(
@@ -84,7 +88,8 @@ public class TicketAssignmentService {
             TicketStatusHistoryRepository statusHistoryRepository,
             TechnicianEligibilityService eligibilityService,
             TicketResponseMapper mapper,
-            WorkLogRepository workLogRepository) {
+            WorkLogRepository workLogRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.authService = authService;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
@@ -94,6 +99,21 @@ public class TicketAssignmentService {
         this.eligibilityService = eligibilityService;
         this.mapper = mapper;
         this.workLogRepository = workLogRepository;
+        this.eventPublisher = eventPublisher;
+    }
+
+    public TicketAssignmentService(
+            AuthService authService,
+            TicketRepository ticketRepository,
+            AppUserRepository userRepository,
+            TechnicianProfileRepository profileRepository,
+            TicketAssignmentRepository assignmentRepository,
+            TicketStatusHistoryRepository statusHistoryRepository,
+            TechnicianEligibilityService eligibilityService,
+            TicketResponseMapper mapper,
+            WorkLogRepository workLogRepository) {
+        this(authService, ticketRepository, userRepository, profileRepository, assignmentRepository,
+                statusHistoryRepository, eligibilityService, mapper, workLogRepository, null);
     }
 
     public TicketAssignmentService(
@@ -106,7 +126,7 @@ public class TicketAssignmentService {
             TechnicianEligibilityService eligibilityService,
             TicketResponseMapper mapper) {
         this(authService, ticketRepository, userRepository, profileRepository, assignmentRepository,
-                statusHistoryRepository, eligibilityService, mapper, null);
+                statusHistoryRepository, eligibilityService, mapper, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -170,6 +190,17 @@ public class TicketAssignmentService {
         recordTransition(ticket, TicketAction.ASSIGN, actor, now);
         // JPA increments @Version exactly once. Map only after that update has executed.
         ticketRepository.flush();
+
+        if (eventPublisher != null) {
+            eventPublisher.publishEvent(new TicketAssignedNotificationEvent(
+                    ticket.getId(),
+                    ticket.getTicketNumber(),
+                    ticket.getTitle(),
+                    assignment.getId(),
+                    assignment.getTechnicianId(),
+                    actor.getId()));
+        }
+
         return new TicketActionResultResponse(ticket.getId(), ticket.getStatus(), ticket.getVersion(),
                 mapper.assignment(assignment, evaluation.user(), actor));
     }
@@ -397,10 +428,23 @@ public class TicketAssignmentService {
 
         currentAssignment.end(now, "RESOLVED");
 
-        statusHistoryRepository.save(new TicketStatusHistory(ticket, from, TicketStatus.RESOLVED,
-                TicketAction.RESOLVE, null, actor, now));
+        TicketStatusHistory history = new TicketStatusHistory(ticket, from, TicketStatus.RESOLVED,
+                TicketAction.RESOLVE, null, actor, now);
+        history = statusHistoryRepository.save(history);
 
         ticketRepository.flush();
+
+        if (eventPublisher != null) {
+            eventPublisher.publishEvent(new TicketResolvedNotificationEvent(
+                    ticket.getId(),
+                    ticket.getTicketNumber(),
+                    ticket.getTitle(),
+                    history.getId(),
+                    ticket.getReporter().getId(),
+                    actor.getId(),
+                    request.resolutionOutcome() != null ? request.resolutionOutcome().name() : null,
+                    request.resolutionSummary()));
+        }
 
         return new TicketActionResultResponse(
                 ticket.getId(),

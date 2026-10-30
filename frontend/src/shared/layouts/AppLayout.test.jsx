@@ -2,25 +2,37 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthContext } from '../../features/auth/context/auth-context'
 import { AppLayout } from './AppLayout'
 
+function renderAppLayout(authValue, initialEntries = ['/']) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider value={authValue}>
+        <MemoryRouter initialEntries={initialEntries}>
+          <AppLayout />
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </QueryClientProvider>,
+  )
+}
+
 it('renders mixed-role navigation, current route, keyboard menu, account and logout', async () => {
   const logout = vi.fn()
-  render(
-    <AuthContext.Provider
-      value={{
-        user: {
-          fullName: 'Test Admin',
-          roles: ['ADMIN', 'REQUESTER', 'TECHNICIAN'],
-        },
-        logout,
-      }}
-    >
-      <MemoryRouter initialEntries={['/tickets/new']}>
-        <AppLayout />
-      </MemoryRouter>
-    </AuthContext.Provider>,
+  renderAppLayout(
+    {
+      user: {
+        id: 1,
+        fullName: 'Test Admin',
+        roles: ['ADMIN', 'REQUESTER', 'TECHNICIAN'],
+      },
+      logout,
+    },
+    ['/tickets/new'],
   )
   expect(screen.getByRole('link', { name: 'Tạo phiếu' })).toHaveAttribute(
     'aria-current',
@@ -29,6 +41,7 @@ it('renders mixed-role navigation, current route, keyboard menu, account and log
   expect(
     screen.getByRole('link', { name: 'Phiếu yêu cầu' }),
   ).not.toHaveAttribute('aria-current')
+  expect(screen.getByRole('button', { name: /thông báo/i })).toBeInTheDocument()
   const user = userEvent.setup()
   const menu = screen.getByRole('button', { name: 'Quản lý' })
   menu.focus()
@@ -50,13 +63,7 @@ it('renders mixed-role navigation, current route, keyboard menu, account and log
 })
 
 it('hides private navigation until session checking completes', () => {
-  render(
-    <AuthContext.Provider value={{ user: null, isChecking: true }}>
-      <MemoryRouter>
-        <AppLayout />
-      </MemoryRouter>
-    </AuthContext.Provider>,
-  )
+  renderAppLayout({ user: null, isChecking: true })
   expect(
     screen.getByText('Đang kiểm tra phiên đăng nhập...'),
   ).toBeInTheDocument()
@@ -66,18 +73,15 @@ it('hides private navigation until session checking completes', () => {
   expect(
     screen.queryByRole('link', { name: 'Đăng nhập' }),
   ).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: /thông báo/i }),
+  ).not.toBeInTheDocument()
 })
 
 it('announces the mobile menu state and collapses after selecting a page', async () => {
-  render(
-    <AuthContext.Provider
-      value={{ user: { fullName: 'Requester', roles: ['REQUESTER'] } }}
-    >
-      <MemoryRouter>
-        <AppLayout />
-      </MemoryRouter>
-    </AuthContext.Provider>,
-  )
+  renderAppLayout({
+    user: { id: 2, fullName: 'Requester', roles: ['REQUESTER'] },
+  })
   const user = userEvent.setup()
   const toggle = screen.getByRole('button', {
     name: 'Mở hoặc đóng điều hướng',
@@ -91,13 +95,7 @@ it('announces the mobile menu state and collapses after selecting a page', async
 })
 
 it('also collapses the anonymous menu when selecting login or the brand', async () => {
-  render(
-    <AuthContext.Provider value={{ user: null }}>
-      <MemoryRouter initialEntries={['/login']}>
-        <AppLayout />
-      </MemoryRouter>
-    </AuthContext.Provider>,
-  )
+  renderAppLayout({ user: null }, ['/login'])
   const user = userEvent.setup()
   const toggle = screen.getByRole('button', {
     name: 'Mở hoặc đóng điều hướng',
