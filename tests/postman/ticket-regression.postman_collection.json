@@ -1,0 +1,2243 @@
+{
+  "info": {
+    "name": "Ticket API Regression Test Suite",
+    "description": "Comprehensive regression testing for Ticket API lifecycle, permissions, concurrency, attachments, and dashboard metrics on real backend and SQL Server database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Authentication",
+      "description": "Authenticates test actors across roles and saves role-specific JWT tokens.",
+      "item": [
+        {
+          "name": "1.1 Login Requester",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{requesterEmail}}\",\"password\":\"{{requesterPassword}}\"}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Response has valid accessToken and Bearer type', function() {",
+                  "    pm.expect(data.accessToken).to.be.a('string').and.not.empty;",
+                  "    pm.expect(data.tokenType).to.eql('Bearer');",
+                  "    pm.expect(data.expiresIn).to.be.a('number').and.greaterThan(0);",
+                  "});",
+                  "pm.test('User has REQUESTER role', function() {",
+                  "    pm.expect(data.user).to.be.an('object');",
+                  "    pm.expect(data.user.roles).to.include('REQUESTER');",
+                  "});",
+                  "pm.environment.set('token_requester', data.accessToken);",
+                  "pm.environment.set('requesterId', data.user.id);",
+                  "pm.environment.set('requesterFullName', data.user.fullName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Verify Current Requester (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Current user matches requester identity and ACTIVE status', function() {",
+                  "    pm.expect(data.id).to.eql(pm.environment.get('requesterId'));",
+                  "    pm.expect(data.email).to.eql(pm.environment.get('requesterEmail'));",
+                  "    pm.expect(data.status).to.eql('ACTIVE');",
+                  "    pm.expect(data.roles).to.include('REQUESTER');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Login Other Requester",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{otherRequesterEmail}}\",\"password\":\"{{otherRequesterPassword}}\"}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('token_other_requester', data.accessToken);",
+                  "pm.environment.set('otherRequesterId', data.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.4 Login Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{managerEmail}}\",\"password\":\"{{managerPassword}}\"}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('User has MANAGER role', function() {",
+                  "    pm.expect(data.user.roles).to.include('MANAGER');",
+                  "});",
+                  "pm.environment.set('token_manager', data.accessToken);",
+                  "pm.environment.set('managerId', data.user.id);",
+                  "pm.environment.set('managerFullName', data.user.fullName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.5 Verify Current Manager (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Manager status is ACTIVE with MANAGER role', function() {",
+                  "    pm.expect(data.id).to.eql(pm.environment.get('managerId'));",
+                  "    pm.expect(data.status).to.eql('ACTIVE');",
+                  "    pm.expect(data.roles).to.include('MANAGER');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Login Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{technicianEmail}}\",\"password\":\"{{technicianPassword}}\"}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('User has TECHNICIAN role', function() {",
+                  "    pm.expect(data.user.roles).to.include('TECHNICIAN');",
+                  "});",
+                  "pm.environment.set('token_technician', data.accessToken);",
+                  "pm.environment.set('technicianId', data.user.id);",
+                  "pm.environment.set('technicianFullName', data.user.fullName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.7 Verify Current Technician (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Technician status is ACTIVE with TECHNICIAN role', function() {",
+                  "    pm.expect(data.id).to.eql(pm.environment.get('technicianId'));",
+                  "    pm.expect(data.status).to.eql('ACTIVE');",
+                  "    pm.expect(data.roles).to.include('TECHNICIAN');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.8 Login Ineligible Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{ineligibleTechnicianEmail}}\",\"password\":\"{{ineligibleTechnicianPassword}}\"}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('token_ineligible_technician', data.accessToken);",
+                  "pm.environment.set('ineligibleTechnicianId', data.user.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Ticket Creation & Validation",
+      "description": "Tests ticket creation with multipart payload and dynamic values, and enforces validation rules.",
+      "item": [
+        {
+          "name": "2.1 Get Reference Published Form",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/categories/{{categoryId}}/published-form"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('runId')) {",
+                  "    var runId = 'RUN-' + Date.now().toString().slice(-6);",
+                  "    pm.environment.set('runId', runId);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Form is PUBLISHED and schema is valid', function() {",
+                  "    pm.expect(data.status).to.eql('PUBLISHED');",
+                  "    pm.expect(data.fields).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create Ticket 1 (Main Workflow Ticket)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "ticket",
+                  "value": "{\"categoryId\":{{categoryId}},\"formVersionId\":{{formVersionId}},\"locationId\":{{locationId}},\"title\":\"[{{runId}}] Main Workflow Safety Ticket\",\"description\":\"Main safety incident reported for full lifecycle testing\",\"dynamicValues\":[{\"fieldKey\":\"impact_scope\",\"value\":\"Corridor on floor 1 has a slippery hazard requiring immediate mitigation\"}],\"attachments\":[]}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Location header points to created ticket', function() {",
+                  "    pm.expect(pm.response.headers.has('Location')).to.be.true;",
+                  "    pm.expect(pm.response.headers.get('Location')).to.match(/\\/api\\/v1\\/tickets\\/\\d+/);",
+                  "});",
+                  "var data = pm.response.json();",
+                  "pm.test('Created ticket has SUBMITTED status and version 0', function() {",
+                  "    pm.expect(data.id).to.be.a('number').and.greaterThan(0);",
+                  "    pm.expect(data.ticketNumber).to.be.a('string').and.match(/^NX-\\d{4}-\\d+$/);",
+                  "    pm.expect(data.status).to.eql('SUBMITTED');",
+                  "    pm.expect(data.version).to.eql(0);",
+                  "});",
+                  "pm.environment.set('ticket1Id', data.id);",
+                  "pm.environment.set('ticket1Number', data.ticketNumber);",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Ticket 2 (Secondary Ticket - No Work Result Photo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "ticket",
+                  "value": "{\"categoryId\":{{categoryId}},\"formVersionId\":{{formVersionId}},\"locationId\":{{locationId}},\"title\":\"[{{runId}}] Secondary Ticket for No-Photo Scenario\",\"description\":\"Testing valid resolve and close without work result photos\",\"dynamicValues\":[{\"fieldKey\":\"impact_scope\",\"value\":\"Emergency exit corridor has loose handrail on floor 1\"}],\"attachments\":[]}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function() { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('ticket2Id', data.id);",
+                  "pm.environment.set('ticket2Number', data.ticketNumber);",
+                  "pm.environment.set('ticket2Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Negative: Create Ticket Missing Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "ticket",
+                  "value": "{\"categoryId\":{{categoryId}},\"formVersionId\":{{formVersionId}},\"title\":\"[{{runId}}] Invalid Ticket Without Location\",\"description\":\"Description text\",\"dynamicValues\":[{\"fieldKey\":\"impact_scope\",\"value\":\"Hazard scope text here\"}],\"attachments\":[]}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test('ProblemDetail contains fieldErrors for locationId', function() {",
+                  "    pm.expect(data.status).to.eql(400);",
+                  "    pm.expect(data.fieldErrors).to.be.an('object');",
+                  "    pm.expect(data.fieldErrors.locationId).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Negative: Create Ticket Missing Required Dynamic Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "ticket",
+                  "value": "{\"categoryId\":{{categoryId}},\"formVersionId\":{{formVersionId}},\"locationId\":{{locationId}},\"title\":\"[{{runId}}] Invalid Ticket Missing Dynamic Values\",\"description\":\"Description text\",\"dynamicValues\":[],\"attachments\":[]}",
+                  "type": "text",
+                  "contentType": "application/json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Validation reports missing required dynamic field', function() {",
+                  "    pm.expect(data.status).to.eql(400);",
+                  "    pm.expect(data.fieldErrors).to.be.an('object');",
+                  "    pm.expect(Object.keys(data.fieldErrors).some(k => k.includes('impact_scope') || k.includes('dynamicValues'))).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Ticket Listing & Detail",
+      "description": "Tests ticket listing pagination, role-scoped visibility isolation, and full detail read-back.",
+      "item": [
+        {
+          "name": "3.1 List Tickets as Requester",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Response is valid PageResponse envelope', function() {",
+                  "    pm.expect(data.content).to.be.an('array');",
+                  "    pm.expect(data.totalElements).to.be.a('number').and.greaterThanOrEqual(2);",
+                  "    pm.expect(data.page).to.eql(0);",
+                  "});",
+                  "pm.test('Requester only sees their own reported tickets', function() {",
+                  "    var myId = pm.environment.get('requesterId');",
+                  "    data.content.forEach(function(item) {",
+                  "        pm.expect(item.reporter.id).to.eql(myId);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 List Tickets as Manager",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Manager list includes both created test tickets', function() {",
+                  "    var ids = data.content.map(function(t) { return t.id; });",
+                  "    pm.expect(ids).to.include(pm.environment.get('ticket1Id'));",
+                  "    pm.expect(ids).to.include(pm.environment.get('ticket2Id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Read Ticket 1 Detail as Requester",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Detail matches initial SUBMITTED state', function() {",
+                  "    pm.expect(data.id).to.eql(pm.environment.get('ticket1Id'));",
+                  "    pm.expect(data.status).to.eql('SUBMITTED');",
+                  "    pm.expect(data.version).to.eql(0);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "    pm.expect(data.resolutionOutcome).to.be.null;",
+                  "    pm.expect(data.resolutionSummary).to.be.null;",
+                  "    pm.expect(data.resolvedAt).to.be.null;",
+                  "    pm.expect(data.closedAt).to.be.null;",
+                  "});",
+                  "pm.test('Initial status history has SUBMIT action by requester', function() {",
+                  "    pm.expect(data.statusHistory).to.be.an('array').with.lengthOf(1);",
+                  "    var h0 = data.statusHistory[0];",
+                  "    pm.expect(h0.transitionAction).to.eql('SUBMIT');",
+                  "    pm.expect(h0.toStatus).to.eql('SUBMITTED');",
+                  "    pm.expect(h0.changedBy.id).to.eql(pm.environment.get('requesterId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Visibility Negative: Other Requester Access Ticket 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_other_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found (safe visibility exclusion)', function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "var data = pm.response.json();",
+                  "pm.test('Does not leak ticket details', function() {",
+                  "    pm.expect(data.status).to.eql(404);",
+                  "    pm.expect(data.title).to.exist;",
+                  "    pm.expect(data.ticketNumber).to.not.exist;",
+                  "    pm.expect(data.description).to.not.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Review & Assignment",
+      "description": "Evaluates technician candidate eligibility, prevents ineligible assignment, handles version conflict, and performs review and assignment.",
+      "item": [
+        {
+          "name": "4.1 Version Conflict Negative: Review Outdated Version",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":999}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/review"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', function() { pm.response.to.have.status(409); });",
+                  "var data = pm.response.json();",
+                  "pm.test('ProblemDetail type is stale-write', function() {",
+                  "    pm.expect(data.status).to.eql(409);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/stale-write');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Review Ticket 1 as Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/review"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket transitions to UNDER_REVIEW with version 1', function() {",
+                  "    pm.expect(data.status).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(data.version).to.eql(1);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Review Ticket 2 as Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket2Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/review"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('ticket2Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Read Back Ticket 1 After Review",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('History includes BEGIN_REVIEW action', function() {",
+                  "    pm.expect(data.status).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(data.version).to.eql(1);",
+                  "    pm.expect(data.statusHistory).to.have.lengthOf(2);",
+                  "    var h1 = data.statusHistory[1];",
+                  "    pm.expect(h1.transitionAction).to.eql('BEGIN_REVIEW');",
+                  "    pm.expect(h1.fromStatus).to.eql('SUBMITTED');",
+                  "    pm.expect(h1.toStatus).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(h1.changedBy.id).to.eql(pm.environment.get('managerId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Query Eligible Technicians for Ticket 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/eligible-technicians"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Candidate list differentiates eligible vs blocked candidates', function() {",
+                  "    pm.expect(data.content).to.be.an('array');",
+                  "    var techId = Number(pm.environment.get('technicianId'));",
+                  "    var ineligTechId = Number(pm.environment.get('ineligibleTechnicianId'));",
+                  "    var tech = data.content.find(t => t.technicianId === techId);",
+                  "    pm.expect(tech, 'Eligible technician should be present').to.exist;",
+                  "    pm.expect(tech.available).to.be.true;",
+                  "    pm.expect(tech.eligibilityReasons).to.be.an('array').with.lengthOf(0);",
+                  "    var inelig = data.content.find(t => t.technicianId === ineligTechId);",
+                  "    if (inelig) {",
+                  "        pm.expect(inelig.available).to.be.false;",
+                  "        pm.expect(inelig.eligibilityReasons.length).to.be.at.least(1);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Negative: Assign Ineligible Candidate to Ticket 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}},\"technicianId\":{{ineligibleTechnicianId}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/assign"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity', function() { pm.response.to.have.status(422); });",
+                  "var data = pm.response.json();",
+                  "pm.test('ProblemDetail indicates business rule rejection', function() {",
+                  "    pm.expect(data.status).to.eql(422);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/business-rule-violation');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Read Back Ticket 1 - Verify Unchanged After Ineligible Assignment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket state and assignment remain unaffected', function() {",
+                  "    pm.expect(data.status).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(data.version).to.eql(1);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "    pm.expect(data.statusHistory).to.have.lengthOf(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Version Conflict Negative: Assign Outdated Version",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":0,\"technicianId\":{{technicianId}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/assign"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', function() { pm.response.to.have.status(409); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Stale write problem returned', function() {",
+                  "    pm.expect(data.status).to.eql(409);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/stale-write');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.9 Assign Ticket 1 to Technician as Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}},\"technicianId\":{{technicianId}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/assign"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket transitions to ASSIGNED with version 2', function() {",
+                  "    pm.expect(data.status).to.eql('ASSIGNED');",
+                  "    pm.expect(data.version).to.eql(2);",
+                  "    pm.expect(data.currentAssignment).to.be.an('object');",
+                  "    pm.expect(data.currentAssignment.technician.technicianId).to.eql(pm.environment.get('technicianId'));",
+                  "    pm.expect(data.currentAssignment.assignedBy.id).to.eql(pm.environment.get('managerId'));",
+                  "    pm.expect(data.currentAssignment.endedAt).to.be.null;",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.10 Assign Ticket 2 to Technician as Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket2Version}},\"technicianId\":{{technicianId}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/assign"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('ticket2Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.11 Read Back Ticket 1 After Assign",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket 1 has ASSIGN in status history', function() {",
+                  "    pm.expect(data.status).to.eql('ASSIGNED');",
+                  "    pm.expect(data.version).to.eql(2);",
+                  "    pm.expect(data.statusHistory).to.have.lengthOf(3);",
+                  "    var h2 = data.statusHistory[2];",
+                  "    pm.expect(h2.transitionAction).to.eql('ASSIGN');",
+                  "    pm.expect(h2.fromStatus).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(h2.toStatus).to.eql('ASSIGNED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.12 Wrong Status Negative: Resolve on ASSIGNED Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}},\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Premature resolution attempt\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/resolve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity (Wrong State)', function() {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Technician Work",
+      "description": "Tests technician work: My Work listing, starting work, enforcing work logs, and logging work entries.",
+      "item": [
+        {
+          "name": "5.1 List Assigned Tickets (My Work)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/technicians/me/assigned-tickets"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Active assignments contain test tickets', function() {",
+                  "    var ids = data.content.map(t => t.id);",
+                  "    pm.expect(ids).to.include(pm.environment.get('ticket1Id'));",
+                  "    pm.expect(ids).to.include(pm.environment.get('ticket2Id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Start Ticket 1 as Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket transitions to IN_PROGRESS with version 3', function() {",
+                  "    pm.expect(data.status).to.eql('IN_PROGRESS');",
+                  "    pm.expect(data.version).to.eql(3);",
+                  "    pm.expect(data.currentAssignment.acceptedAt).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Start Ticket 2 as Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket2Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('ticket2Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 Wrong Status Negative: Start Again on IN_PROGRESS Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity (Cannot start IN_PROGRESS ticket)', function() {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.5 Wrong Status Negative: Close on IN_PROGRESS Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}}}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/close"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity (Cannot close IN_PROGRESS ticket)', function() {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.6 Negative: Resolve Without Prior Work Log",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":{{ticket1Version}},\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Attempting to resolve without logs\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/resolve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity (Requires at least 1 work log)', function() {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.7 Add Work Log to Ticket 1 as Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":3,\"logType\":\"PROGRESS\",\"content\":\"Diagnosed floor moisture and placed caution tape and warning signs\",\"startedAt\":\"2026-10-30T09:00:00Z\",\"minutesSpent\":25}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/work-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function() { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Work log increments ticket version to 4', function() {",
+                  "    pm.expect(data.id).to.be.a('number').and.greaterThan(0);",
+                  "    pm.expect(data.logType).to.eql('PROGRESS');",
+                  "    pm.expect(data.ticketVersion).to.eql(4);",
+                  "    pm.expect(data.technician.id).to.eql(pm.environment.get('technicianId'));",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.ticketVersion);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.8 Add Work Log to Ticket 2 as Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":3,\"logType\":\"REPAIR\",\"content\":\"Secured handrail screws and tested stability\",\"startedAt\":\"2026-10-30T09:15:00Z\",\"minutesSpent\":30}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/work-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function() { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "pm.environment.set('ticket2Version', data.ticketVersion);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.9 Get Work Logs for Ticket 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/work-logs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Chronological logs returned', function() {",
+                  "    pm.expect(data).to.be.an('array');",
+                  "    pm.expect(data.length).to.be.at.least(1);",
+                  "    pm.expect(data[0].logType).to.eql('PROGRESS');",
+                  "    pm.expect(data[0].ticketId).to.eql(pm.environment.get('ticket1Id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Attachments",
+      "description": "Tests file validation (empty, fake MIME, oversize, file count limit), upload authorization, valid WORK_RESULT upload, independent ticket state check, and authorized content retrieval with SHA-256.",
+      "item": [
+        {
+          "name": "6.1 Attachment Validation Negative: Empty File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/empty.png",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Rejects empty file', function() {",
+                  "    pm.expect(data.status).to.eql(400);",
+                  "    pm.expect(data.fieldErrors.files).to.include('empty');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Attachment Validation Negative: Fake MIME / Signature Mismatch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/fake-mime.png",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Rejects MIME signature mismatch', function() {",
+                  "    pm.expect(data.status).to.eql(400);",
+                  "    pm.expect(data.fieldErrors.files).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Attachment Validation Negative: Oversized File (> 5 MiB)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/oversized.jpg",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 413 Payload Too Large', function() { pm.response.to.have.status(413); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Oversized error detail provided', function() {",
+                  "    pm.expect(data.status).to.eql(413);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 Attachment Validation Negative: Exceed File Count Limit (> 5 files)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Rejects batch exceeding 5 files', function() {",
+                  "    pm.expect(data.status).to.eql(400);",
+                  "    pm.expect(data.fieldErrors.files).to.include('5 files');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.5 Permission Negative: Manager Upload WORK_RESULT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function() { pm.response.to.have.status(403); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Access denied: visible but unauthorized role', function() {",
+                  "    pm.expect(data.status).to.eql(403);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/access-denied');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.6 Valid Upload: Technician Uploads WORK_RESULT (JPEG + PNG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "value": "{\"attachmentType\":\"WORK_RESULT\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.png",
+                  "type": "file"
+                },
+                {
+                  "key": "files",
+                  "src": "fixtures/valid.jpg",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function() { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Returns metadata for both files', function() {",
+                  "    pm.expect(data).to.be.an('array').with.lengthOf(2);",
+                  "    var png = data.find(a => a.contentType === 'image/png');",
+                  "    var jpg = data.find(a => a.contentType === 'image/jpeg');",
+                  "    pm.expect(png, 'PNG attachment should exist').to.exist;",
+                  "    pm.expect(jpg, 'JPEG attachment should exist').to.exist;",
+                  "    pm.expect(png.attachmentType).to.eql('WORK_RESULT');",
+                  "    pm.expect(png.fieldDefinitionId).to.be.null;",
+                  "    pm.expect(png.uploadedBy.id).to.eql(pm.environment.get('technicianId'));",
+                  "    pm.expect(jpg.attachmentType).to.eql('WORK_RESULT');",
+                  "    pm.expect(jpg.fieldDefinitionId).to.be.null;",
+                  "    pm.expect(jpg.uploadedBy.id).to.eql(pm.environment.get('technicianId'));",
+                  "    pm.environment.set('pngAttachmentId', png.id);",
+                  "    pm.environment.set('jpgAttachmentId', jpg.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.7 Verify Ticket 1 Independent Read-Back After Upload",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Upload does NOT mutate ticket status, version, or resolution fields', function() {",
+                  "    pm.expect(data.status).to.eql('IN_PROGRESS');",
+                  "    pm.expect(data.version).to.eql(4);",
+                  "    pm.expect(data.resolutionOutcome).to.be.null;",
+                  "    pm.expect(data.resolutionSummary).to.be.null;",
+                  "    pm.expect(data.resolvedAt).to.be.null;",
+                  "    pm.expect(data.attachments).to.be.an('array').with.lengthOf(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.8 Read Authorized Attachment Content (PNG) as Technician",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments/{{pngAttachmentId}}/content"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Headers match image/png and inline disposition', function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('image/png');",
+                  "    pm.expect(pm.response.headers.get('Content-Disposition')).to.include('inline');",
+                  "    pm.expect(pm.response.headers.get('Content-Length')).to.eql('67');",
+                  "});",
+                  "pm.test('PNG file content matches fixture size', function() {",
+                  "    pm.expect(pm.response.text().length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.9 Read Authorized Attachment Content (JPEG) as Reporter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments/{{jpgAttachmentId}}/content"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Headers match image/jpeg and inline disposition', function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('image/jpeg');",
+                  "    pm.expect(pm.response.headers.get('Content-Disposition')).to.include('inline');",
+                  "    pm.expect(pm.response.headers.get('Content-Length')).to.eql('149');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.10 Visibility Negative: Other Requester Access Attachment Content",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_other_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/attachments/{{pngAttachmentId}}/content"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found (Safe attachment isolation)', function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('No attachment bytes are leaked', function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('problem+json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 Reporter Close",
+      "description": "Tests resolving tickets, version conflicts on close, permission enforcement, and successful closing by the reporter (both with and without work result photos).",
+      "item": [
+        {
+          "name": "7.1 Scenario B: Resolve Ticket 2 Without WORK_RESULT Attachments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":4,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Handrail securely repaired and tested without photos\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/resolve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK (Resolve without attachments)', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket 2 moves to RESOLVED version 5', function() {",
+                  "    pm.expect(data.status).to.eql('RESOLVED');",
+                  "    pm.expect(data.version).to.eql(5);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "});",
+                  "pm.environment.set('ticket2Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 Scenario B: Close Ticket 2 Without WORK_RESULT Attachments as Reporter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":5,\"reason\":\"Confirmed handrail repaired stably without photos\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket2Id}}/close"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK (Close without attachments)', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket 2 is CLOSED at version 6', function() {",
+                  "    pm.expect(data.status).to.eql('CLOSED');",
+                  "    pm.expect(data.version).to.eql(6);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.3 Resolve Ticket 1 as Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":4,\"resolutionOutcome\":\"FIXED\",\"resolutionSummary\":\"Hazard fully cleared and floor dried completely with photo evidence\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/resolve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket 1 transitions to RESOLVED with version 5', function() {",
+                  "    pm.expect(data.status).to.eql('RESOLVED');",
+                  "    pm.expect(data.version).to.eql(5);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.4 Read Back Ticket 1 After Resolve",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Resolution fields are populated correctly', function() {",
+                  "    pm.expect(data.status).to.eql('RESOLVED');",
+                  "    pm.expect(data.version).to.eql(5);",
+                  "    pm.expect(data.resolutionOutcome).to.eql('FIXED');",
+                  "    pm.expect(data.resolutionSummary).to.include('dried completely');",
+                  "    pm.expect(data.resolvedAt).to.be.a('string').and.not.empty;",
+                  "    pm.expect(data.closedAt).to.be.null;",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "    pm.expect(data.attachments).to.have.lengthOf(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.5 Version Conflict Negative: Close Outdated Version",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":4,\"reason\":\"Close attempt with outdated version\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/close"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', function() { pm.response.to.have.status(409); });",
+                  "var data = pm.response.json();",
+                  "pm.test('ProblemDetail type is stale-write', function() {",
+                  "    pm.expect(data.status).to.eql(409);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/stale-write');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.6 Permission Negative: Non-Reporter (Manager) Close Ticket 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":5,\"reason\":\"Manager attempts to close requester ticket\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/close"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', function() { pm.response.to.have.status(403); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Only active reporter with REQUESTER role can close', function() {",
+                  "    pm.expect(data.status).to.eql(403);",
+                  "    pm.expect(data.type).to.eql('https://nexora.app/problems/access-denied');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.7 Close Ticket 1 as Reporter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\":5,\"reason\":\"Inspected floor in person; surface is dry and safe for passage.\"}"
+            },
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}/close"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Ticket 1 transitions to CLOSED at version 6', function() {",
+                  "    pm.expect(data.status).to.eql('CLOSED');",
+                  "    pm.expect(data.version).to.eql(6);",
+                  "    pm.expect(data.currentAssignment).to.be.null;",
+                  "});",
+                  "pm.environment.set('ticket1Version', data.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.8 Read Back Final Ticket 1 Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticket1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Final ticket state is fully closed and consistent', function() {",
+                  "    pm.expect(data.status).to.eql('CLOSED');",
+                  "    pm.expect(data.version).to.eql(6);",
+                  "    pm.expect(data.closedAt).to.be.a('string').and.not.empty;",
+                  "    pm.expect(data.resolvedAt).to.be.a('string').and.not.empty;",
+                  "    pm.expect(data.resolutionOutcome).to.eql('FIXED');",
+                  "    pm.expect(data.resolutionSummary).to.be.a('string').and.not.empty;",
+                  "    pm.expect(data.attachments).to.have.lengthOf(2);",
+                  "});",
+                  "pm.test('CLOSE history event is recorded with reporter comment', function() {",
+                  "    var latest = data.statusHistory[data.statusHistory.length - 1];",
+                  "    pm.expect(latest.transitionAction).to.eql('CLOSE');",
+                  "    pm.expect(latest.fromStatus).to.eql('RESOLVED');",
+                  "    pm.expect(latest.toStatus).to.eql('CLOSED');",
+                  "    pm.expect(latest.reason).to.eql('Inspected floor in person; surface is dry and safe for passage.');",
+                  "    pm.expect(latest.changedBy.id).to.eql(pm.environment.get('requesterId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Dashboard & Post-Workflow Verification",
+      "description": "Verifies dashboard metrics across roles and proves that resolved tickets remain counted in resolvedThisWeek even after close.",
+      "item": [
+        {
+          "name": "8.1 Get Dashboard Summary as Manager",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_manager}}"
+              }
+            ],
+            "url": "{{baseUrl}}/dashboard/summary"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Dashboard schema is valid and counts are non-negative', function() {",
+                  "    pm.expect(data.openTickets).to.be.a('number').and.greaterThanOrEqual(0);",
+                  "    pm.expect(data.inProgressTickets).to.be.a('number').and.greaterThanOrEqual(0);",
+                  "    pm.expect(data.slaAtRiskTickets).to.be.a('number').and.greaterThanOrEqual(0);",
+                  "    pm.expect(data.resolvedThisWeek).to.be.a('number').and.greaterThanOrEqual(2);",
+                  "    pm.expect(data.generatedAt).to.be.a('string').and.include('+07:00');",
+                  "});",
+                  "pm.test('Closed tickets remain counted in resolvedThisWeek', function() {",
+                  "    pm.expect(data.resolvedThisWeek).to.be.at.least(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.2 Get Dashboard Summary as Requester",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_requester}}"
+              }
+            ],
+            "url": "{{baseUrl}}/dashboard/summary"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Requester dashboard scope includes resolved tickets', function() {",
+                  "    pm.expect(data.resolvedThisWeek).to.be.at.least(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.3 Get Dashboard Summary as Technician",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_technician}}"
+              }
+            ],
+            "url": "{{baseUrl}}/dashboard/summary"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function() { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Technician dashboard scope reflects assignments', function() {",
+                  "    pm.expect(data.resolvedThisWeek).to.be.at.least(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -25,3 +25,8 @@ Thumbs.db
 
 # Local infrastructure data
 .data/
+
+# Postman local environments and test reports
+tests/postman/*.postman_environment.json
+!tests/postman/*.example.postman_environment.json
+tests/postman/reports/
