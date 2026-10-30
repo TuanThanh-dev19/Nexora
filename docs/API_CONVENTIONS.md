@@ -88,6 +88,7 @@ Các path trong bảng được thêm sau /api/v1. Quyền đọc riêng của t
 | Result upload      | POST /tickets/{id}/attachments                                                                            | Current TECHNICIAN, IN_PROGRESS                          |
 | Image read         | GET /tickets/{id}/attachments/{attachmentId}/content                                                      | Visibility của Ticket, đúng attachment/Ticket            |
 | Dashboard          | GET /dashboard/summary                                                                                    | Có xác thực và role hỗ trợ, scope theo Ticket visibility |
+| Reports            | GET /reports/tickets; GET /reports/tickets/export                                                         | MANAGER/ADMIN, báo cáo theo khoảng ngày và xuất CSV      |
 | Public health      | GET /public/health                                                                                        | Public                                                   |
 
 ## 5. Category và form version
@@ -238,6 +239,43 @@ GET /dashboard/summary không nhận query params. Trả số nguyên không âm
 
 Scope dùng visibility và không đếm đôi khi actor có nhiều role. resolvedThisWeek không dựa vào updatedAt/closedAt. Database failure không bị chuyển thành bốn số 0.
 
-## 10. Phạm vi chưa bật
+## 10. Báo cáo Ticket theo khoảng thời gian và xuất CSV
+
+Chỉ `MANAGER` hoặc `ADMIN` được phép truy cập `GET /reports/tickets` và `GET /reports/tickets/export`. Người dùng chỉ có role `REQUESTER` hoặc `TECHNICIAN` nhận phản hồi `403 Forbidden`. Chưa xác thực nhận `401 Unauthorized`.
+
+### 10.1. Tham số truy vấn và validation
+
+- `fromDate`, `toDate` (bắt buộc): Chuỗi ngày theo định dạng `yyyy-MM-dd` tại múi giờ `Asia/Bangkok`. Khoảng thời gian nửa mở: `createdAt >= fromDate 00:00:00+07:00` và `createdAt < (toDate + 1 ngày) 00:00:00+07:00` (cả hai ngày người dùng chọn đều được tính trọn vẹn).
+- Hợp lệ: `fromDate <= toDate` và khoảng cách tối đa 92 ngày tính cả hai đầu. Nếu vi phạm, trả về `400 Bad Request`.
+- Bộ lọc tùy chọn:
+  - `locationId`: ID địa điểm (số nguyên dương).
+  - `priority`: Mức ưu tiên (`LOW`, `NORMAL`, `HIGH`, `URGENT`).
+- Phân trang (chỉ áp dụng cho `GET /reports/tickets`):
+  - `page`: Số nguyên không âm, mặc định `0`.
+  - `size`: Từ `1` đến `100`, mặc định `20`.
+  - Thứ tự sắp xếp cố định: `createdAt DESC`, ID phụ tăng dần.
+- Bất kỳ tham số lạ hoặc tham số lặp lại nào đều bị từ chối với `400 Bad Request`.
+
+### 10.2. Công thức chỉ số báo cáo
+
+Báo cáo thể hiện trạng thái **hiện tại** của nhóm Ticket được tạo trong khoảng thời gian đã chọn:
+
+- `totalTickets`: Tổng số Ticket trong tập dữ liệu sau lọc.
+- `statusCounts`: Số lượng Ticket theo từng trạng thái hiện tại (bao gồm đủ 9 trạng thái: `SUBMITTED`, `UNDER_REVIEW`, `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, `REOPENED`, `CLOSED`, `REJECTED`, `CANCELLED`). Tổng các nhóm luôn bằng `totalTickets`.
+- `overdueTickets`: Số Ticket thuộc tập kết quả đang ở trạng thái hoạt động (`SUBMITTED`, `UNDER_REVIEW`, `ASSIGNED`, `IN_PROGRESS`, `REOPENED`), có `slaDueAt != null` và `slaDueAt < generatedAt` (so sánh nghiêm ngặt trước `generatedAt`, bằng chưa tính quá hạn). Các trạng thái kết thúc/đã xử lý (`RESOLVED`, `CLOSED`, `REJECTED`, `CANCELLED`) không tính đang quá hạn.
+- Summary và danh sách phân trang được tính toán trên cùng một transaction / snapshot dữ liệu nhất quán. Dữ liệu rỗng trả các chỉ số bằng 0 và danh sách rỗng.
+
+### 10.3. Xuất CSV
+
+Endpoint `GET /reports/tickets/export` xuất toàn bộ kết quả sau lọc:
+
+- Giới hạn tối đa **10.000 Ticket** mỗi lần xuất. Nếu vượt quá giới hạn, trả về `422 Unprocessable Entity` kèm thông báo lỗi rõ ràng yêu cầu người dùng thu hẹp bộ lọc.
+- Tên file chứa khoảng ngày và thời gian lập kèm múi giờ rõ ràng (ví dụ: `ticket-report_2026-10-01_to_2026-10-07_20261030-150000_ICT.csv`).
+- Định dạng UTF-8 có BOM (`\uFEFF`) để hiển thị tiếng Việt chính xác trên Microsoft Excel.
+- Tiêu đề cột chuẩn: `Mã phiếu`, `Tiêu đề`, `Trạng thái`, `Mức ưu tiên`, `Vị trí`, `Danh mục`, `Người tạo`, `Hạn SLA`, `Ngày tạo`, `Ngày cập nhật`.
+- Escape chuẩn CSV theo RFC 4180 (dấu phẩy, dấu nháy kép, xuống dòng).
+- Vô hiệu hóa công thức (chống CSV Formula Injection) cho tất cả ô văn bản bắt đầu bằng `=`, `+`, `-`, `@` hoặc ký tự điều khiển bằng cách thêm tiền tố nháy đơn `'`.
+
+## 11. Phạm vi chưa bật
 
 Reject/cancel/unassign/reopen/force-close, comments và feedback đang tắt trong demoScope. Reassign đã bật cho ASSIGNED khi có current assignment. Mock handlers/DTO/schema cho các phần hoãn không phải cam kết API/UI thật. Chỉ bổ sung endpoint vào danh mục chính khi controller, service và kiểm thử tích hợp đã có bằng chứng.

@@ -42,6 +42,12 @@ export const NAVIGATION_ITEMS = [
     group: 'management',
   },
   {
+    path: '/reports/tickets',
+    label: 'Báo cáo Ticket',
+    roles: MANAGEMENT_ROLES,
+    group: 'management',
+  },
+  {
     path: '/categories',
     label: 'Danh mục sự cố',
     roles: [ROLE_CODES.ADMIN],
