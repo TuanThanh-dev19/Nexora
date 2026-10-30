@@ -2,9 +2,10 @@ import { httpClient } from '../../../shared/api/httpClient'
 
 /**
  * Lấy danh sách thông báo của người dùng hiện tại có phân trang và lọc unread.
+ * httpClient đã cấu hình baseURL là '/api/v1', do đó đường dẫn là '/notifications'.
  */
 export async function getNotificationsApi({ page = 0, size = 20, unreadOnly = false } = {}) {
-  const response = await httpClient.get('/api/v1/notifications', {
+  const response = await httpClient.get('/notifications', {
     params: { page, size, unreadOnly },
   })
   return response.data
@@ -14,7 +15,7 @@ export async function getNotificationsApi({ page = 0, size = 20, unreadOnly = fa
  * Lấy số lượng thông báo chưa đọc của người dùng hiện tại.
  */
 export async function getUnreadCountApi() {
-  const response = await httpClient.get('/api/v1/notifications/unread-count')
+  const response = await httpClient.get('/notifications/unread-count')
   return response.data
 }
 
@@ -22,7 +23,6 @@ export async function getUnreadCountApi() {
  * Đánh dấu một thông báo là đã đọc.
  */
 export async function markNotificationAsReadApi(notificationId) {
-  const response = await httpClient.patch(`/api/v1/notifications/${notificationId}/read`)
+  const response = await httpClient.patch(`/notifications/${notificationId}/read`)
   return response.data
 }
-

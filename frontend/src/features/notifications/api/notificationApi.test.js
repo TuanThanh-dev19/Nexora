@@ -18,7 +18,7 @@ describe('notificationApi', () => {
     vi.clearAllMocks()
   })
 
-  it('getNotificationsApi calls GET /api/v1/notifications with default parameters', async () => {
+  it('getNotificationsApi calls GET /notifications with default parameters', async () => {
     const mockData = {
       content: [],
       page: 0,
@@ -30,13 +30,13 @@ describe('notificationApi', () => {
 
     const result = await getNotificationsApi()
 
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/notifications', {
+    expect(httpClient.get).toHaveBeenCalledWith('/notifications', {
       params: { page: 0, size: 20, unreadOnly: false },
     })
     expect(result).toEqual(mockData)
   })
 
-  it('getNotificationsApi calls GET /api/v1/notifications with custom parameters', async () => {
+  it('getNotificationsApi calls GET /notifications with custom parameters', async () => {
     const mockData = {
       content: [{ id: '60f1b2b3c9e77b0015f8a001' }],
       page: 2,
@@ -48,23 +48,23 @@ describe('notificationApi', () => {
 
     const result = await getNotificationsApi({ page: 2, size: 10, unreadOnly: true })
 
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/notifications', {
+    expect(httpClient.get).toHaveBeenCalledWith('/notifications', {
       params: { page: 2, size: 10, unreadOnly: true },
     })
     expect(result).toEqual(mockData)
   })
 
-  it('getUnreadCountApi calls GET /api/v1/notifications/unread-count', async () => {
+  it('getUnreadCountApi calls GET /notifications/unread-count', async () => {
     const mockData = { unreadCount: 5 }
     httpClient.get.mockResolvedValueOnce({ data: mockData })
 
     const result = await getUnreadCountApi()
 
-    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/notifications/unread-count')
+    expect(httpClient.get).toHaveBeenCalledWith('/notifications/unread-count')
     expect(result).toEqual(mockData)
   })
 
-  it('markNotificationAsReadApi calls PATCH /api/v1/notifications/:id/read', async () => {
+  it('markNotificationAsReadApi calls PATCH /notifications/:id/read', async () => {
     const notificationId = '60f1b2b3c9e77b0015f8a002'
     const mockData = {
       id: notificationId,
@@ -76,9 +76,8 @@ describe('notificationApi', () => {
     const result = await markNotificationAsReadApi(notificationId)
 
     expect(httpClient.patch).toHaveBeenCalledWith(
-      `/api/v1/notifications/${notificationId}/read`,
+      `/notifications/${notificationId}/read`,
     )
     expect(result).toEqual(mockData)
   })
 })
-
