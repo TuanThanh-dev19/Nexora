@@ -80,12 +80,14 @@ public class TicketReadService {
         var statusHistory = history.findByTicketIdOrderByChangedAtAscIdAsc(ticketId);
         var attachmentMetadata = attachments.findByTicketIdAndAttachmentTypeInOrderByCreatedAtAscIdAsc(ticketId,
                 List.of(AttachmentType.REPORT_EVIDENCE, AttachmentType.WORK_RESULT));
-        var currentAssignment = assignments.findByTicketIdAndEndedAtIsNull(ticketId)
+        var assignmentHistory = assignments.findByTicketIdOrderByAssignedAtDescIdDesc(ticketId).stream()
                 .map(assignment -> mapper.assignment(assignment, users.getReferenceById(assignment.getTechnicianId()),
                         users.getReferenceById(assignment.getAssignedBy())))
-                .orElse(null);
+                .toList();
+        var currentAssignment = assignmentHistory.stream().filter(assignment -> assignment.endedAt() == null)
+                .findFirst().orElse(null);
         return mapper.detail(ticket, storedFields, storedOptions, dynamicValues, statusHistory, attachmentMetadata,
-                currentAssignment);
+                currentAssignment, assignmentHistory);
     }
 
     private CurrentUserResponse viewer(Jwt jwt) {

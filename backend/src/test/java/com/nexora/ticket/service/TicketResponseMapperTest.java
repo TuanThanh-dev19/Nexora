@@ -22,7 +22,7 @@ class TicketResponseMapperTest {
         var field = new FieldDefinition(form, "image", "Bằng chứng", DynamicFieldType.IMAGE, 0);
         var ticket = new Ticket("TEST-1", UserFixtures.requester(), category, form,
                 new Location("L", "Location", LocationType.CAMPUS, null), null, "Title", "Description", Priority.NORMAL);
-        var dto = new TicketResponseMapper().detail(ticket, List.of(field), List.of(), List.of(), List.of(), List.of(), null);
+        var dto = new TicketResponseMapper().detail(ticket, List.of(field), List.of(), List.of(), List.of(), List.of(), null, List.of());
         var payload = new ObjectMapper().findAndRegisterModules().writeValueAsString(dto);
         assertThat(dto.formVersion().versionNumber()).isEqualTo(7);
         assertThat(dto.dynamicValues()).isEmpty();
@@ -71,7 +71,7 @@ class TicketResponseMapperTest {
 
         var dto = new TicketResponseMapper().detail(ticket, List.of(choice, number, image),
                 List.of(oldOption, newOption), List.of(choiceValue, numberValue),
-                List.of(initial, sameStatus), List.of(evidence, result), null);
+                List.of(initial, sameStatus), List.of(evidence, result), null, List.of());
 
         assertThat(dto.description()).isEqualTo("Description");
         assertThat(dto.version()).isEqualTo(3L);

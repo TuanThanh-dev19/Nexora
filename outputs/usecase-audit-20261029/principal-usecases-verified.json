@@ -1,0 +1,4241 @@
+{
+  "verified": true,
+  "rows": 57,
+  "blankUsecaseCells": 0,
+  "maxUsecases": 3,
+  "changedRows": 25,
+  "after": {
+    "spreadsheetId": "15AJcAfaJRjbjWaa99LC5S-Sq339IYSZLbFSf6-FMgfQ",
+    "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/15AJcAfaJRjbjWaa99LC5S-Sq339IYSZLbFSf6-FMgfQ/edit",
+    "properties": {
+      "title": "Nexora_Product_Backlog",
+      "locale": "vi_VN",
+      "timeZone": "America/Los_Angeles"
+    },
+    "sheets": [
+      {
+        "properties": {
+          "sheetId": 1201240531,
+          "title": "Product Backlog",
+          "index": 0,
+          "sheetType": "GRID",
+          "gridProperties": {
+            "rowCount": 1000,
+            "columnCount": 26,
+            "hideGridlines": true,
+            "rowGroupControlAfter": true,
+            "columnGroupControlAfter": true
+          }
+        },
+        "data": [
+          {
+            "rowData": [
+              {
+                "values": [
+                  {
+                    "formattedValue": "STT",
+                    "userEnteredValue": {
+                      "stringValue": "STT"
+                    }
+                  },
+                  {
+                    "formattedValue": "Usecase liên quan",
+                    "userEnteredValue": {
+                      "stringValue": "Usecase liên quan"
+                    },
+                    "note": "Chỉ liệt kê 1–3 usecase chính/tiêu biểu theo danh mục Usecase, phân cách bằng '; '. Với công việc nền tảng, đây là usecase được hỗ trợ, không phải xác nhận đã triển khai hoàn chỉnh. Với kiểm thử, phạm vi đầy đủ vẫn theo nội dung issue GitHub."
+                  },
+                  {
+                    "formattedValue": "Việc cần làm",
+                    "userEnteredValue": {
+                      "stringValue": "Việc cần làm"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trạng thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trạng thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "Chủ sở hữu",
+                    "userEnteredValue": {
+                      "stringValue": "Chủ sở hữu"
+                    }
+                  },
+                  {
+                    "formattedValue": "Ngày đến hạn",
+                    "userEnteredValue": {
+                      "stringValue": "Ngày đến hạn"
+                    }
+                  },
+                  {
+                    "formattedValue": "Sprint",
+                    "userEnteredValue": {
+                      "stringValue": "Sprint"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tên nhánh",
+                    "userEnteredValue": {
+                      "stringValue": "Tên nhánh"
+                    }
+                  },
+                  {
+                    "formattedValue": "Ghi chú",
+                    "userEnteredValue": {
+                      "stringValue": "Ghi chú"
+                    }
+                  },
+                  {},
+                  {
+                    "formattedValue": "Thành viên",
+                    "userEnteredValue": {
+                      "stringValue": "Thành viên"
+                    }
+                  },
+                  {
+                    "formattedValue": "Số lượng việc cần làm",
+                    "userEnteredValue": {
+                      "stringValue": "Số lượng việc cần làm"
+                    }
+                  },
+                  {
+                    "formattedValue": "% đóng góp",
+                    "userEnteredValue": {
+                      "stringValue": "% đóng góp"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Users; Manage User Roles",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Users; Manage User Roles"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho User và Role",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho User và Role"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "25/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46290
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/9-identity-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/9-identity-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/9 — Backlog xếp Sprint 1; GitHub hiện gắn Planning & Foundation Lock. Phân loại cần đối chiếu lại.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/9 — Backlog xếp Sprint 1; GitHub hiện gắn Planning & Foundation Lock. Phân loại cần đối chiếu lại."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/9"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 50
+                      }
+                    ]
+                  },
+                  {},
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "9",
+                    "userEnteredValue": {
+                      "formulaValue": "=COUNTIF(E:E; K2)"
+                    }
+                  },
+                  {
+                    "formattedValue": "15,79%",
+                    "userEnteredValue": {
+                      "formulaValue": "=IFERROR(L2/$L$7;0)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " Log In to Account; Log Out of Account",
+                    "userEnteredValue": {
+                      "stringValue": "Log In to Account; Log Out of Account"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Skeleton cho Authentication và Frontend Session",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Skeleton cho Authentication và Frontend Session"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "26/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46291
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/10-auth-session-skeleton",
+                    "userEnteredValue": {
+                      "stringValue": "feature/10-auth-session-skeleton"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/10",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/10"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/10"
+                  },
+                  {},
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "9",
+                    "userEnteredValue": {
+                      "formulaValue": "=COUNTIF(E:E; K3)"
+                    }
+                  },
+                  {
+                    "formattedValue": "15,79%",
+                    "userEnteredValue": {
+                      "formulaValue": "=IFERROR(L3/$L$7;0)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; Assign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; Assign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Đồng bộ Canonical Domain Vocabulary trên toàn ứng dụng",
+                    "userEnteredValue": {
+                      "stringValue": "Đồng bộ Canonical Domain Vocabulary trên toàn ứng dụng"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "26/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46291
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/11-canonical-domain-vocabulary",
+                    "userEnteredValue": {
+                      "stringValue": "feature/11-canonical-domain-vocabulary"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/11 — Công việc nền tảng dùng chung; Submit Ticket và Assign Technician là usecase tiêu biểu được hỗ trợ. Không phải issue triển khai hoàn chỉnh hai usecase.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/11 — Công việc nền tảng dùng chung; Submit Ticket và Assign Technician là usecase tiêu biểu được hỗ trợ. Không phải issue triển khai hoàn chỉnh hai usecase."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/11"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  },
+                  {},
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "16",
+                    "userEnteredValue": {
+                      "formulaValue": "=COUNTIF(E:E; K4)"
+                    }
+                  },
+                  {
+                    "formattedValue": "28,07%",
+                    "userEnteredValue": {
+                      "formulaValue": "=IFERROR(L4/$L$7;0)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Dynamic Form Drafts; View Form Versions",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Dynamic Form Drafts; View Form Versions"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho Dynamic Form",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho Dynamic Form"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "26/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46291
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/12-dynamic-form-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/12-dynamic-form-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 12 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 12 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/12"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  },
+                  {},
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "13",
+                    "userEnteredValue": {
+                      "formulaValue": "=COUNTIF(E:E; K5)"
+                    }
+                  },
+                  {
+                    "formattedValue": "22,81%",
+                    "userEnteredValue": {
+                      "formulaValue": "=IFERROR(L5/$L$7;0)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "5",
+                    "userEnteredValue": {
+                      "numberValue": 5
+                    }
+                  },
+                  {
+                    "formattedValue": " Review Ticket; Assign Technician; Resolve Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Review Ticket; Assign Technician; Resolve Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Định nghĩa Contract cho Ticket Workflow Transition",
+                    "userEnteredValue": {
+                      "stringValue": "Định nghĩa Contract cho Ticket Workflow Transition"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "29/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46294
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/13-ticket-workflow-contract",
+                    "userEnteredValue": {
+                      "stringValue": "feature/13-ticket-workflow-contract"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/13 — Done chỉ xác nhận workflow contract. Theo phạm vi chốt 29/10: không thực hiện Reject/Cancel/Reopen; không còn trong danh mục usecase. Unassign Technician đưa vào kế hoạch riêng, dự kiến 04/11, chưa có issue triển khai riêng.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/13 — Done chỉ xác nhận workflow contract. Theo phạm vi chốt 29/10: không thực hiện Reject/Cancel/Reopen; không còn trong danh mục usecase. Unassign Technician đưa vào kế hoạch riêng, dự kiến 04/11, chưa có issue triển khai riêng."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/13"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  },
+                  {},
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "10",
+                    "userEnteredValue": {
+                      "formulaValue": "=COUNTIF(E:E; K6)"
+                    }
+                  },
+                  {
+                    "formattedValue": "17,54%",
+                    "userEnteredValue": {
+                      "formulaValue": "=IFERROR(L6/$L$7;0)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "6",
+                    "userEnteredValue": {
+                      "numberValue": 6
+                    }
+                  },
+                  {
+                    "formattedValue": " View Technician Profiles; Configure Technician Skills",
+                    "userEnteredValue": {
+                      "stringValue": "View Technician Profiles; Configure Technician Skills"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho Technician Workforce",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho Technician Workforce"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "29/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46294
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/14-technician-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/14-technician-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/14",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/14"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/14"
+                  },
+                  {},
+                  {
+                    "formattedValue": "Tổng cộng",
+                    "userEnteredValue": {
+                      "stringValue": "Tổng cộng"
+                    }
+                  },
+                  {
+                    "formattedValue": "57",
+                    "userEnteredValue": {
+                      "formulaValue": "=SUM(L2:L6)"
+                    }
+                  },
+                  {
+                    "formattedValue": "100,00%",
+                    "userEnteredValue": {
+                      "formulaValue": "=SUM(M2:M6)"
+                    }
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "7",
+                    "userEnteredValue": {
+                      "numberValue": 7
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Locations; Manage Equipment Types",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Locations; Manage Equipment Types"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho Location và Equipment Type",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho Location và Equipment Type"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "29/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46294
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/15-location-equipment-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/15-location-equipment-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/15",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/15"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/15"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "8",
+                    "userEnteredValue": {
+                      "numberValue": 8
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Assets; Change Asset Status",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Assets; Change Asset Status"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho Asset và Asset Status History",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho Asset và Asset Status History"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "29/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46294
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/16-asset-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/16-asset-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 11 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 11 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/16"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "9",
+                    "userEnteredValue": {
+                      "numberValue": 9
+                    }
+                  },
+                  {
+                    "formattedValue": " View Tickets; Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "View Tickets; Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Chuẩn hóa Shared API Error, Pagination và Concurrency Contracts",
+                    "userEnteredValue": {
+                      "stringValue": "Chuẩn hóa Shared API Error, Pagination và Concurrency Contracts"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "30/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46295
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/17-shared-api-contracts",
+                    "userEnteredValue": {
+                      "stringValue": "feature/17-shared-api-contracts"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/17 — Chuẩn hóa lỗi, phân trang và concurrency dùng chung; View Tickets và Submit Ticket là hai usecase tiêu biểu được hỗ trợ.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/17 — Chuẩn hóa lỗi, phân trang và concurrency dùng chung; View Tickets và Submit Ticket là hai usecase tiêu biểu được hỗ trợ."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/17"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "10",
+                    "userEnteredValue": {
+                      "numberValue": 10
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; Assign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; Assign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Thiết lập Shared Test Fixtures và Demo Bootstrap Strategy",
+                    "userEnteredValue": {
+                      "stringValue": "Thiết lập Shared Test Fixtures và Demo Bootstrap Strategy"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "30/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46295
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/18-test-fixtures-bootstrap",
+                    "userEnteredValue": {
+                      "stringValue": "feature/18-test-fixtures-bootstrap"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/18 — Thiết lập fixture/bootstrap cho kiểm thử nghiệp vụ; Submit Ticket và Assign Technician là hai usecase tiêu biểu được hỗ trợ.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/18 — Thiết lập fixture/bootstrap cho kiểm thử nghiệp vụ; Submit Ticket và Assign Technician là hai usecase tiêu biểu được hỗ trợ."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/18"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "11",
+                    "userEnteredValue": {
+                      "numberValue": 11
+                    }
+                  },
+                  {
+                    "formattedValue": " View Asset Status History",
+                    "userEnteredValue": {
+                      "stringValue": "View Asset Status History"
+                    }
+                  },
+                  {
+                    "formattedValue": " Implement Asset and Asset Status History Persistence Foundation",
+                    "userEnteredValue": {
+                      "stringValue": "Implement Asset and Asset Status History Persistence Foundation"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46280
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/16-asset-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/16-asset-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 8 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 8 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/16"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "12",
+                    "userEnteredValue": {
+                      "numberValue": 12
+                    }
+                  },
+                  {
+                    "formattedValue": " Archive Form Version",
+                    "userEnteredValue": {
+                      "stringValue": "Archive Form Version"
+                    }
+                  },
+                  {
+                    "formattedValue": " Implement Dynamic Form Persistence Foundation\r\n",
+                    "userEnteredValue": {
+                      "stringValue": "Implement Dynamic Form Persistence Foundation\r\n"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/09/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46280
+                    }
+                  },
+                  {
+                    "formattedValue": "1",
+                    "userEnteredValue": {
+                      "numberValue": 1
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/12-dynamic-form-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/12-dynamic-form-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 4 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 4 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/12"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "13",
+                    "userEnteredValue": {
+                      "numberValue": 13
+                    }
+                  },
+                  {
+                    "formattedValue": " Log In to Account",
+                    "userEnteredValue": {
+                      "stringValue": "Log In to Account"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API đăng nhập và phát hành JWT",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API đăng nhập và phát hành JWT"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46300
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/19-auth-login-jwt",
+                    "userEnteredValue": {
+                      "stringValue": "feature/19-auth-login-jwt"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/27"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/27"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "14",
+                    "userEnteredValue": {
+                      "numberValue": 14
+                    }
+                  },
+                  {
+                    "formattedValue": " Log In to Account; Log Out of Account",
+                    "userEnteredValue": {
+                      "stringValue": "Log In to Account; Log Out of Account"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API Current User và kết nối phiên đăng nhập Frontend",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API Current User và kết nối phiên đăng nhập Frontend"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/20-current-user-session",
+                    "userEnteredValue": {
+                      "stringValue": "feature/20-current-user-session"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/28"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/28"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "15",
+                    "userEnteredValue": {
+                      "numberValue": 15
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Users; Manage User Roles; View Technician Profiles",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Users; Manage User Roles; View Technician Profiles"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng chức năng quản lý User, Role và Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng chức năng quản lý User, Role và Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "09/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46304
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/21-user-technician-management",
+                    "userEnteredValue": {
+                      "stringValue": "feature/21-user-technician-management"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/29"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/29"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "16",
+                    "userEnteredValue": {
+                      "numberValue": 16
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API đọc Category, Published Form và SLA",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API đọc Category, Published Form và SLA"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46300
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/22-24-category-form-api-admin-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/22-24-category-form-api-admin-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/30",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/30"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/30"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "17",
+                    "userEnteredValue": {
+                      "numberValue": 17
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API quản trị Category và Dynamic Form",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API quản trị Category và Dynamic Form"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/22-24-category-form-api-admin-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/22-24-category-form-api-admin-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/31"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/31"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "18",
+                    "userEnteredValue": {
+                      "numberValue": 18
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng giao diện quản trị Category và Dynamic Form",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng giao diện quản trị Category và Dynamic Form"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/22-24-category-form-api-admin-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/22-24-category-form-api-admin-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/32",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/32"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/32"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "19",
+                    "userEnteredValue": {
+                      "numberValue": 19
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; View Tickets",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; View Tickets"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Persistence nền tảng cho Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Persistence nền tảng cho Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46300
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/25-ticket-core-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/25-ticket-core-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/33",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/33"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/33"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "20",
+                    "userEnteredValue": {
+                      "numberValue": 20
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Details; View Ticket Attachments",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Details; View Ticket Attachments"
+                    }
+                  },
+                  {
+                    "formattedValue": " Persistence dữ liệu động, lịch sử và Attachment của Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Persistence dữ liệu động, lịch sử và Attachment của Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/26-ticket-supporting-persistence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/26-ticket-supporting-persistence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/34",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/34"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/34"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "21",
+                    "userEnteredValue": {
+                      "numberValue": 21
+                    }
+                  },
+                  {
+                    "formattedValue": " View Tickets; View Ticket Details",
+                    "userEnteredValue": {
+                      "stringValue": "View Tickets; View Ticket Details"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API đọc danh sách và chi tiết Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API đọc danh sách và chi tiết Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "09/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46304
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/27-ticket-read-api",
+                    "userEnteredValue": {
+                      "stringValue": "feature/27-ticket-read-api"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/35"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/35"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "22",
+                    "userEnteredValue": {
+                      "numberValue": 22
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Locations; Manage Equipment Types",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Locations; Manage Equipment Types"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng CRUD Location và Equipment Type",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng CRUD Location và Equipment Type"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46300
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/28-location-equipment-crud",
+                    "userEnteredValue": {
+                      "stringValue": "feature/28-location-equipment-crud"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/36"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/36"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "23",
+                    "userEnteredValue": {
+                      "numberValue": 23
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Assets; View Asset Status History",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Assets; View Asset Status History"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng CRUD Asset và lịch sử trạng thái",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng CRUD Asset và lịch sử trạng thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/29-asset-crud-status-history",
+                    "userEnteredValue": {
+                      "stringValue": "feature/29-asset-crud-status-history"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/37"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/37"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "24",
+                    "userEnteredValue": {
+                      "numberValue": 24
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API lấy Asset hợp lệ theo Location",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API lấy Asset hợp lệ theo Location"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "09/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46304
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/30-eligible-assets-by-location",
+                    "userEnteredValue": {
+                      "stringValue": "feature/30-eligible-assets-by-location"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/38",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/38"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/38"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "25",
+                    "userEnteredValue": {
+                      "numberValue": 25
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Tạo SQL Server Sequence cho Ticket Number",
+                    "userEnteredValue": {
+                      "stringValue": "Tạo SQL Server Sequence cho Ticket Number"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46300
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/31-ticket-number-sequence",
+                    "userEnteredValue": {
+                      "stringValue": "feature/31-ticket-number-sequence"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/39",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/39"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/39"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "26",
+                    "userEnteredValue": {
+                      "numberValue": 26
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; Upload Work Result Images",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; Upload Work Result Images"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng nền tảng lưu trữ File đính kèm",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng nền tảng lưu trữ File đính kèm"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "07/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46302
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/32-local-file-storage",
+                    "userEnteredValue": {
+                      "stringValue": "feature/32-local-file-storage"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/40",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/40"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/40"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "27",
+                    "userEnteredValue": {
+                      "numberValue": 27
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Dashboard",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Dashboard"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Contract và giao diện khung Dashboard",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Contract và giao diện khung Dashboard"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "09/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46304
+                    }
+                  },
+                  {
+                    "formattedValue": "2",
+                    "userEnteredValue": {
+                      "numberValue": 2
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/33-dashboard-contract-shell",
+                    "userEnteredValue": {
+                      "stringValue": "feature/33-dashboard-contract-shell"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/41",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/41"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/41"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "28",
+                    "userEnteredValue": {
+                      "numberValue": 28
+                    }
+                  },
+                  {
+                    "formattedValue": " Log In to Account; Manage Users; Manage User Roles",
+                    "userEnteredValue": {
+                      "stringValue": "Log In to Account; Manage Users; Manage User Roles"
+                    }
+                  },
+                  {
+                    "formattedValue": " Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role",
+                    "userEnteredValue": {
+                      "stringValue": "Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/42-auth-admin-user-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/42-auth-admin-user-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/51 — Backlog xếp Sprint 3; GitHub hiện gắn Milestone 2. Cần thống nhất phân loại, chưa tự chuyển sprint.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/51 — Backlog xếp Sprint 3; GitHub hiện gắn Milestone 2. Cần thống nhất phân loại, chưa tự chuyển sprint."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/51"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "29",
+                    "userEnteredValue": {
+                      "numberValue": 29
+                    }
+                  },
+                  {
+                    "formattedValue": " View Technician Profiles; Configure Technician Skills; Configure Technician Service Areas",
+                    "userEnteredValue": {
+                      "stringValue": "View Technician Profiles; Configure Technician Skills; Configure Technician Service Areas"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng UI quản lý Technician, Skill và Service Area",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng UI quản lý Technician, Skill và Service Area"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/43-technician-configuration-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/43-technician-configuration-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/52"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/52"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "30",
+                    "userEnteredValue": {
+                      "numberValue": 30
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Incident Categories; Manage Dynamic Form Drafts; Publish Form Version"
+                    }
+                  },
+                  {
+                    "formattedValue": " Hoàn thiện UI Category và Dynamic Form",
+                    "userEnteredValue": {
+                      "stringValue": "Hoàn thiện UI Category và Dynamic Form"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/44-category-form-ui-completion",
+                    "userEnteredValue": {
+                      "stringValue": "feature/44-category-form-ui-completion"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/53",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/53"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/53"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "31",
+                    "userEnteredValue": {
+                      "numberValue": 31
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Locations; Manage Equipment Types",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Locations; Manage Equipment Types"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng UI quản trị Location và Equipment Type",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng UI quản trị Location và Equipment Type"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/45-location-equipment-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/45-location-equipment-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/54"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/54"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "32",
+                    "userEnteredValue": {
+                      "numberValue": 32
+                    }
+                  },
+                  {
+                    "formattedValue": " Manage Assets; View Asset Status History",
+                    "userEnteredValue": {
+                      "stringValue": "Manage Assets; View Asset Status History"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng UI quản trị Asset và lịch sử trạng thái",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng UI quản trị Asset và lịch sử trạng thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/46-asset-management-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/46-asset-management-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/55"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/55"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "33",
+                    "userEnteredValue": {
+                      "numberValue": 33
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng Location Selector và Eligible Asset Selector",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng Location Selector và Eligible Asset Selector"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/47-location-eligible-asset-selectors",
+                    "userEnteredValue": {
+                      "stringValue": "feature/47-location-eligible-asset-selectors"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/56",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/56"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/56"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "34",
+                    "userEnteredValue": {
+                      "numberValue": 34
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng UI Create Ticket theo published dynamic form",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng UI Create Ticket theo published dynamic form"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/50-create-ticket-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/50-create-ticket-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/57",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/57"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/57"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "35",
+                    "userEnteredValue": {
+                      "numberValue": 35
+                    }
+                  },
+                  {
+                    "formattedValue": " Review Ticket; Assign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Review Ticket; Assign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Hoàn thiện UI Manager review và assignment",
+                    "userEnteredValue": {
+                      "stringValue": "Hoàn thiện UI Manager review và assignment"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/52-manager-ticket-workflow-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/52-manager-ticket-workflow-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/58"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/58"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "36",
+                    "userEnteredValue": {
+                      "numberValue": 36
+                    }
+                  },
+                  {
+                    "formattedValue": " View Assigned Work; Record Work Log; Resolve Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "View Assigned Work; Record Work Log; Resolve Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng My Assigned Work và UI Technician xử lý Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng My Assigned Work và UI Technician xử lý Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "15/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46310
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/53-technician-assigned-work-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/53-technician-assigned-work-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/59"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/59"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "37",
+                    "userEnteredValue": {
+                      "numberValue": 37
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Details",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Details"
+                    }
+                  },
+                  {
+                    "formattedValue": " Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI",
+                    "userEnteredValue": {
+                      "stringValue": "Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/54-ticket-detail-collaboration-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/54-ticket-detail-collaboration-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/60"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/60"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "38",
+                    "userEnteredValue": {
+                      "numberValue": 38
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Dashboard",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Dashboard"
+                    }
+                  },
+                  {
+                    "formattedValue": " Hoàn thiện Dashboard shell theo role",
+                    "userEnteredValue": {
+                      "stringValue": "Hoàn thiện Dashboard shell theo role"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/55-dashboard-shell-ui",
+                    "userEnteredValue": {
+                      "stringValue": "feature/55-dashboard-shell-ui"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/61"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/61"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "39",
+                    "userEnteredValue": {
+                      "numberValue": 39
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; View Ticket Details; View Ticket Dashboard",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; View Ticket Details; View Ticket Dashboard"
+                    }
+                  },
+                  {
+                    "formattedValue": " Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP",
+                    "userEnteredValue": {
+                      "stringValue": "Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "3",
+                    "userEnteredValue": {
+                      "numberValue": 3
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/56-ui-navigation-quality",
+                    "userEnteredValue": {
+                      "stringValue": "feature/56-ui-navigation-quality"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/62 — Tích hợp navigation và nghiệm thu UI dùng chung; chỉ liệt kê Submit Ticket, View Ticket Details, View Ticket Dashboard làm usecase chính.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/62 — Tích hợp navigation và nghiệm thu UI dùng chung; chỉ liệt kê Submit Ticket, View Ticket Details, View Ticket Dashboard làm usecase chính."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/62"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "40",
+                    "userEnteredValue": {
+                      "numberValue": 40
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng validation dữ liệu động và ảnh khi tạo Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng validation dữ liệu động và ảnh khi tạo Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "16/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46311
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-submission-validation",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-submission-validation"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/80",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/80"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/80"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "41",
+                    "userEnteredValue": {
+                      "numberValue": 41
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API tạo Ticket và kết nối giao diện tạo phiếu",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API tạo Ticket và kết nối giao diện tạo phiếu"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/create-ticket-api",
+                    "userEnteredValue": {
+                      "stringValue": "feature/create-ticket-api"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/78",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/78"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/78"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "42",
+                    "userEnteredValue": {
+                      "numberValue": 42
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Attachments; Download Ticket Attachments",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Attachments; Download Ticket Attachments"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API xem và tải ảnh Ticket có phân quyền",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API xem và tải ảnh Ticket có phân quyền"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-attachment-content",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-attachment-content"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/76",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/76"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/76"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "43",
+                    "userEnteredValue": {
+                      "numberValue": 43
+                    }
+                  },
+                  {
+                    "formattedValue": " View Technician Profiles",
+                    "userEnteredValue": {
+                      "stringValue": "View Technician Profiles"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API danh sách Technician phục vụ Manager/Admin",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API danh sách Technician phục vụ Manager/Admin"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/technician-list-api",
+                    "userEnteredValue": {
+                      "stringValue": "feature/technician-list-api"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/74",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/74"
+                    },
+                    "hyperlink": "https://github.com/TuanThanh-dev19/Nexora/issues/74"
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "44",
+                    "userEnteredValue": {
+                      "numberValue": 44
+                    }
+                  },
+                  {
+                    "formattedValue": " Check Technician Eligibility",
+                    "userEnteredValue": {
+                      "stringValue": "Check Technician Eligibility"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API kiểm tra Technician phù hợp để phân công Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API kiểm tra Technician phù hợp để phân công Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "16/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46311
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-technician-eligibility",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-technician-eligibility"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/73 — Không có override trong scope demo.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/73 — Không có override trong scope demo."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/73"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "45",
+                    "userEnteredValue": {
+                      "numberValue": 45
+                    }
+                  },
+                  {
+                    "formattedValue": " Review Ticket; Assign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Review Ticket; Assign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API tiếp nhận, phân công và đọc phân công hiện tại của Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API tiếp nhận, phân công và đọc phân công hiện tại của Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "18/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46313
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-review-assignment",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-review-assignment"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/79 — Review, assign và current assignment. Reassign triển khai tại #92; Unassign Technician lập kế hoạch riêng, dự kiến 04/11. Reject/Cancel không thuộc phạm vi thực hiện.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/79 — Review, assign và current assignment. Reassign triển khai tại #92; Unassign Technician lập kế hoạch riêng, dự kiến 04/11. Reject/Cancel không thuộc phạm vi thực hiện."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/79"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "46",
+                    "userEnteredValue": {
+                      "numberValue": 46
+                    }
+                  },
+                  {
+                    "formattedValue": " View Assigned Work; Start Ticket Work",
+                    "userEnteredValue": {
+                      "stringValue": "View Assigned Work; Start Ticket Work"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API công việc hiện tại và bắt đầu xử lý Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API công việc hiện tại và bắt đầu xử lý Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "20/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46315
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/technician-work-start",
+                    "userEnteredValue": {
+                      "stringValue": "feature/technician-work-start"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/75 — My Work và start; work log/resolve thuộc #81.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/75 — My Work và start; work log/resolve thuộc #81."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/75"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "47",
+                    "userEnteredValue": {
+                      "numberValue": 47
+                    }
+                  },
+                  {
+                    "formattedValue": " Record Work Log; Resolve Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Record Work Log; Resolve Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API nhật ký công việc và hoàn tất xử lý Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API nhật ký công việc và hoàn tất xử lý Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "22/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46317
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-worklog-resolve",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-worklog-resolve"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/81 — Work log và resolve; upload ảnh thuộc #88.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/81 — Work log và resolve; upload ảnh thuộc #88."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/81"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "48",
+                    "userEnteredValue": {
+                      "numberValue": 48
+                    }
+                  },
+                  {
+                    "formattedValue": " Upload Work Result Images",
+                    "userEnteredValue": {
+                      "stringValue": "Upload Work Result Images"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API upload ảnh kết quả xử lý Ticket và tích hợp giao diện kỹ thuật viên",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API upload ảnh kết quả xử lý Ticket và tích hợp giao diện kỹ thuật viên"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "24/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46319
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-work-result-upload",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-work-result-upload"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/88 — Upload ảnh kết quả xử lý; ảnh là tùy chọn, không bắt buộc để resolve hoặc close. Giữ hạn kế hoạch hiện có trong backlog.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/88 — Upload ảnh kết quả xử lý; ảnh là tùy chọn, không bắt buộc để resolve hoặc close. Giữ hạn kế hoạch hiện có trong backlog."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/88"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "49",
+                    "userEnteredValue": {
+                      "numberValue": 49
+                    }
+                  },
+                  {
+                    "formattedValue": " Close Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Close Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API đóng Ticket và hoàn thiện phạm vi giao diện demo",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API đóng Ticket và hoàn thiện phạm vi giao diện demo"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "23/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46318
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/ticket-close-demo-scope",
+                    "userEnteredValue": {
+                      "stringValue": "feature/ticket-close-demo-scope"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/77 — API close và phạm vi UI demo. Reopen không thuộc phạm vi thực hiện; comments/feedback chưa được triển khai trong demo.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/77 — API close và phạm vi UI demo. Reopen không thuộc phạm vi thực hiện; comments/feedback chưa được triển khai trong demo."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/77"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "50",
+                    "userEnteredValue": {
+                      "numberValue": 50
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Dashboard; View Ticket SLA",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Dashboard; View Ticket SLA"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng API Dashboard summary theo quyền người dùng",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng API Dashboard summary theo quyền người dùng"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "23/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46318
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feature/dashboard-summary-api",
+                    "userEnteredValue": {
+                      "stringValue": "feature/dashboard-summary-api"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/72 — Dashboard summary theo quyền; issue đã đóng, API đã hoàn tất.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/72 — Dashboard summary theo quyền; issue đã đóng, API đã hoàn tất."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/72"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "51",
+                    "userEnteredValue": {
+                      "numberValue": 51
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; Resolve Ticket; Close Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; Resolve Ticket; Close Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI",
+                    "userEnteredValue": {
+                      "stringValue": "Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI"
+                    }
+                  },
+                  {
+                    "formattedValue": "To Do",
+                    "userEnteredValue": {
+                      "stringValue": "To Do"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Phan Nhật Huy",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Phan Nhật Huy"
+                    }
+                  },
+                  {
+                    "formattedValue": "31/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46326
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " test/test-ticket-api-regression",
+                    "userEnteredValue": {
+                      "stringValue": "test/test-ticket-api-regression"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/90 — Kiểm thử hồi quy API Ticket; assignee hiện tại là Huytran2903, dù nội dung còn đề xuất Phan Tuấn Thành. GitHub #90 là định danh chính vì mã NEX-051 trùng #92. Trạng thái backlog: To Do; GitHub: open. Hạn 31/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026. Cột Usecase chỉ liệt kê 3 mốc chính Submit/Resolve/Close; phạm vi kiểm thử đầy đủ vẫn theo nội dung issue.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/90 — Kiểm thử hồi quy API Ticket; assignee hiện tại là Huytran2903, dù nội dung còn đề xuất Phan Tuấn Thành. GitHub #90 là định danh chính vì mã NEX-051 trùng #92. Trạng thái backlog: To Do; GitHub: open. Hạn 31/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026. Cột Usecase chỉ liệt kê 3 mốc chính Submit/Resolve/Close; phạm vi kiểm thử đầy đủ vẫn theo nội dung issue."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/90"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "52",
+                    "userEnteredValue": {
+                      "numberValue": 52
+                    }
+                  },
+                  {
+                    "formattedValue": " Submit Ticket; Resolve Ticket; Close Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Submit Ticket; Resolve Ticket; Close Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": " [E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật",
+                    "userEnteredValue": {
+                      "stringValue": "[E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật"
+                    }
+                  },
+                  {
+                    "formattedValue": "To Do",
+                    "userEnteredValue": {
+                      "stringValue": "To Do"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "05/11/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46331
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " test/test-ticket-ui-e2e",
+                    "userEnteredValue": {
+                      "stringValue": "test/test-ticket-ui-e2e"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/91 — Kiểm thử E2E với API thật. Hạn dự kiến điều chỉnh 05/11/2026, sau Reassign #92 (03/11) và Unassign Technician dự kiến (04/11). Chạy bộ MVP hiện có trước; bổ sung ca Unassign khi có triển khai thật. Lịch điều chỉnh trên Sheets; milestone GitHub vẫn 30/10. Cột Usecase chỉ liệt kê 3 mốc chính Submit/Resolve/Close; phạm vi kiểm thử đầy đủ vẫn theo nội dung issue.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/91 — Kiểm thử E2E với API thật. Hạn dự kiến điều chỉnh 05/11/2026, sau Reassign #92 (03/11) và Unassign Technician dự kiến (04/11). Chạy bộ MVP hiện có trước; bổ sung ca Unassign khi có triển khai thật. Lịch điều chỉnh trên Sheets; milestone GitHub vẫn 30/10. Cột Usecase chỉ liệt kê 3 mốc chính Submit/Resolve/Close; phạm vi kiểm thử đầy đủ vẫn theo nội dung issue."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/91"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "53",
+                    "userEnteredValue": {
+                      "numberValue": 53
+                    }
+                  },
+                  {
+                    "formattedValue": " Reassign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Reassign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Đổi Technician được phân công cho Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Đổi Technician được phân công cho Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "In Progress",
+                    "userEnteredValue": {
+                      "stringValue": "In Progress"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "03/11/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46329
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feat/ticket-reassignment",
+                    "userEnteredValue": {
+                      "stringValue": "feat/ticket-reassignment"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/92 — Chỉ đổi Technician khi ASSIGNED; bắt buộc lý do và eligibility; không gồm unassign/reopen. Trạng thái backlog: In Progress; GitHub: open. Hạn 03/11/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/92 — Chỉ đổi Technician khi ASSIGNED; bắt buộc lý do và eligibility; không gồm unassign/reopen. Trạng thái backlog: In Progress; GitHub: open. Hạn 03/11/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/92"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "54",
+                    "userEnteredValue": {
+                      "numberValue": 54
+                    }
+                  },
+                  {
+                    "formattedValue": " View Ticket Report; Export Ticket Report",
+                    "userEnteredValue": {
+                      "stringValue": "View Ticket Report; Export Ticket Report"
+                    }
+                  },
+                  {
+                    "formattedValue": " Báo cáo Ticket theo khoảng thời gian và xuất CSV",
+                    "userEnteredValue": {
+                      "stringValue": "Báo cáo Ticket theo khoảng thời gian và xuất CSV"
+                    }
+                  },
+                  {
+                    "formattedValue": "In Progress",
+                    "userEnteredValue": {
+                      "stringValue": "In Progress"
+                    }
+                  },
+                  {
+                    "formattedValue": "Trần Quốc Thái",
+                    "userEnteredValue": {
+                      "stringValue": "Trần Quốc Thái"
+                    }
+                  },
+                  {
+                    "formattedValue": "30/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46325
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feat/ticket-period-report",
+                    "userEnteredValue": {
+                      "stringValue": "feat/ticket-period-report"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/93 — Xem báo cáo nhóm Ticket theo ngày tạo và xuất CSV; không sửa dashboard summary hiện có. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/93 — Xem báo cáo nhóm Ticket theo ngày tạo và xuất CSV; không sửa dashboard summary hiện có. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/93"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "55",
+                    "userEnteredValue": {
+                      "numberValue": 55
+                    }
+                  },
+                  {
+                    "formattedValue": " View Notifications; Mark Notification as Read",
+                    "userEnteredValue": {
+                      "stringValue": "View Notifications; Mark Notification as Read"
+                    }
+                  },
+                  {
+                    "formattedValue": " Thông báo trong ứng dụng khi phân công và giải quyết Ticket",
+                    "userEnteredValue": {
+                      "stringValue": "Thông báo trong ứng dụng khi phân công và giải quyết Ticket"
+                    }
+                  },
+                  {
+                    "formattedValue": "In Progress",
+                    "userEnteredValue": {
+                      "stringValue": "In Progress"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tô Phi Oanh",
+                    "userEnteredValue": {
+                      "stringValue": "Tô Phi Oanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "30/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46325
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feat/ticket-in-app-notifications",
+                    "userEnteredValue": {
+                      "stringValue": "feat/ticket-in-app-notifications"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/94 — Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/94 — Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/94"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "56",
+                    "userEnteredValue": {
+                      "numberValue": 56
+                    }
+                  },
+                  {
+                    "formattedValue": " Search Tickets",
+                    "userEnteredValue": {
+                      "stringValue": "Search Tickets"
+                    }
+                  },
+                  {
+                    "formattedValue": " Bổ sung tìm kiếm Ticket theo mã và tiêu đề",
+                    "userEnteredValue": {
+                      "stringValue": "Bổ sung tìm kiếm Ticket theo mã và tiêu đề"
+                    }
+                  },
+                  {
+                    "formattedValue": "Done",
+                    "userEnteredValue": {
+                      "stringValue": "Done"
+                    }
+                  },
+                  {
+                    "formattedValue": "Lâm Thoại Thanh",
+                    "userEnteredValue": {
+                      "stringValue": "Lâm Thoại Thanh"
+                    }
+                  },
+                  {
+                    "formattedValue": "28/10/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46323
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feat/ticket-keyword-search",
+                    "userEnteredValue": {
+                      "stringValue": "feat/ticket-keyword-search"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/95 — Bổ sung tìm keyword theo mã/tiêu đề; Filter Tickets nền tảng thuộc #35. Trạng thái backlog: Done; GitHub: closed. Hạn 28/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Nhánh đã tồn tại trên GitHub. Issue đóng 08:18 ngày 29/10/2026 (Asia/Bangkok); hạn 28/10 là kế hoạch, không phải ngày hoàn thành.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/95 — Bổ sung tìm keyword theo mã/tiêu đề; Filter Tickets nền tảng thuộc #35. Trạng thái backlog: Done; GitHub: closed. Hạn 28/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Nhánh đã tồn tại trên GitHub. Issue đóng 08:18 ngày 29/10/2026 (Asia/Bangkok); hạn 28/10 là kế hoạch, không phải ngày hoàn thành."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/95"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "formattedValue": "57",
+                    "userEnteredValue": {
+                      "numberValue": 57
+                    }
+                  },
+                  {
+                    "formattedValue": " Unassign Technician",
+                    "userEnteredValue": {
+                      "stringValue": "Unassign Technician"
+                    }
+                  },
+                  {
+                    "formattedValue": " Gỡ phân công Technician khỏi Ticket — kế hoạch triển khai",
+                    "userEnteredValue": {
+                      "stringValue": "Gỡ phân công Technician khỏi Ticket — kế hoạch triển khai"
+                    }
+                  },
+                  {
+                    "formattedValue": "To Do",
+                    "userEnteredValue": {
+                      "stringValue": "To Do"
+                    }
+                  },
+                  {
+                    "formattedValue": "Phan Tuấn Thành",
+                    "userEnteredValue": {
+                      "stringValue": "Phan Tuấn Thành"
+                    }
+                  },
+                  {
+                    "formattedValue": "04/11/2026",
+                    "userEnteredValue": {
+                      "numberValue": 46330
+                    }
+                  },
+                  {
+                    "formattedValue": "4",
+                    "userEnteredValue": {
+                      "numberValue": 4
+                    }
+                  },
+                  {
+                    "formattedValue": " feat/ticket-unassign",
+                    "userEnteredValue": {
+                      "stringValue": "feat/ticket-unassign"
+                    }
+                  },
+                  {
+                    "formattedValue": "https://github.com/TuanThanh-dev19/Nexora/issues/13 — Nguồn tham khảo contract, KHÔNG phải issue triển khai Unassign. Phạm vi thực hiện do người dùng xác nhận 29/10/2026. Phân công dự kiến Phan Tuấn Thành; hạn dự kiến 04/11 sau Reassign #92 (03/11), E2E #91 dự kiến 05/11. Chưa có issue triển khai riêng; nhánh chỉ là tên dự kiến.",
+                    "userEnteredValue": {
+                      "stringValue": "https://github.com/TuanThanh-dev19/Nexora/issues/13 — Nguồn tham khảo contract, KHÔNG phải issue triển khai Unassign. Phạm vi thực hiện do người dùng xác nhận 29/10/2026. Phân công dự kiến Phan Tuấn Thành; hạn dự kiến 04/11 sau Reassign #92 (03/11), E2E #91 dự kiến 05/11. Chưa có issue triển khai riêng; nhánh chỉ là tên dự kiến."
+                    },
+                    "textFormatRuns": [
+                      {
+                        "format": {
+                          "foregroundColor": {
+                            "red": 0.06666667,
+                            "green": 0.33333334,
+                            "blue": 0.8
+                          },
+                          "underline": true,
+                          "foregroundColorStyle": {
+                            "rgbColor": {
+                              "red": 0.06666667,
+                              "green": 0.33333334,
+                              "blue": 0.8
+                            }
+                          },
+                          "link": {
+                            "uri": "https://github.com/TuanThanh-dev19/Nexora/issues/13"
+                          }
+                        }
+                      },
+                      {
+                        "startIndex": 51
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "properties": {
+          "sheetId": 1612712148,
+          "title": "Usecase",
+          "index": 1,
+          "sheetType": "GRID",
+          "gridProperties": {
+            "rowCount": 991,
+            "columnCount": 27,
+            "frozenRowCount": 1,
+            "frozenColumnCount": 2,
+            "hideGridlines": true,
+            "rowGroupControlAfter": true,
+            "columnGroupControlAfter": true
+          }
+        },
+        "data": [
+          {
+            "startRow": 1,
+            "startColumn": 19,
+            "rowData": [
+              {
+                "values": [
+                  {
+                    "formattedValue": "Usecase liên quan",
+                    "userEnteredValue": {
+                      "stringValue": "Usecase liên quan"
+                    }
+                  },
+                  {
+                    "formattedValue": "Text; nhiều giá trị",
+                    "userEnteredValue": {
+                      "stringValue": "Text; nhiều giá trị"
+                    }
+                  },
+                  {
+                    "formattedValue": "Tên chuẩn tại Usecase!A2:A45; mỗi dòng backlog chọn 1–3 usecase chính/tiêu biểu, ngăn cách bằng '; '. Việc nền tảng dùng usecase tiêu biểu được hỗ trợ; không để trống hoặc liệt kê toàn bộ usecase gián tiếp. Phạm vi đầy đủ xem issue GitHub.",
+                    "userEnteredValue": {
+                      "stringValue": "Tên chuẩn tại Usecase!A2:A45; mỗi dòng backlog chọn 1–3 usecase chính/tiêu biểu, ngăn cách bằng '; '. Việc nền tảng dùng usecase tiêu biểu được hỗ trợ; không để trống hoặc liệt kê toàn bộ usecase gián tiếp. Phạm vi đầy đủ xem issue GitHub."
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

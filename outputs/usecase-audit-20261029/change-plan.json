@@ -1,0 +1,994 @@
+{
+  "usecases": [
+    {
+      "name": "Search Tickets",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46323,
+      "closed": 46324,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/95",
+      "support": "",
+      "contribution": "#95: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Tìm keyword do Lâm Thoại Thanh; bộ lọc nền tảng do Phan Tuấn Thành (#35)."
+    },
+    {
+      "name": "Filter Tickets",
+      "owner": "Phan Tuấn Thành",
+      "due": 46304,
+      "closed": 46307,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+      "support": "",
+      "contribution": "#35: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Tickets",
+      "owner": "Phan Tuấn Thành",
+      "due": 46304,
+      "closed": 46307,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+      "support": "",
+      "contribution": "#35: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Ticket Details",
+      "owner": "Phan Tuấn Thành",
+      "due": 46313,
+      "closed": 46309,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+      "contribution": "#35: Phan Tuấn Thành\n#60: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Log In to Account",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46309,
+      "actor": "Người dùng",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/28\nhttps://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "contribution": "#27: Trần Phan Nhật Huy\n#28: Trần Phan Nhật Huy\n#51: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Log Out of Account",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46309,
+      "actor": "Người dùng đã đăng nhập",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "contribution": "#28: Trần Phan Nhật Huy\n#51: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Users",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46309,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "contribution": "#29: Trần Phan Nhật Huy\n#51: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage User Roles",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46309,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "contribution": "#29: Trần Phan Nhật Huy\n#51: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Locations",
+      "owner": "Tô Phi Oanh",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+      "contribution": "#36: Tô Phi Oanh\n#54: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Equipment Types",
+      "owner": "Tô Phi Oanh",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+      "contribution": "#36: Tô Phi Oanh\n#54: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Assets",
+      "owner": "Tô Phi Oanh",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+      "contribution": "#37: Tô Phi Oanh\n#55: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Change Asset Status",
+      "owner": "Tô Phi Oanh",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+      "contribution": "#37: Tô Phi Oanh\n#55: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Asset Status History",
+      "owner": "Tô Phi Oanh",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+      "contribution": "#37: Tô Phi Oanh\n#55: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Incident Categories",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Form Versions",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Manage Dynamic Form Drafts",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Preview Dynamic Forms",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Publish Form Version",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Archive Form Version",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46310,
+      "closed": 46308,
+      "actor": "Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/32\nhttps://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "contribution": "#31: Lâm Thoại Thanh\n#32: Lâm Thoại Thanh\n#53: Lâm Thoại Thanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Technician Profiles",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46313,
+      "closed": 46315,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/74",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "contribution": "#74: Trần Phan Nhật Huy\n#52: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Configure Technician Availability",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "contribution": "#29: Trần Phan Nhật Huy\n#52: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Configure Technician Capacity",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "contribution": "#29: Trần Phan Nhật Huy\n#52: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Configure Technician Skills",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "contribution": "#29: Trần Phan Nhật Huy\n#52: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Configure Technician Service Areas",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46310,
+      "closed": 46310,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "contribution": "#29: Trần Phan Nhật Huy\n#52: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Submit Ticket",
+      "owner": "Lâm Thoại Thanh",
+      "due": 46313,
+      "closed": 46314,
+      "actor": "Requester",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/78",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/80\nhttps://github.com/TuanThanh-dev19/Nexora/issues/57\nhttps://github.com/TuanThanh-dev19/Nexora/issues/56",
+      "contribution": "#78: Lâm Thoại Thanh\n#80: Lâm Thoại Thanh\n#57: Lâm Thoại Thanh\n#56: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Ticket Attachments",
+      "owner": "Trần Quốc Thái",
+      "due": 46313,
+      "closed": 46313,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/76",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+      "contribution": "#76: Trần Quốc Thái\n#60: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Download Ticket Attachments",
+      "owner": "Trần Quốc Thái",
+      "due": 46313,
+      "closed": 46313,
+      "actor": "Người dùng có quyền xem Ticket",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/76",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+      "contribution": "#76: Trần Quốc Thái\n#60: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Review Ticket",
+      "owner": "Phan Tuấn Thành",
+      "due": 46313,
+      "closed": 46317,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/79",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+      "contribution": "#79: Phan Tuấn Thành\n#58: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Ticket SLA",
+      "owner": "Trần Quốc Thái",
+      "due": 46318,
+      "closed": 46313,
+      "actor": "Người dùng theo phạm vi role",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/72",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+      "contribution": "#72: Trần Quốc Thái\n#61: Trần Quốc Thái",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Check Technician Eligibility",
+      "owner": "Trần Phan Nhật Huy",
+      "due": 46311,
+      "closed": 46315,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/73",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+      "contribution": "#73: Trần Phan Nhật Huy\n#58: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Assign Technician",
+      "owner": "Phan Tuấn Thành",
+      "due": 46313,
+      "closed": 46317,
+      "actor": "Manager / Admin",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/79",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/58\nhttps://github.com/TuanThanh-dev19/Nexora/issues/73",
+      "contribution": "#79: Phan Tuấn Thành\n#58: Phan Tuấn Thành\n#73: Trần Phan Nhật Huy",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Assigned Work",
+      "owner": "Tô Phi Oanh",
+      "due": 46315,
+      "closed": 46316,
+      "actor": "Technician được phân công",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/75",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+      "contribution": "#75: Tô Phi Oanh\n#59: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Start Ticket Work",
+      "owner": "Tô Phi Oanh",
+      "due": 46315,
+      "closed": 46316,
+      "actor": "Technician được phân công",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/75",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+      "contribution": "#75: Tô Phi Oanh\n#59: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Record Work Log",
+      "owner": "Tô Phi Oanh",
+      "due": 46317,
+      "closed": 46317,
+      "actor": "Technician được phân công",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/81",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/59\nhttps://github.com/TuanThanh-dev19/Nexora/issues/75",
+      "contribution": "#81: Tô Phi Oanh\n#59: Phan Tuấn Thành\n#75: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Upload Work Result Images",
+      "owner": "Phan Tuấn Thành",
+      "due": 46319,
+      "closed": 46319,
+      "actor": "Technician được phân công",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/88",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+      "contribution": "#88: Phan Tuấn Thành\n#59: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Hạn 24/10 theo backlog, thay mốc 25/10 chưa đồng bộ tại Config cũ; GitHub không có hạn riêng."
+    },
+    {
+      "name": "Resolve Ticket",
+      "owner": "Tô Phi Oanh",
+      "due": 46317,
+      "closed": 46317,
+      "actor": "Technician được phân công",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/81",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/59\nhttps://github.com/TuanThanh-dev19/Nexora/issues/75",
+      "contribution": "#81: Tô Phi Oanh\n#59: Phan Tuấn Thành\n#75: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Close Ticket",
+      "owner": "Phan Tuấn Thành",
+      "due": 46318,
+      "closed": 46319,
+      "actor": "Requester là reporter",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/77",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/60\nhttps://github.com/TuanThanh-dev19/Nexora/issues/81",
+      "contribution": "#77: Phan Tuấn Thành\n#60: Phan Tuấn Thành\n#81: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "View Ticket Dashboard",
+      "owner": "Trần Quốc Thái",
+      "due": 46318,
+      "closed": 46313,
+      "actor": "Người dùng theo phạm vi role",
+      "status": "Các issue triển khai đã đóng",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/72",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+      "contribution": "#72: Trần Quốc Thái\n#61: Trần Quốc Thái",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E."
+    },
+    {
+      "name": "Reassign Technician",
+      "owner": "Phan Tuấn Thành",
+      "due": 46329,
+      "closed": "",
+      "actor": "Manager / Admin",
+      "status": "In Progress",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/92",
+      "support": "",
+      "contribution": "#92: Phan Tuấn Thành",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Chỉ đổi khi ASSIGNED. Hạn 03/11 vượt mốc Sprint 4 trên GitHub (30/10)."
+    },
+    {
+      "name": "View Notifications",
+      "owner": "Tô Phi Oanh",
+      "due": 46325,
+      "closed": "",
+      "actor": "Người dùng đã đăng nhập",
+      "status": "In Progress",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/94",
+      "support": "",
+      "contribution": "#94: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Issue đang mở; không ghi ngày hoàn thành."
+    },
+    {
+      "name": "Mark Notification as Read",
+      "owner": "Tô Phi Oanh",
+      "due": 46325,
+      "closed": "",
+      "actor": "Người nhận thông báo",
+      "status": "In Progress",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/94",
+      "support": "",
+      "contribution": "#94: Tô Phi Oanh",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Issue đang mở; không ghi ngày hoàn thành."
+    },
+    {
+      "name": "View Ticket Report",
+      "owner": "Trần Quốc Thái",
+      "due": 46325,
+      "closed": "",
+      "actor": "Manager / Admin",
+      "status": "In Progress",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/93",
+      "support": "",
+      "contribution": "#93: Trần Quốc Thái",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Issue đang mở; không ghi ngày hoàn thành."
+    },
+    {
+      "name": "Export Ticket Report",
+      "owner": "Trần Quốc Thái",
+      "due": 46325,
+      "closed": "",
+      "actor": "Manager / Admin",
+      "status": "In Progress",
+      "primary": "https://github.com/TuanThanh-dev19/Nexora/issues/93",
+      "support": "",
+      "contribution": "#93: Trần Quốc Thái",
+      "note": "Hạn = mốc muộn nhất của các issue cần cho usecase trong Product Backlog; giữ lịch hiện tại. Ngày đóng = issue cuối trong nhóm (Asia/Bangkok), không phải ngày nghiệm thu E2E. Issue đang mở; không ghi ngày hoàn thành."
+    },
+    {
+      "name": "Reject Ticket",
+      "owner": "",
+      "due": "",
+      "closed": "",
+      "actor": "Manager / Admin",
+      "status": "Hoãn; chưa có issue triển khai",
+      "primary": "",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "contribution": "",
+      "note": "Chỉ có workflow contract #13; issue #79/#77 chưa triển khai action này. Không tính là usecase hoàn thành."
+    },
+    {
+      "name": "Cancel Ticket",
+      "owner": "",
+      "due": "",
+      "closed": "",
+      "actor": "Theo contract; chưa nghiệm thu",
+      "status": "Hoãn; chưa có issue triển khai",
+      "primary": "",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "contribution": "",
+      "note": "Chỉ có workflow contract #13; issue #79/#77 chưa triển khai action này. Không tính là usecase hoàn thành."
+    },
+    {
+      "name": "Unassign Technician",
+      "owner": "",
+      "due": "",
+      "closed": "",
+      "actor": "Manager / Admin",
+      "status": "Hoãn; chưa có issue triển khai",
+      "primary": "",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "contribution": "",
+      "note": "Chỉ có workflow contract #13; issue #79/#77 chưa triển khai action này. Không tính là usecase hoàn thành."
+    },
+    {
+      "name": "Reopen Ticket",
+      "owner": "",
+      "due": "",
+      "closed": "",
+      "actor": "Theo contract; chưa nghiệm thu",
+      "status": "Hoãn; chưa có issue triển khai",
+      "primary": "",
+      "support": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "contribution": "",
+      "note": "Chỉ có workflow contract #13; issue #79/#77 chưa triển khai action này. Không tính là usecase hoàn thành."
+    }
+  ],
+  "mapping": {
+    "2": [
+      "Log In to Account",
+      "Manage Users",
+      "Manage User Roles"
+    ],
+    "3": [
+      "Log In to Account",
+      "Log Out of Account"
+    ],
+    "4": [],
+    "5": [
+      "Manage Dynamic Form Drafts",
+      "View Form Versions"
+    ],
+    "6": [
+      "Review Ticket",
+      "Reject Ticket",
+      "Cancel Ticket",
+      "Assign Technician",
+      "Reassign Technician",
+      "Unassign Technician",
+      "Start Ticket Work",
+      "Resolve Ticket",
+      "Close Ticket",
+      "Reopen Ticket"
+    ],
+    "7": [
+      "View Technician Profiles",
+      "Configure Technician Availability",
+      "Configure Technician Capacity",
+      "Configure Technician Skills",
+      "Configure Technician Service Areas",
+      "Assign Technician"
+    ],
+    "8": [
+      "Manage Locations",
+      "Manage Equipment Types"
+    ],
+    "9": [
+      "Manage Assets",
+      "Change Asset Status"
+    ],
+    "10": [],
+    "11": [],
+    "12": [
+      "View Asset Status History"
+    ],
+    "13": [
+      "Archive Form Version",
+      "Submit Ticket"
+    ],
+    "14": [
+      "Log In to Account"
+    ],
+    "15": [
+      "Log In to Account",
+      "Log Out of Account"
+    ],
+    "16": [
+      "Manage Users",
+      "Manage User Roles",
+      "Configure Technician Availability",
+      "Configure Technician Capacity",
+      "Configure Technician Skills",
+      "Configure Technician Service Areas"
+    ],
+    "17": [
+      "Submit Ticket",
+      "Manage Dynamic Form Drafts"
+    ],
+    "18": [
+      "Manage Incident Categories",
+      "View Form Versions",
+      "Manage Dynamic Form Drafts",
+      "Preview Dynamic Forms",
+      "Publish Form Version",
+      "Archive Form Version"
+    ],
+    "19": [
+      "Manage Incident Categories",
+      "View Form Versions",
+      "Manage Dynamic Form Drafts",
+      "Preview Dynamic Forms",
+      "Publish Form Version",
+      "Archive Form Version"
+    ],
+    "20": [
+      "View Tickets",
+      "Search Tickets",
+      "Filter Tickets",
+      "View Ticket Details"
+    ],
+    "21": [
+      "View Ticket Details",
+      "View Ticket Attachments",
+      "Download Ticket Attachments"
+    ],
+    "22": [
+      "View Tickets",
+      "Filter Tickets",
+      "View Ticket Details"
+    ],
+    "23": [
+      "Manage Locations",
+      "Manage Equipment Types"
+    ],
+    "24": [
+      "Manage Assets",
+      "Change Asset Status",
+      "View Asset Status History"
+    ],
+    "25": [
+      "Submit Ticket"
+    ],
+    "26": [
+      "Submit Ticket"
+    ],
+    "27": [
+      "Submit Ticket",
+      "Upload Work Result Images",
+      "View Ticket Attachments",
+      "Download Ticket Attachments"
+    ],
+    "28": [
+      "View Ticket Dashboard"
+    ],
+    "29": [
+      "Log In to Account",
+      "Log Out of Account",
+      "Manage Users",
+      "Manage User Roles"
+    ],
+    "30": [
+      "View Technician Profiles",
+      "Configure Technician Availability",
+      "Configure Technician Capacity",
+      "Configure Technician Skills",
+      "Configure Technician Service Areas"
+    ],
+    "31": [
+      "Manage Incident Categories",
+      "View Form Versions",
+      "Manage Dynamic Form Drafts",
+      "Preview Dynamic Forms",
+      "Publish Form Version",
+      "Archive Form Version"
+    ],
+    "32": [
+      "Manage Locations",
+      "Manage Equipment Types"
+    ],
+    "33": [
+      "Manage Assets",
+      "Change Asset Status",
+      "View Asset Status History"
+    ],
+    "34": [
+      "Submit Ticket"
+    ],
+    "35": [
+      "Submit Ticket"
+    ],
+    "36": [
+      "Review Ticket",
+      "Check Technician Eligibility",
+      "Assign Technician"
+    ],
+    "37": [
+      "View Assigned Work",
+      "Start Ticket Work",
+      "Record Work Log",
+      "Upload Work Result Images",
+      "Resolve Ticket"
+    ],
+    "38": [
+      "View Ticket Details"
+    ],
+    "39": [
+      "View Ticket Dashboard"
+    ],
+    "40": [],
+    "41": [
+      "Submit Ticket"
+    ],
+    "42": [
+      "Submit Ticket"
+    ],
+    "43": [
+      "View Ticket Attachments",
+      "Download Ticket Attachments"
+    ],
+    "44": [
+      "View Technician Profiles"
+    ],
+    "45": [
+      "Check Technician Eligibility"
+    ],
+    "46": [
+      "Review Ticket",
+      "Assign Technician"
+    ],
+    "47": [
+      "View Assigned Work",
+      "Start Ticket Work"
+    ],
+    "48": [
+      "Record Work Log",
+      "Resolve Ticket"
+    ],
+    "49": [
+      "Upload Work Result Images"
+    ],
+    "50": [
+      "Close Ticket"
+    ],
+    "51": [
+      "View Ticket Dashboard",
+      "View Ticket SLA"
+    ],
+    "52": [
+      "View Tickets",
+      "View Ticket Details",
+      "Submit Ticket",
+      "Check Technician Eligibility",
+      "Review Ticket",
+      "Assign Technician",
+      "View Assigned Work",
+      "Start Ticket Work",
+      "Record Work Log",
+      "Upload Work Result Images",
+      "View Ticket Attachments",
+      "Download Ticket Attachments",
+      "Resolve Ticket",
+      "Close Ticket",
+      "View Ticket Dashboard"
+    ],
+    "53": [
+      "View Tickets",
+      "View Ticket Details",
+      "Submit Ticket",
+      "Check Technician Eligibility",
+      "Review Ticket",
+      "Assign Technician",
+      "View Assigned Work",
+      "Start Ticket Work",
+      "Record Work Log",
+      "Upload Work Result Images",
+      "View Ticket Attachments",
+      "Download Ticket Attachments",
+      "Resolve Ticket",
+      "Close Ticket",
+      "View Ticket Dashboard"
+    ],
+    "54": [
+      "Reassign Technician"
+    ],
+    "55": [
+      "View Ticket Report",
+      "Export Ticket Report"
+    ],
+    "56": [
+      "View Notifications",
+      "Mark Notification as Read"
+    ],
+    "57": [
+      "Search Tickets"
+    ]
+  },
+  "notes": {
+    "2": "https://github.com/TuanThanh-dev19/Nexora/issues/9 — Backlog xếp Sprint 1; GitHub hiện gắn Planning & Foundation Lock. Phân loại cần đối chiếu lại.",
+    "3": "https://github.com/TuanThanh-dev19/Nexora/issues/10",
+    "4": "https://github.com/TuanThanh-dev19/Nexora/issues/11 — Công việc kỹ thuật hỗ trợ nhiều usecase, không phải usecase độc lập; cột Usecase để trống.",
+    "5": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 12 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+    "6": "https://github.com/TuanThanh-dev19/Nexora/issues/13 — Done chỉ xác nhận workflow contract; reject/cancel/unassign/reopen chưa có issue triển khai được nghiệm thu.",
+    "7": "https://github.com/TuanThanh-dev19/Nexora/issues/14",
+    "8": "https://github.com/TuanThanh-dev19/Nexora/issues/15",
+    "9": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 11 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+    "10": "https://github.com/TuanThanh-dev19/Nexora/issues/17 — Công việc kỹ thuật hỗ trợ nhiều usecase, không phải usecase độc lập; cột Usecase để trống.",
+    "11": "https://github.com/TuanThanh-dev19/Nexora/issues/18 — Công việc kỹ thuật hỗ trợ nhiều usecase, không phải usecase độc lập; cột Usecase để trống.",
+    "12": "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 8 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+    "13": "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 4 (tách usecase, không phải issue độc lập). Hai dòng cùng issue đang có hạn kế hoạch khác nhau; giữ nguyên ngày hiện tại, cần nhóm xác nhận.",
+    "14": "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+    "15": "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+    "16": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+    "17": "https://github.com/TuanThanh-dev19/Nexora/issues/30",
+    "18": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+    "19": "https://github.com/TuanThanh-dev19/Nexora/issues/32",
+    "20": "https://github.com/TuanThanh-dev19/Nexora/issues/33",
+    "21": "https://github.com/TuanThanh-dev19/Nexora/issues/34",
+    "22": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+    "23": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+    "24": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+    "25": "https://github.com/TuanThanh-dev19/Nexora/issues/38",
+    "26": "https://github.com/TuanThanh-dev19/Nexora/issues/39",
+    "27": "https://github.com/TuanThanh-dev19/Nexora/issues/40",
+    "28": "https://github.com/TuanThanh-dev19/Nexora/issues/41",
+    "29": "https://github.com/TuanThanh-dev19/Nexora/issues/51 — Backlog xếp Sprint 3; GitHub hiện gắn Milestone 2. Cần thống nhất phân loại, chưa tự chuyển sprint.",
+    "30": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+    "31": "https://github.com/TuanThanh-dev19/Nexora/issues/53",
+    "32": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+    "33": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+    "34": "https://github.com/TuanThanh-dev19/Nexora/issues/56",
+    "35": "https://github.com/TuanThanh-dev19/Nexora/issues/57",
+    "36": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+    "37": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+    "38": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+    "39": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+    "40": "https://github.com/TuanThanh-dev19/Nexora/issues/62 — Công việc kỹ thuật hỗ trợ nhiều usecase, không phải usecase độc lập; cột Usecase để trống.",
+    "41": "https://github.com/TuanThanh-dev19/Nexora/issues/80",
+    "42": "https://github.com/TuanThanh-dev19/Nexora/issues/78",
+    "43": "https://github.com/TuanThanh-dev19/Nexora/issues/76",
+    "44": "https://github.com/TuanThanh-dev19/Nexora/issues/74",
+    "45": "https://github.com/TuanThanh-dev19/Nexora/issues/73 — Không có override trong scope demo.",
+    "46": "https://github.com/TuanThanh-dev19/Nexora/issues/79 — Review, assign và current assignment. Reassign triển khai riêng tại #92; reject/cancel/unassign tiếp tục hoãn.",
+    "47": "https://github.com/TuanThanh-dev19/Nexora/issues/75 — My Work và start; work log/resolve thuộc #81.",
+    "48": "https://github.com/TuanThanh-dev19/Nexora/issues/81 — Work log và resolve; upload ảnh thuộc #88.",
+    "49": "https://github.com/TuanThanh-dev19/Nexora/issues/88 — Upload ảnh kết quả xử lý; ảnh là tùy chọn, không bắt buộc để resolve hoặc close. Giữ hạn kế hoạch hiện có trong backlog.",
+    "50": "https://github.com/TuanThanh-dev19/Nexora/issues/77 — Gộp phạm vi UI demo và nghiệm thu; hoãn reopen/force-close/comments/feedback.",
+    "51": "https://github.com/TuanThanh-dev19/Nexora/issues/72 — Dashboard summary theo quyền; issue đã đóng, API đã hoàn tất.",
+    "52": "https://github.com/TuanThanh-dev19/Nexora/issues/90 — Kiểm thử hồi quy API Ticket; assignee hiện tại là Huytran2903, dù nội dung còn đề xuất Phan Tuấn Thành. GitHub #90 là định danh chính vì mã NEX-051 trùng #92. Trạng thái backlog: To Do; GitHub: open. Hạn 31/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+    "53": "https://github.com/TuanThanh-dev19/Nexora/issues/91 — Kiểm thử E2E luồng Ticket với API thật; không gồm comments/feedback. Trạng thái backlog: To Do; GitHub: open. Hạn 03/11/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+    "54": "https://github.com/TuanThanh-dev19/Nexora/issues/92 — Chỉ đổi Technician khi ASSIGNED; bắt buộc lý do và eligibility; không gồm unassign/reopen. Trạng thái backlog: In Progress; GitHub: open. Hạn 03/11/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+    "55": "https://github.com/TuanThanh-dev19/Nexora/issues/93 — Xem báo cáo nhóm Ticket theo ngày tạo và xuất CSV; không sửa dashboard summary hiện có. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+    "56": "https://github.com/TuanThanh-dev19/Nexora/issues/94 — Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Trạng thái backlog: In Progress; GitHub: open. Hạn 30/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Tên nhánh là kế hoạch; chưa thấy trong danh sách nhánh GitHub ngày 29/10/2026.",
+    "57": "https://github.com/TuanThanh-dev19/Nexora/issues/95 — Bổ sung tìm keyword theo mã/tiêu đề; Filter Tickets nền tảng thuộc #35. Trạng thái backlog: Done; GitHub: closed. Hạn 28/10/2026 theo lịch hiện tại của Product Backlog; milestone Sprint 4 trên GitHub kết thúc 30/10/2026. Nhánh đã tồn tại trên GitHub. Issue đóng 08:18 ngày 29/10/2026 (Asia/Bangkok); hạn 28/10 là kế hoạch, không phải ngày hoàn thành."
+  },
+  "branches": [
+    "develop",
+    "feat/ticket-keyword-search",
+    "feature/create-ticket-api",
+    "feature/dashboard-summary-api",
+    "feature/technician-list-api",
+    "feature/technician-work-start",
+    "feature/ticket-attachment-content",
+    "feature/ticket-close-demo-scope",
+    "feature/ticket-review-assignment",
+    "feature/ticket-submission-validation",
+    "feature/ticket-technician-eligibility",
+    "feature/ticket-work-result-upload",
+    "feature/ticket-worklog-resolve",
+    "feature/unify-ui-color-scheme",
+    "feature/10-auth-session-skeleton",
+    "feature/12-dynamic-form-persistence",
+    "feature/15-location-equipment-persistence",
+    "feature/16-asset-persistence",
+    "feature/19-auth-login-jwt",
+    "feature/20-current-user-session",
+    "feature/21-user-technician-management",
+    "feature/22-24-category-form-api-admin-ui",
+    "feature/27-ticket-read-api",
+    "feature/28-location-equipment-crud",
+    "feature/29-asset-crud-status-history",
+    "feature/30-eligible-assets-by-location",
+    "feature/31-ticket-number-sequence",
+    "feature/42-auth-admin-user-ui",
+    "feature/43-technician-configuration-ui",
+    "feature/44-category-form-ui-completion",
+    "feature/45-location-equipment-ui",
+    "feature/46-asset-management-ui",
+    "feature/47-location-eligible-asset-selectors",
+    "feature/50-create-ticket-ui",
+    "feature/52-manager-ticket-workflow-ui",
+    "feature/53-technician-assigned-work-ui",
+    "feature/54-ticket-detail-collaboration-ui",
+    "feature/55-dashboard-shell-ui",
+    "feature/56-ui-navigation-quality",
+    "main",
+    "refactor/optimize-ticket-flow"
+  ],
+  "metadata": {
+    "spreadsheetId": "15AJcAfaJRjbjWaa99LC5S-Sq339IYSZLbFSf6-FMgfQ",
+    "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/15AJcAfaJRjbjWaa99LC5S-Sq339IYSZLbFSf6-FMgfQ/edit",
+    "properties": {
+      "title": "Nexora_Product_Backlog",
+      "locale": "vi_VN",
+      "timeZone": "America/Los_Angeles"
+    },
+    "sheets": [
+      {
+        "properties": {
+          "sheetId": 1201240531,
+          "title": "Product Backlog",
+          "index": 0,
+          "sheetType": "GRID",
+          "gridProperties": {
+            "rowCount": 1000,
+            "columnCount": 26,
+            "hideGridlines": true,
+            "rowGroupControlAfter": true,
+            "columnGroupControlAfter": true
+          }
+        }
+      },
+      {
+        "properties": {
+          "sheetId": 1612712148,
+          "title": "Config",
+          "index": 1,
+          "sheetType": "GRID",
+          "gridProperties": {
+            "rowCount": 991,
+            "columnCount": 28,
+            "hideGridlines": true,
+            "rowGroupControlAfter": true,
+            "columnGroupControlAfter": true
+          }
+        }
+      },
+      {
+        "properties": {
+          "sheetId": 1740752975,
+          "title": "Import Audit",
+          "index": 2,
+          "sheetType": "GRID",
+          "gridProperties": {
+            "rowCount": 1000,
+            "columnCount": 26,
+            "hideGridlines": true,
+            "rowGroupControlAfter": true,
+            "columnGroupControlAfter": true
+          }
+        }
+      }
+    ]
+  }
+}

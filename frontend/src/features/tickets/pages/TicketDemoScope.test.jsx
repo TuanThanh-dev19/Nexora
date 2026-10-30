@@ -72,6 +72,125 @@ async function closeDialog() {
 }
 
 describe('real API demo scope', () => {
+  it.each([false, true])(
+    'reassigns with production scope when mock flag=%s and refreshes other viewers',
+    async (mockFlag) => {
+      vi.stubEnv('VITE_TICKET_WORKFLOW_MOCK', String(mockFlag))
+      actor = {
+        id: 5,
+        fullName: 'Manager',
+        status: 'ACTIVE',
+        roles: ['MANAGER'],
+      }
+      const reassign = vi.spyOn(ticketApi, 'reassign')
+      const { client } = await mount(12)
+      const otherWorkKey = ['tickets', 21, 'TECHNICIAN', 'assigned', '']
+      client.setQueryData(otherWorkKey, { content: [] })
+      const invalidate = vi.spyOn(client, 'invalidateQueries')
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Đổi kỹ thuật viên', exact: true }),
+      )
+      const dialog = within(await screen.findByRole('dialog'))
+      expect(
+        await dialog.findByRole('radio', { name: 'Chọn Nguyễn An' }),
+      ).toBeDisabled()
+      expect(
+        dialog.getByRole('radio', { name: 'Chọn Trần Bình' }),
+      ).toBeDisabled()
+      await userEvent.click(
+        dialog.getByRole('radio', { name: 'Chọn Phan Nam' }),
+      )
+      expect(dialog.getByRole('textbox', { name: /Lý do/ })).toHaveAttribute(
+        'maxlength',
+        '1000',
+      )
+      fireEvent.change(dialog.getByRole('textbox', { name: /Lý do/ }), {
+        target: { value: 'a'.repeat(1000) },
+      })
+      await userEvent.click(
+        dialog.getByRole('button', { name: 'Xác nhận đổi kỹ thuật viên' }),
+      )
+      expect(dialog.getByRole('button', { name: 'Đang xử lý…' })).toBeDisabled()
+      fireEvent.click(dialog.getByRole('button', { name: 'Đang xử lý…' }))
+      await screen.findByText('Đổi kỹ thuật viên thành công.')
+      expect(reassign).toHaveBeenCalledExactlyOnceWith(12, {
+        version: 2,
+        technicianId: 29,
+        reason: 'a'.repeat(1000),
+      })
+      expect(client.getQueryState(otherWorkKey).isInvalidated).toBe(true)
+      for (const key of ['tickets', 'technicians', 'dashboard'])
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: [key] })
+      const history = within(
+        screen
+          .getByRole('heading', { name: 'Lịch sử phân công' })
+          .closest('.card'),
+      )
+      expect(history.getByText('Nguyễn An')).toBeInTheDocument()
+      expect(history.getByText('Phan Nam')).toBeInTheDocument()
+      expect(history.getByText('Đã kết thúc')).toBeInTheDocument()
+      expect(history.getByText('Đang phụ trách')).toBeInTheDocument()
+      await client.invalidateQueries({ queryKey: ['tickets'] })
+      expect(
+        screen.getByText(/Kỹ thuật viên hiện tại: Phan Nam/),
+      ).toBeInTheDocument()
+    },
+  )
+
+  it.each([409, 422])(
+    'requires reload or candidate reselection after reassignment HTTP %s',
+    async (status) => {
+      actor = { id: 5, status: 'ACTIVE', roles: ['MANAGER'] }
+      const reassign = vi.spyOn(ticketApi, 'reassign')
+      await mount(12)
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Đổi kỹ thuật viên', exact: true }),
+      )
+      const dialog = within(await screen.findByRole('dialog'))
+      await userEvent.click(
+        await dialog.findByRole('radio', { name: 'Chọn Phan Nam' }),
+      )
+      fireEvent.change(dialog.getByRole('textbox', { name: /Lý do/ }), {
+        target: { value: 'Đổi ca' },
+      })
+      if (status === 409) mock.failNextAction(409)
+      else
+        mock.store.candidates.find(
+          (candidate) => candidate.technicianId === 29,
+        ).available = false
+      await userEvent.click(
+        dialog.getByRole('button', { name: 'Xác nhận đổi kỹ thuật viên' }),
+      )
+      await dialog.findByRole('alert')
+      expect(
+        dialog.getByRole('button', { name: 'Xác nhận đổi kỹ thuật viên' }),
+      ).toBeDisabled()
+      expect(reassign).toHaveBeenCalledTimes(1)
+      if (status === 409) {
+        expect(dialog.getByRole('textbox', { name: /Lý do/ })).toBeDisabled()
+        await userEvent.click(
+          dialog.getByRole('button', { name: 'Tải lại phiếu' }),
+        )
+        await waitFor(() =>
+          expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+        )
+      } else {
+        await waitFor(() =>
+          expect(
+            dialog.getByRole('radio', { name: 'Chọn Phan Nam' }),
+          ).toBeDisabled(),
+        )
+        expect(
+          dialog.getByRole('radio', { name: 'Chọn Phan Nam' }),
+        ).not.toBeChecked()
+        expect(dialog.getByRole('textbox', { name: /Lý do/ })).toHaveValue(
+          'Đổi ca',
+        )
+      }
+      expect(reassign).toHaveBeenCalledTimes(1)
+    },
+  )
+
   it.each([
     ['REQUESTER'],
     ['REQUESTER', 'MANAGER'],
@@ -98,7 +217,7 @@ describe('real API demo scope', () => {
       expect(screen.getAllByText('Đã đóng').length).toBeGreaterThan(0)
       expect(screen.getByText('Thời gian đóng')).toBeInTheDocument()
       expect(invalidate).toHaveBeenCalledWith({
-        queryKey: ['tickets', 4, [...roles].sort().join(',')],
+        queryKey: ['tickets'],
       })
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ['dashboard'] })
       expect(
@@ -167,7 +286,7 @@ describe('real API demo scope', () => {
       for (const name of [
         'Từ chối',
         'Hủy phiếu',
-        'Phân công lại',
+        'Đổi kỹ thuật viên',
         'Gỡ phân công',
         'Mở lại phiếu',
         'Đóng phiếu',
@@ -212,7 +331,6 @@ describe('real API demo scope', () => {
       'addFeedback',
       'reject',
       'cancel',
-      'reassign',
       'unassign',
       'reopen',
     ].map((method) => vi.spyOn(ticketApi, method))
@@ -243,13 +361,7 @@ describe('real API demo scope', () => {
       await expect(
         result.current.feedback.mutation.mutateAsync({ rating: 5 }),
       ).rejects.toThrow()
-      for (const action of [
-        'reject',
-        'cancel',
-        'reassign',
-        'unassign',
-        'reopen',
-      ]) {
+      for (const action of ['reject', 'cancel', 'unassign', 'reopen']) {
         await expect(
           result.current.workflow.mutation.mutateAsync({
             action,

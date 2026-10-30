@@ -22,6 +22,7 @@ public record TicketDetailResponse(
         String description, Long version, StoredForm formVersion, List<DynamicValue> dynamicValues,
         List<HistoryEntry> statusHistory, List<AttachmentMetadata> attachments,
         CurrentAssignmentResponse currentAssignment,
+        List<CurrentAssignmentResponse> assignmentHistory,
         ResolutionOutcome resolutionOutcome,
         String resolutionSummary,
         OffsetDateTime resolvedAt,
@@ -30,6 +31,7 @@ public record TicketDetailResponse(
         dynamicValues = List.copyOf(dynamicValues);
         statusHistory = List.copyOf(statusHistory);
         attachments = List.copyOf(attachments);
+        assignmentHistory = List.copyOf(assignmentHistory);
     }
     public record StoredForm(Long id, int versionNumber, FormStatus formStatus, List<Field> fields) {
         public StoredForm { fields = List.copyOf(fields); }

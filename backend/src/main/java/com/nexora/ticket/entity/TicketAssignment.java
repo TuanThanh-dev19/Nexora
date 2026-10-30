@@ -37,7 +37,7 @@ public class TicketAssignment {
     private OffsetDateTime endedAt;
 
     @Nationalized
-    @Column(name = "end_reason", length = 500)
+    @Column(name = "end_reason", length = 1000)
     private String endReason;
 
     @Nationalized

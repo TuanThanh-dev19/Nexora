@@ -868,7 +868,16 @@ export function createTicketWorkflowMock({
       )
       if (!ticket || !visible(ticket, auth.actor))
         return problem(404, 'resource-not-found', 'Không thể truy cập phiếu.')
-      return HttpResponse.json(ticket)
+      return HttpResponse.json({
+        ...ticket,
+        assignmentHistory: store.assignments
+          .filter((assignment) => assignment.ticketId === ticket.id)
+          .sort(
+            (a, b) =>
+              Date.parse(b.assignedAt) - Date.parse(a.assignedAt) ||
+              b.id - a.id,
+          ),
+      })
     }),
     http.get(
       `${ticketEndpoint}/:ticketId/eligible-technicians`,
@@ -1078,6 +1087,16 @@ export function createTicketWorkflowMock({
               422,
               'business-rule-violation',
               'Phiếu đã được phân công.',
+            )
+          if (
+            action === 'reassign' &&
+            String(payload.technicianId) ===
+              String(ticket.currentAssignment.technician.technicianId)
+          )
+            return problem(
+              422,
+              'business-rule-violation',
+              'Vui lòng chọn kỹ thuật viên khác người hiện tại.',
             )
           applyAction(ticket, action, payload, auth.actor, candidate)
           return HttpResponse.json({

@@ -1,0 +1,6 @@
+51	 Shared Foundation and Integration	 Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI	In Progress	Trần Phan Nhật Huy	30/10/2026	4	 test/test-ticket-api-regression
+52	 Shared Foundation and Integration	 [E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật	To Do	Phan Tuấn Thành	30/10/2026	4	 test/test-ticket-ui-e2e
+53	 Reassign Technician	 Đổi Technician được phân công cho Ticket	To Do	Phan Tuấn Thành	30/10/2026	4	 feat/ticket-reassignment
+54	 View Ticket Dashboard; View Ticket Report; Export Ticket Report	 Báo cáo Ticket theo khoảng thời gian và xuất CSV	To Do	Trần Quốc Thái	30/10/2026	4	 feat/ticket-period-report
+55	 View Notifications; Mark Notification as Read	 Thông báo trong ứng dụng khi phân công và giải quyết Ticket	To Do	Tô Phi Oanh	30/10/2026	4	 codex/ticket-in-app-notifications
+56	 Search and Filter Tickets	 Bổ sung tìm kiếm Ticket theo mã và tiêu đề	To Do	Lâm Thoại Thanh	30/10/2026	4	 feat/ticket-keyword-search

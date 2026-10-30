@@ -9,7 +9,7 @@ export const demoScope = {
     close: true,
     reject: false,
     cancel: false,
-    reassign: false,
+    reassign: true,
     unassign: false,
     reopen: false,
     forceClose: false,

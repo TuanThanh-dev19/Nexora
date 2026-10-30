@@ -196,7 +196,7 @@ public final class TicketWorkflowContract {
         put(transitions, definition(
                 TicketAction.REASSIGN,
                 EXISTING_TICKET,
-                statuses(TicketStatus.ASSIGNED, TicketStatus.IN_PROGRESS),
+                statuses(TicketStatus.ASSIGNED),
                 TicketStatus.ASSIGNED,
                 managerAndAdmin(),
                 true,

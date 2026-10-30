@@ -17,6 +17,7 @@ import {
   TicketAttachments,
   TicketDynamicValues,
   TicketStatusHistory,
+  TicketAssignmentHistory,
 } from '../components/TicketDetailSections'
 import { FORM_STATUS_LABELS } from '../constants/ticketPresentation'
 import { RESOLUTION_OUTCOMES } from '../constants/technicianWork'
@@ -204,6 +205,9 @@ export function TicketDetailPage() {
               </div>
               <div>
                 <TicketStatusHistory history={ticket.statusHistory} />
+                <TicketAssignmentHistory
+                  history={ticket.assignmentHistory ?? []}
+                />
               </div>
             </div>
             {demoScope.features.attachmentRead && (

@@ -2,7 +2,7 @@
 
 ## 1. Nguồn chính thức
 
-SQL Server 2022 lưu **26 bảng ứng dụng** sau V8; V9–V11 bổ sung concurrency, sequence và resolution summary, không thêm bảng ứng dụng. flyway_schema_history là bảng kỹ thuật, không nằm trong 26 bảng.
+SQL Server 2022 lưu **26 bảng ứng dụng** sau V8; V9–V12 bổ sung concurrency, sequence, resolution summary và độ dài lý do kết thúc phân công, không thêm bảng ứng dụng. flyway_schema_history là bảng kỹ thuật, không nằm trong 26 bảng.
 
 Nguồn tạo/nâng cấp schema: [Flyway migrations](../backend/src/main/resources/db/migration/). Backend dùng ddl-auto=validate; Docker init chỉ tạo database.
 
@@ -19,6 +19,7 @@ Nguồn tạo/nâng cấp schema: [Flyway migrations](../backend/src/main/resour
 | V9        | Revision/khóa cho category form administration                          |
 | V10       | Sequence sinh số Ticket                                                 |
 | V11       | Resolution summary của Ticket                                           |
+| V12       | ticket_assignments.end_reason NVARCHAR(1000), phục vụ lý do đổi Technician |
 
 Không sửa migration đã áp dụng. Migration kế tiếp phải có version mới và được kiểm trên SQL Server thật.
 

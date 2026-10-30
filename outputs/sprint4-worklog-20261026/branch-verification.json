@@ -1,0 +1,82 @@
+{
+  "develop": "8f33803de63099bb4875952969291e684edb7ff2",
+  "proof": [
+    {
+      "issue": 72,
+      "branch": "feature/dashboard-summary-api",
+      "sha": "8353e92c16058fcd6eab442b92029149c00c443b",
+      "inDevelop": true,
+      "pr": 85
+    },
+    {
+      "issue": 73,
+      "branch": "feature/ticket-technician-eligibility",
+      "sha": "1b247a27baf7b6a2c28ff12e6765746cddd1e043",
+      "inDevelop": true,
+      "pr": null
+    },
+    {
+      "issue": 74,
+      "branch": "feature/technician-list-api",
+      "sha": "ccbdb8f6bb244f49566f7473298e5dab33c3cd84",
+      "inDevelop": true,
+      "pr": null
+    },
+    {
+      "issue": 75,
+      "branch": "feature/technician-work-start",
+      "sha": "1119e63546f53f72e2ff9e6db7010851b5f28252",
+      "inDevelop": true,
+      "pr": null
+    },
+    {
+      "issue": 76,
+      "branch": "feature/ticket-attachment-content",
+      "sha": "cf082212e464786b1d6b0ca30a4ae799fd32fd80",
+      "inDevelop": true,
+      "pr": 84
+    },
+    {
+      "issue": 77,
+      "branch": "feature/ticket-close-demo-scope",
+      "sha": "3129613694f9e4c386a67bbdd9d6d94285f14591",
+      "inDevelop": true,
+      "pr": 87
+    },
+    {
+      "issue": 78,
+      "branch": "feature/create-ticket-api",
+      "sha": "4fb7f65ec4201077f2bc3a88a335eb6732eb3916",
+      "inDevelop": true,
+      "pr": 82
+    },
+    {
+      "issue": 79,
+      "branch": "feature/ticket-review-assignment",
+      "sha": "429218bb7eca227e90ea9ebb05c4ad2caf6340e7",
+      "inDevelop": true,
+      "pr": 86
+    },
+    {
+      "issue": 80,
+      "branch": "feature/ticket-submission-validation",
+      "sha": "b8dfd67c5ae7495a1921507728792c7ffc251997",
+      "inDevelop": true,
+      "pr": 83
+    },
+    {
+      "issue": 81,
+      "branch": "feature/ticket-worklog-resolve",
+      "sha": "86ccdab09ea672da2c77dd816fb808ed62ce8821",
+      "inDevelop": true,
+      "pr": null
+    },
+    {
+      "issue": 88,
+      "branch": "feature/ticket-work-result-upload",
+      "sha": "18a0219d7a94f15aeb9219ddeaffac7381711494",
+      "inDevelop": true,
+      "pr": 89
+    }
+  ]
+}
