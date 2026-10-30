@@ -135,3 +135,86 @@ Bằng chứng upload đã ghi nhận: version 2 → 2, IN_PROGRESS giữ nguyê
 Ghi commit/hash, ngày giờ, OS/runtime, lệnh, số passed/failed/skipped và lý do skip. Lưu Surefire reports ở backend/target/surefire-reports và output Vitest cần thiết. Không đưa token/mật khẩu/log có dữ liệu nhạy cảm vào repository.
 
 Lần thay đổi chỉ tài liệu không yêu cầu chạy lại toàn bộ business tests; cần kiểm links, sơ đồ, test-suite references, số slide và đối chiếu thông tin với mã nguồn. Nếu có sửa code/config ảnh hưởng runtime, chạy lại kiểm tra tương ứng.
+
+## 7. Kiểm thử hồi quy API Ticket bằng Postman CLI (Newman)
+
+### 7.1. Mục tiêu và phạm vi
+
+Bộ kiểm thử hồi quy tự động API Ticket được xây dựng để kiểm thử các endpoint của hệ thống trên môi trường backend thật (Spring Boot) kết hợp SQL Server và Local File Storage. Bộ kiểm thử được cấu trúc bằng Postman Collection v2.1 và thực thi thông qua Newman (Postman CLI).
+
+Các nguyên tắc cốt lõi:
+- **Zero Mock**: 100% request được gửi qua HTTP đến backend đang chạy thực tế, ghi dữ liệu vào database SQL Server và lưu trữ file ảnh trên đĩa.
+- **Dynamic ID & Token Resolution**: Toàn bộ ID của ticket, technician, attachment, version optimistic locking và JWT token đều được trích xuất động từ response của các bước trước; tuyệt đối không hardcode.
+- **Độc lập và Re-runnable**: Hỗ trợ chạy liên tiếp nhiều lần với Correlation Run ID riêng biệt (`NX-RUN-<timestamp>`), không gây xung đột dữ liệu giữa các lần chạy.
+- **Bảo vệ Secret**: Không commit JWT token, mật khẩu hoặc file environment nhạy cảm vào Git repository.
+
+### 7.2. Cấu trúc thư mục
+
+Toàn bộ tài nguyên phục vụ kiểm thử được đặt trong thư mục `tests/postman/`:
+
+```
+tests/postman/
+├── ticket-regression.postman_collection.json   # Postman collection chính (8 nhóm, 59 requests, 114 assertions)
+├── local.example.postman_environment.json      # Mẫu biến môi trường (không chứa secret thật)
+├── setup-test-data.ps1                         # Script chuẩn bị dữ liệu kiểm thử idempotent
+├── run-ticket-regression.ps1                   # Runner CLI tự động hóa toàn diện
+├── generate-collection.js                      # Mã nguồn sinh collection có cấu trúc
+├── fixtures/                                   # Fixture ảnh phục vụ kịch bản kiểm thử upload
+│   ├── valid.png                               # PNG hợp lệ (67 bytes)
+│   ├── valid.jpg                               # JPEG hợp lệ (149 bytes)
+│   ├── empty.png                               # File rỗng (0 bytes)
+│   ├── fake-mime.png                           # File giả MIME (nội dung text, đuôi .png)
+│   └── oversized.jpg                           # File vượt dung lượng (5.000.001 bytes > 5 MiB)
+└── reports/                                    # Thư mục lưu báo cáo HTML tự động sinh (được gitignore)
+```
+
+### 7.3. Chi tiết các nhóm kịch bản kiểm thử
+
+Collection bao gồm 8 nhóm (Folders) với 59 HTTP requests và 114 assertions bao phủ toàn diện các yêu cầu nghiệp vụ:
+
+| Nhóm | Tên nhóm | Số request | Nội dung kiểm thử chính |
+| :--- | :--- | :---: | :--- |
+| **01** | **Authentication** | 8 | Đăng nhập và xác thực vai trò từng actor riêng biệt (Requester, Other Requester, Manager, Technician, Ineligible Technician); kiểm tra token Bearer và `/auth/me`. |
+| **02** | **Ticket Creation & Validation** | 5 | Đọc form definition published tham chiếu; tạo Ticket chính (Ticket 1); tạo Ticket phụ (Ticket 2); validation lỗi thiếu `locationId` (400) và thiếu dynamic field bắt buộc (400). |
+| **03** | **Ticket Listing & Detail** | 4 | Kiểm tra phân trang `PageResponse`; kiểm tra phân quyền hiển thị (Requester chỉ thấy vé của mình, Manager thấy vé hệ thống); kiểm tra safe visibility (User khác truy cập vé không có quyền trả về 404 không lộ dữ liệu). |
+| **04** | **Review & Assignment** | 12 | Xung đột phiên bản Review (409); Review vé 1 & 2 (200); Tra cứu danh sách ứng viên `GET /tickets/{id}/eligible-technicians` (kiểm tra `eligibilityReasons`); Từ chối gán kỹ thuật viên không đủ điều kiện (422); Xung đột phiên bản Assign (409); Gán vé 1 & 2 cho kỹ thuật viên hợp lệ (200); Từ chối resolve trên trạng thái `ASSIGNED` (422). |
+| **05** | **Technician Work** | 9 | Từ chối start bởi Manager (403); Kỹ thuật viên bắt đầu công việc (200, chuyển sang `IN_PROGRESS`); Ghi nhật ký công việc (201); Từ chối start khi đã `IN_PROGRESS` (422); Đọc danh sách work logs theo thứ tự thời gian (200). |
+| **06** | **Attachments** | 12 | Validation ảnh: file rỗng (400), giả mạo MIME/magic bytes (400), vượt quá 5 MiB (413), vượt quá giới hạn 5 ảnh (400); Phân quyền: Manager không phải assignee bị từ chối upload (403); Upload hợp lệ ảnh kết quả `WORK_RESULT` (JPEG & PNG, trả về 201); Kiểm tra tính độc lập: upload không làm tăng version, không đổi status hoặc history của Ticket; Tải ảnh qua endpoint phân quyền `GET /tickets/{id}/attachments/{attId}/content` và đối chiếu mã băm SHA-256 khớp 100% fixture gốc. |
+| **07** | **Reporter Close** | 8 | **Scenario B**: Kỹ thuật viên Resolve và Requester Close Ticket 2 thành công mà **không cần ảnh kết quả**; Kỹ thuật viên Resolve Ticket 1; Xung đột phiên bản Close (409); Non-reporter (Manager) thử đóng vé bị từ chối (403); Reporter đóng Ticket 1 (200, chuyển sang `CLOSED`); Đọc lại trạng thái cuối cùng, xác nhận đầy đủ `CLOSE` event và comment trong status history. |
+| **08** | **Dashboard & Post-Workflow** | 3 | Kiểm tra thống kê dashboard của Manager, Requester và Technician; xác minh vé đã đóng (`CLOSED`) vẫn được ghi nhận trong chỉ số `resolvedThisWeek`. |
+
+### 7.4. Hướng dẫn thực thi
+
+#### 1. Yêu cầu tiên quyết
+- Node.js (>= 18.x)
+- Newman và HTML Extra Reporter:
+  ```powershell
+  npm install -g newman newman-reporter-htmlextra
+  ```
+- Backend CampusFix (Spring Boot) đang chạy tại `http://localhost:8080` (hoặc cấu hình tương đương).
+- Cơ sở dữ liệu SQL Server với Flyway schema đã áp dụng đầy đủ.
+
+#### 2. Chuẩn bị dữ liệu kiểm thử
+Script `setup-test-data.ps1` sẽ tạo người dùng test, thiết lập profile kỹ thuật viên (đủ điều kiện và không đủ điều kiện), liên kết kỹ năng và khu vực phục vụ, đồng thời sinh file `local.postman_environment.json`:
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/postman/setup-test-data.ps1
+```
+
+#### 3. Chạy kiểm thử hồi quy tự động
+Sử dụng script runner tự động:
+```powershell
+# Chạy đầy đủ kèm sinh báo cáo HTML chi tiết
+powershell -ExecutionPolicy Bypass -File tests/postman/run-ticket-regression.ps1
+
+# Chạy nhanh chỉ xuất console CLI (không tạo báo cáo HTML)
+powershell -ExecutionPolicy Bypass -File tests/postman/run-ticket-regression.ps1 -NoHtmlReport
+
+# Tự động chuẩn bị lại dữ liệu trước khi chạy
+powershell -ExecutionPolicy Bypass -File tests/postman/run-ticket-regression.ps1 -SetupData
+```
+
+#### 4. Báo cáo nghiệm thu
+Sau khi chạy thành công, báo cáo HTML trực quan được lưu tự động tại thư mục `tests/postman/reports/` với tên định dạng:
+`ticket-regression-report-yyyyMMdd-HHmmss.html`.
+Báo cáo hiển thị chi tiết thời gian phản hồi, trạng thái HTTP, assertion matrix và payload request/response của toàn bộ 59 bước kiểm thử.
+
