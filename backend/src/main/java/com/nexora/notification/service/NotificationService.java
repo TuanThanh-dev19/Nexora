@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,9 +36,10 @@ public class NotificationService {
     private final SqlReferenceValidator referenceValidator;
     private final MongoTemplate mongoTemplate;
 
+    @Autowired
     public NotificationService(NotificationRepository repository,
             SqlReferenceValidator referenceValidator,
-            MongoTemplate mongoTemplate) {
+            @Autowired(required = false) MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.referenceValidator = referenceValidator;
         this.mongoTemplate = mongoTemplate;
