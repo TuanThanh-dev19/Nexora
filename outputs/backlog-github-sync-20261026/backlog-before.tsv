@@ -1,0 +1,66 @@
+STT	Usecase liên quan	Việc cần làm	Trạng thái	Chủ sở hữu	Ngày đến hạn	Sprint	Tên nhánh	Ghi chú		Thành viên	Số lượng việc cần làm	% đóng góp
+1	 Login; Manage Users; Manage User Roles	 Xây dựng Persistence nền tảng cho User và Role	Done	Phan Tuấn Thành	25/09/2026	1	 feature/9-identity-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/9		Trần Phan Nhật Huy	8	15,38%
+2	 Login; Logout	 Xây dựng Skeleton cho Authentication và Frontend Session	Done	Trần Phan Nhật Huy	26/09/2026	1	 feature/10-auth-session-skeleton	https://github.com/TuanThanh-dev19/Nexora/issues/10		Lâm Thoại Thanh	8	15,38%
+3	 Shared Foundation and Integration	 Đồng bộ Canonical Domain Vocabulary trên toàn ứng dụng	Done	Phan Tuấn Thành	26/09/2026	1	 feature/11-canonical-domain-vocabulary	https://github.com/TuanThanh-dev19/Nexora/issues/11		Phan Tuấn Thành	15	28,85%
+4	 Manage Dynamic Form Drafts; View Form Versions	 Xây dựng Persistence nền tảng cho Dynamic Form	Done	Tô Phi Oanh	26/09/2026	1	 feature/12-dynamic-form-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 12 (tách usecase, không phải issue độc lập).		Tô Phi Oanh	12	23,08%
+5	 Review Ticket; Reject Ticket; Cancel Ticket; Assign Technician; Reassign Technician; Unassign Technician; Start Ticket Work; Resolve Ticket; Close Ticket; Reopen Ticket	 Định nghĩa Contract cho Ticket Workflow Transition	Done	Phan Tuấn Thành	29/09/2026	1	 feature/13-ticket-workflow-contract	https://github.com/TuanThanh-dev19/Nexora/issues/13		Trần Quốc Thái	9	17,31%
+6	 View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician	 Xây dựng Persistence nền tảng cho Technician Workforce	Done	Phan Tuấn Thành	29/09/2026	1	 feature/14-technician-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/14		Tổng cộng	52	100,00%
+7	 Manage Locations; Manage Equipment Types	 Xây dựng Persistence nền tảng cho Location và Equipment Type	Done	Lâm Thoại Thanh	29/09/2026	1	 feature/15-location-equipment-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/15				
+8	 Manage Assets; Change Asset Status	 Xây dựng Persistence nền tảng cho Asset và Asset Status History	Done	Tô Phi Oanh	29/09/2026	1	 feature/16-asset-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 11 (tách usecase, không phải issue độc lập).				
+9	 Shared Foundation and Integration	 Chuẩn hóa Shared API Error, Pagination và Concurrency Contracts	Done	Trần Quốc Thái	30/09/2026	1	 feature/17-shared-api-contracts	https://github.com/TuanThanh-dev19/Nexora/issues/17				
+10	 Shared Foundation and Integration	 Thiết lập Shared Test Fixtures và Demo Bootstrap Strategy	Done	Trần Quốc Thái	30/09/2026	1	 feature/18-test-fixtures-bootstrap	https://github.com/TuanThanh-dev19/Nexora/issues/18				
+11	 View Asset Status History	 Implement Asset and Asset Status History Persistence Foundation	Done	Tô Phi Oanh	15/09/2026	1	 feature/16-asset-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 8 (tách usecase, không phải issue độc lập).				
+12	 Archive Form Version; Submit Ticket	" Implement Dynamic Form Persistence Foundation
+"	Done	Tô Phi Oanh	15/09/2026	1	 feature/12-dynamic-form-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 4 (tách usecase, không phải issue độc lập).				
+13	 Login	 Xây dựng API đăng nhập và phát hành JWT	Done	Trần Phan Nhật Huy	05/10/2026	2	 feature/19-auth-login-jwt	https://github.com/TuanThanh-dev19/Nexora/issues/27				
+14	 Login; Logout	 Xây dựng API Current User và kết nối phiên đăng nhập Frontend	Done	Trần Phan Nhật Huy	07/10/2026	2	 feature/20-current-user-session	https://github.com/TuanThanh-dev19/Nexora/issues/28				
+15	 Manage Users	 Xây dựng chức năng quản lý User, Role và Technician	Done	Trần Phan Nhật Huy	09/10/2026	2	 feature/21-user-technician-management	https://github.com/TuanThanh-dev19/Nexora/issues/29				
+16	 Submit Ticket; Manage Dynamic Form Drafts	 Xây dựng API đọc Category, Published Form và SLA	Done	Lâm Thoại Thanh	05/10/2026	2	 feature/22-24-category-form-api-admin-ui	https://github.com/TuanThanh-dev19/Nexora/issues/30				
+17	 Manage Incident Categories	 Xây dựng API quản trị Category và Dynamic Form	Done	Lâm Thoại Thanh	07/10/2026	2	 feature/22-24-category-form-api-admin-ui	https://github.com/TuanThanh-dev19/Nexora/issues/31				
+18	 View Form Versions	 Xây dựng giao diện quản trị Category và Dynamic Form	Done	Lâm Thoại Thanh	07/10/2026	2	 feature/22-24-category-form-api-admin-ui	https://github.com/TuanThanh-dev19/Nexora/issues/32				
+19	 Search and Filter Tickets; View Ticket Details	 Xây dựng Persistence nền tảng cho Ticket	Done	Phan Tuấn Thành	05/10/2026	2	 feature/25-ticket-core-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/33				
+20	 View Ticket Details; View and Download Ticket Attachments	 Persistence dữ liệu động, lịch sử và Attachment của Ticket	Done	Phan Tuấn Thành	07/10/2026	2	 feature/26-ticket-supporting-persistence	https://github.com/TuanThanh-dev19/Nexora/issues/34				
+21	 Search and Filter Tickets; View Ticket Details	 Xây dựng API đọc danh sách và chi tiết Ticket	Done	Phan Tuấn Thành	09/10/2026	2	 feature/27-ticket-read-api	https://github.com/TuanThanh-dev19/Nexora/issues/35				
+22	 Manage Locations; Manage Equipment Types	 Xây dựng CRUD Location và Equipment Type	Done	Tô Phi Oanh	05/10/2026	2	 feature/28-location-equipment-crud	https://github.com/TuanThanh-dev19/Nexora/issues/36				
+23	 Manage Assets; Change Asset Status	 Xây dựng CRUD Asset và lịch sử trạng thái	Done	Tô Phi Oanh	07/10/2026	2	 feature/29-asset-crud-status-history	https://github.com/TuanThanh-dev19/Nexora/issues/37				
+24	 Submit Ticket	 Xây dựng API lấy Asset hợp lệ theo Location	Done	Tô Phi Oanh	09/10/2026	2	 feature/30-eligible-assets-by-location	https://github.com/TuanThanh-dev19/Nexora/issues/38				
+25	 Submit Ticket	 Tạo SQL Server Sequence cho Ticket Number	Done	Trần Quốc Thái	05/10/2026	2	 feature/31-ticket-number-sequence	https://github.com/TuanThanh-dev19/Nexora/issues/39				
+26	 Submit Ticket; Upload Work Result Images; View and Download Ticket Attachments	 Xây dựng nền tảng lưu trữ File đính kèm	Done	Trần Quốc Thái	07/10/2026	2	 feature/32-local-file-storage	https://github.com/TuanThanh-dev19/Nexora/issues/40				
+27	 View Ticket Dashboard	 Xây dựng Contract và giao diện khung Dashboard	Done	Trần Quốc Thái	09/10/2026	2	 feature/33-dashboard-contract-shell	https://github.com/TuanThanh-dev19/Nexora/issues/41				
+28	 Login; Logout; Manage Users; Manage User Roles	 Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role	Done	Trần Phan Nhật Huy	15/10/2026	3	 feature/42-auth-admin-user-ui	https://github.com/TuanThanh-dev19/Nexora/issues/51				
+29	 View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician	 Xây dựng UI quản lý Technician, Skill và Service Area	Done	Trần Phan Nhật Huy	15/10/2026	3	 feature/43-technician-configuration-ui	https://github.com/TuanThanh-dev19/Nexora/issues/52				
+30	 Manage Dynamic Form Drafts	 Hoàn thiện UI Category và Dynamic Form	Done	Lâm Thoại Thanh	15/10/2026	3	 feature/44-category-form-ui-completion	https://github.com/TuanThanh-dev19/Nexora/issues/53				
+31	 Manage Locations; Manage Equipment Types	 Xây dựng UI quản trị Location và Equipment Type	Done	Tô Phi Oanh	15/10/2026	3	 feature/45-location-equipment-ui	https://github.com/TuanThanh-dev19/Nexora/issues/54				
+32	 View Asset Status History	 Xây dựng UI quản trị Asset và lịch sử trạng thái	Done	Tô Phi Oanh	15/10/2026	3	 feature/46-asset-management-ui	https://github.com/TuanThanh-dev19/Nexora/issues/55				
+33	 Submit Ticket	 Xây dựng Location Selector và Eligible Asset Selector	Done	Tô Phi Oanh	15/10/2026	3	 feature/47-location-eligible-asset-selectors	https://github.com/TuanThanh-dev19/Nexora/issues/56				
+34	 Submit Ticket	 Xây dựng UI Create Ticket theo published dynamic form	Done	Lâm Thoại Thanh	15/10/2026	3	 feature/50-create-ticket-ui	https://github.com/TuanThanh-dev19/Nexora/issues/57				
+35	 Review Ticket	 Hoàn thiện UI Manager review và assignment	Done	Phan Tuấn Thành	15/10/2026	3	 feature/52-manager-ticket-workflow-ui	https://github.com/TuanThanh-dev19/Nexora/issues/58				
+36	 View Assigned Work; Start Ticket Work; Record Work Log; Upload Work Result Images; Resolve Ticket	 Xây dựng My Assigned Work và UI Technician xử lý Ticket	Done	Phan Tuấn Thành	15/10/2026	3	 feature/53-technician-assigned-work-ui	https://github.com/TuanThanh-dev19/Nexora/issues/59				
+37	 View Ticket Details	 Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI	Done	Phan Tuấn Thành	18/10/2026	3	 feature/54-ticket-detail-collaboration-ui	https://github.com/TuanThanh-dev19/Nexora/issues/60				
+38	 View Ticket Dashboard	 Hoàn thiện Dashboard shell theo role	Done	Trần Quốc Thái	18/10/2026	3	 feature/55-dashboard-shell-ui	https://github.com/TuanThanh-dev19/Nexora/issues/61				
+39	 Shared Foundation and Integration	 Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP	Done	Trần Quốc Thái	18/10/2026	3	 feature/56-ui-navigation-quality	https://github.com/TuanThanh-dev19/Nexora/issues/62				
+40	 Submit Ticket	 Xây dựng validation dữ liệu động và ảnh khi tạo Ticket	Done	Lâm Thoại Thanh	16/10/2026	4	 feature/ticket-submission-validation	https://github.com/TuanThanh-dev19/Nexora/issues/80				
+41	 Submit Ticket	 Xây dựng API tạo Ticket và kết nối giao diện tạo phiếu	Done	Lâm Thoại Thanh	18/10/2026	4	 feature/create-ticket-api	https://github.com/TuanThanh-dev19/Nexora/issues/78				
+42	 View and Download Ticket Attachments	 Xây dựng API xem và tải ảnh Ticket có phân quyền	Done	Trần Quốc Thái	18/10/2026	4	 feature/ticket-attachment-content	https://github.com/TuanThanh-dev19/Nexora/issues/76				
+43	 View Technician Profiles	 Xây dựng API danh sách Technician phục vụ Manager/Admin	Done	Trần Phan Nhật Huy	18/10/2026	4	 feature/technician-list-api	https://github.com/TuanThanh-dev19/Nexora/issues/74				
+44	 Assign Technician	 Xây dựng API kiểm tra Technician phù hợp để phân công Ticket	Done	Trần Phan Nhật Huy	16/10/2026	4	 feature/ticket-technician-eligibility	https://github.com/TuanThanh-dev19/Nexora/issues/73 — Không có override trong scope demo.				
+45	 Review Ticket; Assign Technician	 Xây dựng API tiếp nhận, phân công và đọc phân công hiện tại của Ticket	Done	Phan Tuấn Thành	18/10/2026	4	 feature/ticket-review-assignment	https://github.com/TuanThanh-dev19/Nexora/issues/79 — Review, assign và current assignment. Hoãn reject/cancel/reassign/unassign.				
+46	 View Assigned Work; Start Ticket Work	 Xây dựng API công việc hiện tại và bắt đầu xử lý Ticket	Done	Tô Phi Oanh	20/10/2026	4	 feature/technician-work-start	https://github.com/TuanThanh-dev19/Nexora/issues/75 — My Work và start; work log/resolve thuộc #81.				
+47	 Record Work Log; Resolve Ticket	 Xây dựng API nhật ký công việc và hoàn tất xử lý Ticket	Done	Tô Phi Oanh	22/10/2026	4	 feature/ticket-worklog-resolve	https://github.com/TuanThanh-dev19/Nexora/issues/81 — Work log và resolve; upload ảnh thuộc #88.				
+48	 Upload Work Result Images	 Xây dựng API upload ảnh kết quả xử lý Ticket và tích hợp giao diện kỹ thuật viên	Done	Phan Tuấn Thành	24/10/2026	4	 feature/ticket-work-result-upload	https://github.com/TuanThanh-dev19/Nexora/issues/88 — Chưa có hạn kế hoạch trên GitHub, để trống ngày đến hạn. Ảnh kết quả là tùy chọn.				
+49	 Close Ticket	 Xây dựng API đóng Ticket và hoàn thiện phạm vi giao diện demo	Done	Phan Tuấn Thành	23/10/2026	4	 feature/ticket-close-demo-scope	https://github.com/TuanThanh-dev19/Nexora/issues/77 — Gộp phạm vi UI demo và nghiệm thu; hoãn reopen/force-close/comments/feedback.				
+50	 View Ticket Dashboard; Monitor Ticket SLA	 Xây dựng API Dashboard summary theo quyền người dùng	Done	Trần Quốc Thái	23/10/2026	4	 feature/dashboard-summary-api	https://github.com/TuanThanh-dev19/Nexora/issues/72 — Dashboard summary theo quyền; issue đã đóng, API đã hoàn tất.				
+51	 Testing	 Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI	In Progress	Phan Tuấn Thành	30/10/2026	4	 test/test-ticket-api-regression	Hoãn ngoài phạm vi Sprint 4. Chưa triển khai API comments trong demo; xem issue #77 và #88.				
+52	 Testing	 [E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật	To Do	Phan Tuấn Thành	30/10/2026	4	 test/test-ticket-ui-e2e	Hoãn ngoài phạm vi Sprint 4. Chưa triển khai API feedback trong demo; xem issue #77 và #88.				
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												

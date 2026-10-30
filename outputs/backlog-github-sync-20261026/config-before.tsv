@@ -1,0 +1,55 @@
+Chức năng	Phụ trách hiện tại	Hạn kế hoạch		Trạng thái		Thành viên		Thuộc tính	Kiểu dữ liệu	Cách cập nhật / nguồn
+ Search and Filter Tickets	 Phan Tuấn Thành	09/10/2026		 To Do		 Tô Phi Oanh		 STT	 Number — số nguyên	 Số liên tục từ 1; khi thêm việc mới, nhập số tiếp theo.
+ View Ticket Details	 Phan Tuấn Thành	15/10/2026		 In Progress		 Trần Quốc Thái		 Chức năng liên quan	 Select — List	 Tên usecase chuẩn tại Config!A2:A44. Mỗi tên một dòng; backlog nhiều usecase phân tách bằng '; '.
+ Login	 Trần Phan Nhật Huy	15/10/2026		 Done		 Lâm Thoại Thanh		 Việc cần làm	 Title — Text	 Tên issue gốc hoặc mô tả đúng scope của issue. Không xem usecase là một issue độc lập.
+ Logout	 Trần Phan Nhật Huy	15/10/2026		 Blocked		 Phan Tuấn Thành		 Trạng thái	 Status — List	 Done khi issue GitHub closed/completed. To Do, In Progress, Blocked theo tiến độ đã xác nhận. Việc hoãn ghi rõ trong Ghi chú.
+ Manage Users	 Trần Phan Nhật Huy	15/10/2026				 Trần Phan Nhật Huy		 Chủ sở hữu	 Person — List	 Dùng GitHub assignee và ánh xạ Member 1–5 do nhóm cung cấp; không thay assignee bằng tác giả commit/PR.
+ Manage User Roles	 Trần Phan Nhật Huy	15/10/2026						 Ngày đến hạn	 Date	 Hạn kế hoạch trong nội dung issue, không phải ngày đóng/merge. Thiếu hạn thì để trống. Hiển thị DD/MM/YYYY.
+ Manage Locations	 Tô Phi Oanh	15/10/2026						 Ghi chú	 Text	 URL issue GitHub, scope hoãn và quan hệ giữa các dòng cùng issue. Đối chiếu ngày 26/10/2026.
+ Manage Equipment Types	 Tô Phi Oanh	15/10/2026						 Số đợt phát triển	 Number — nguyên dương	 Sprint theo phạm vi nhóm đã chốt. Công việc hoãn để trống Sprint, không tính vào Sprint 4.
+ Manage Assets	 Tô Phi Oanh	15/10/2026						 Tên nhánh	 Text	 Dùng tên branch thực tế đã kiểm tra trên GitHub/Git hoặc head branch của PR. Không giữ placeholder <issue-number>.
+ Change Asset Status	 Tô Phi Oanh	15/10/2026						 Cập nhật dropdown	 Named Range	 Nguồn danh mục: usecase ở cột A, trạng thái E2:E5, thành viên G2:G6. Giữ tên chuẩn và không chèn dòng trống giữa danh sách.
+ View Asset Status History	 Tô Phi Oanh	15/10/2026						 Thêm công việc	 Google Sheets Table	 Thêm công việc trong ProductBacklogTable, giữ dropdown và định dạng. Mỗi dòng phải có issue tham chiếu hoặc ghi rõ phần việc được tách.
+ Manage Incident Categories	 Lâm Thoại Thanh	15/10/2026						 Đối chiếu nguồn	 Import Audit	 Backlog cột I lưu nguồn GitHub. ConfigUsecase B/C theo issue triển khai chính hiện tại; không dùng để ghi đè các issue nền tảng. Usecase hoãn để trống B/C.
+ View Form Versions	 Lâm Thoại Thanh	15/10/2026								
+ Manage Dynamic Form Drafts	 Lâm Thoại Thanh	15/10/2026								
+ Preview Dynamic Forms	 Lâm Thoại Thanh	15/10/2026								
+ Publish Form Version	 Lâm Thoại Thanh	15/10/2026								
+ Archive Form Version	 Lâm Thoại Thanh	15/10/2026								
+ View Technician Profiles	 Trần Phan Nhật Huy	18/10/2026								
+ Configure Technician Availability and Capacity	 Trần Phan Nhật Huy	15/10/2026								
+ Configure Technician Skills	 Trần Phan Nhật Huy	15/10/2026								
+ Configure Technician Service Areas	 Trần Phan Nhật Huy	15/10/2026								
+ Submit Ticket	 Lâm Thoại Thanh	18/10/2026								
+ View and Download Ticket Attachments	 Trần Quốc Thái	18/10/2026								
+ Review Ticket	 Phan Tuấn Thành	18/10/2026								
+ Monitor Ticket SLA	 Trần Quốc Thái	23/10/2026								
+ Assign Technician	 Phan Tuấn Thành	18/10/2026								
+ View Assigned Work	 Tô Phi Oanh	20/10/2026								
+ Start Ticket Work	 Tô Phi Oanh	20/10/2026								
+ Record Work Log	 Tô Phi Oanh	22/10/2026								
+ Upload Work Result Images	 Phan Tuấn Thành	25/10/2026								
+ Resolve Ticket	 Tô Phi Oanh	22/10/2026								
+ Close Ticket	 Phan Tuấn Thành	23/10/2026								
+ View Ticket Dashboard	 Trần Quốc Thái	23/10/2026								
+ Shared Foundation and Integration	 Trần Quốc Thái	15/10/2026								
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										
+										

@@ -1,0 +1,1765 @@
+{
+  "issueIds": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    16,
+    12,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62
+  ],
+  "owners": {
+    "Huytran2903": "Trần Phan Nhật Huy",
+    "thoaithanh-web": "Lâm Thoại Thanh",
+    "TuanThanh-dev19": "Phan Tuấn Thành",
+    "OanhPhiTo": "Tô Phi Oanh",
+    "tranthaigin": "Trần Quốc Thái"
+  },
+  "issues": {
+    "9": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/9",
+      "title": "[NEX-003] [BACKEND] Implement User and Role Persistence Foundation",
+      "issue_number": 9,
+      "body": "# [TASK] Implement User and Role Persistence Foundation\n\nID: #9\n\n## Objective\n\nImplement the JPA persistence foundation for users, roles, and user-role assignments using the existing SQL Server schema.\n\nThis foundation will support authentication, authorization, user administration, and technician configuration in later milestones.\n\n## Requirements\n\n- Create JPA entities and supporting value types for `app_users`, `roles`, and `user_roles` without changing the existing database contract.\n- Map user status values exactly as:\n  - `ACTIVE`\n  - `LOCKED`\n  - `DISABLED`\n- Map role codes exactly as:\n  - `REQUESTER`\n  - `TECHNICIAN`\n  - `MANAGER`\n  - `ADMIN`\n- Support multiple roles per user and preserve the assignment metadata defined by the schema, including:\n  - `assigned_at`\n  - nullable `assigned_by`\n- Map the user `version` column using optimistic locking.\n- Treat `normalized_email` as a database-generated, read-only value and do not attempt to write it from application code.\n- Create repositories for:\n  - User lookup by ID.\n  - User lookup by normalized email.\n  - Role lookup by code.\n  - Loading a user together with their assigned roles.\n- Add persistence tests for:\n  - Saving and retrieving users.\n  - Resolving roles.\n  - Handling multiple roles.\n  - Rejecting duplicate normalized email values where the test database supports the constraint.\n- Keep entities internal to the persistence/domain layer.\n- Do not add REST controllers.\n- Do not expose JPA entities as API responses.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- The backend can persist and retrieve users and their roles through repositories.\n- Entity mappings are compatible with the existing Flyway schema.\n- Optimistic locking is available for future user-management operations.\n- Authentication work can use a stable user and role model.\n- No existing migration or document-database feature is affected.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] All three relational structures are mapped and repository operations work in automated tests.\n- [ ] Role and status values match the canonical project vocabulary.\n- [ ] A user can be loaded with all assigned roles without exposing password hashes outside the domain/persistence boundary.\n- [ ] The `version` field is configured for optimistic locking.\n- [ ] No existing Flyway migration has been modified.\n- [ ] `./mvnw verify` succeeds.\n- [ ] No secret, password, or real credential is committed.\n- [ ] The code has been pushed.\n- [ ] A Pull Request has been created and reviewed before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-identity-persistence\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-03 — Align Canonical Domain Vocabulary\n\nReplace the planning ID above with the actual GitHub issue number after issue creation.\n\n## Technical Notes\n\n- Follow the existing package-by-feature structure under `com.nexora.user` and `com.nexora.auth` as appropriate.\n- Prefer explicit entity relationships and avoid large bidirectional object graphs.\n- Use `OffsetDateTime` or another type that correctly preserves SQL Server `DATETIMEOFFSET` values.\n- Do not modify migrations V1–V8.\n- Any unavoidable schema change requires:\n  - A new migration.\n  - Prior team agreement.\n- Do not log or serialize `password_hash`.\n- Do not add user-management endpoints in this issue.\n\n## Definition of Done\n\n- [ ] Code is complete and follows the current project structure.\n- [ ] Repository and mapping tests pass.\n- [ ] The backend build has no errors.\n- [ ] Relevant persistence documentation is updated if the implementation introduces a new convention.\n- [ ] A Pull Request has been created and reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #9\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        }
+      ],
+      "milestone": 1,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:17:52Z",
+      "updated_at": "2026-10-17T14:25:10Z",
+      "closed_at": "2026-10-01T13:57:25Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/9",
+      "display_title": "[NEX-003] [BACKEND] Implement User and Role Persistence Foundation"
+    },
+    "10": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/10",
+      "title": "[NEX-004] [FRONTEND Build Authentication and Frontend Session Skeleton",
+      "issue_number": 10,
+      "body": "# [BACKEND] Build Authentication and Frontend Session Skeleton\n\nID: #10\n\n## Objective\n\nCreate the backend and frontend authentication scaffolding required for the approved bearer-token flow.\n\nThis issue should replace the unsafe demo-role assumptions with a stable technical foundation while leaving full credential authentication and current-user business behavior for the next milestone.\n\n## Requirements\n\n- Provide a BCrypt `PasswordEncoder` bean for future credential verification.\n- Add the HS256 JWT encoding/signing foundation that complements the existing JWT decoder.\n- Define the token claims contract:\n  - `sub` contains the user ID.\n  - The `roles` claim contains canonical role codes.\n- Define request/response DTO contracts for:\n  - Login.\n  - Current-user data.\n- Do not expose password hashes or JPA entities through authentication DTOs.\n- Add a JWT-to-Spring-authority converter so canonical role codes are mapped consistently to application authorities.\n- Refactor the frontend authentication state to store:\n  - Access token.\n  - Current-user data.\n- Store authentication state in `sessionStorage` using production-oriented keys instead of `nexora.demo-user`.\n- Update the shared Axios client to:\n  - Send `Authorization: Bearer <token>`.\n  - Set `withCredentials` to `false`.\n- Preserve the existing behavior that clears the local session after an HTTP `401` response.\n- Remove any ability for users to grant themselves a role from the login UI.\n- If a temporary development-only authentication path is retained:\n  - It must be isolated behind an explicit local-only mechanism.\n  - It must not accept an arbitrary role selected or provided by the user.\n- Add backend tests for:\n  - Token claims.\n  - Authority conversion.\n- Add frontend tests for:\n  - Token restoration.\n  - Logout.\n  - Bearer-header injection.\n  - HTTP `401` handling.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Backend security has reusable password and JWT building blocks.\n- Frontend authentication state follows the approved bearer-token storage strategy.\n- Protected routes and role checks consume server-provided user roles instead of a user-selected demo role.\n- Full login and `/me` integration can be implemented in the next milestone without redesigning authentication state.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] BCrypt password encoding is configured and tested.\n- [ ] The JWT skeleton can create or validate the agreed claim shape in automated tests.\n- [ ] Canonical roles are mapped consistently to Spring Security authorities.\n- [ ] The frontend restores token/session state correctly.\n- [ ] The frontend clears token/session state correctly during logout.\n- [ ] Authenticated frontend requests include the bearer token.\n- [ ] Authenticated frontend requests do not enable cookie credentials.\n- [ ] An HTTP `401` response clears the local authentication session.\n- [ ] After an HTTP `401`, the user is redirected or safely left in an unauthenticated state.\n- [ ] The normal UI does not allow users to select their own authorization role.\n- [ ] Backend verification succeeds.\n- [ ] Frontend lint succeeds.\n- [ ] Frontend tests succeed.\n- [ ] Frontend production build succeeds.\n- [ ] The Pull Request is reviewed by someone other than its author.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-auth-session-skeleton\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-01 — Implement User and Role Persistence Foundation.\n- M1-03 — Align Canonical Domain Vocabulary.\n- M1-09 — Standardize Shared API Contracts.\n\n> Replace the planning IDs above with the actual GitHub issue numbers after issue creation.\n\n## Technical Notes\n\n- The approved access-token lifetime is **8 hours**.\n- The MVP does not use refresh tokens.\n- Use HS256 for JWT signing.\n- Require a JWT secret of at least **32 bytes**, consistent with the existing security configuration.\n- Never commit:\n  - JWT secrets.\n  - Real bootstrap credentials.\n  - Production credentials.\n- Update `.env.example` only when a new environment variable is introduced.\n- Do not implement the following in this issue:\n  - User administration.\n  - Refresh-token support.\n  - OAuth login.\n  - Production deployment secrets.\n- Do not weaken backend authorization to keep the old demo login working.\n\n## Definition of Done\n\n- [ ] Backend authentication scaffolding is complete.\n- [ ] Frontend session scaffolding is complete.\n- [ ] Security tests pass.\n- [ ] Frontend session tests pass.\n- [ ] Backend build has no errors.\n- [ ] Frontend build has no errors.\n- [ ] Configuration documentation is updated where needed.\n- [ ] Authentication documentation is updated where needed.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #10\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": [
+        {
+          "name": "frontend",
+          "color": "61DAFB",
+          "description": "Tasks related to the user interface and frontend application."
+        },
+        {
+          "name": "priority: medium",
+          "color": "FBCA04",
+          "description": "Important task with normal development priority."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:20:34Z",
+      "updated_at": "2026-10-17T14:25:18Z",
+      "closed_at": "2026-10-01T14:08:49Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/10",
+      "display_title": "[NEX-004] [FRONTEND Build Authentication and Frontend Session Skeleton"
+    },
+    "11": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/11",
+      "title": "[NEX-005] [BACKEND] Align Canonical Domain Vocabulary Across the Application",
+      "issue_number": 11,
+      "body": "#[BACKEND] Align Canonical Domain Vocabulary Across the Application\n\nID: #11\n\n## Objective\n\nRemove vocabulary mismatches between the SQL Server schema, backend domain model, frontend constants, and validation schemas.\n\nThis issue establishes one canonical set of values before multiple modules begin parallel development.\n\n## Requirements\n\n- Replace the frontend role code `USER` with `REQUESTER` everywhere, including:\n  - Authentication validation.\n  - Route checks.\n  - Demo/default data.\n  - Tests.\n  - Visible role options.\n- Define the canonical roles as:\n  - `REQUESTER`\n  - `TECHNICIAN`\n  - `MANAGER`\n  - `ADMIN`\n- Add the missing ticket status `REOPENED`.\n- Ensure all ticket statuses exactly match the database:\n  - `SUBMITTED`\n  - `UNDER_REVIEW`\n  - `ASSIGNED`\n  - `IN_PROGRESS`\n  - `RESOLVED`\n  - `REOPENED`\n  - `CLOSED`\n  - `REJECTED`\n  - `CANCELLED`\n- Add the missing dynamic field types:\n  - `MULTI_SELECT`\n  - `DATETIME`\n  - `BOOLEAN`\n- Ensure the frontend supports all field types defined by the database schema.\n- Confirm that the following value sets use the same spelling across the database, backend, and frontend:\n  - Asset statuses.\n  - Priorities.\n  - Form statuses.\n  - Location types.\n  - User statuses.\n- Create or update centralized backend enums/value types instead of duplicating string literals.\n- Create or update centralized frontend constants instead of duplicating string literals in feature components.\n- Update affected:\n  - UI labels.\n  - Filters.\n  - Badges.\n  - Validation schemas.\n  - Tests.\n- Add lightweight contract tests that fail when:\n  - A required canonical value is missing.\n  - An obsolete value such as `USER` is reintroduced.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Shared domain values are consistent across all application layers.\n- New persistence and API work can depend on stable enum names.\n- Existing frontend components safely display all supported statuses and dynamic field types.\n- No database migration is required for vocabulary alignment.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] No application source file uses `USER` as an authorization role.\n- [ ] `REQUESTER` is used as the canonical requester role across the application.\n- [ ] `REOPENED` is supported by ticket constants.\n- [ ] `REOPENED` is supported by relevant presentation components.\n- [ ] All canonical ticket statuses exactly match the database values.\n- [ ] All nine dynamic field types supported by SQL Server are represented in shared constants.\n- [ ] Backend enums use the exact database values.\n- [ ] Frontend constants use the exact database values.\n- [ ] Asset statuses are consistent across database, backend, and frontend.\n- [ ] Priority values are consistent across database, backend, and frontend.\n- [ ] Form statuses are consistent across database, backend, and frontend.\n- [ ] Location types are consistent across database, backend, and frontend.\n- [ ] User statuses are consistent across database, backend, and frontend.\n- [ ] Tests cover the canonical role set.\n- [ ] Tests cover the canonical ticket status set.\n- [ ] Tests cover the canonical dynamic field type set.\n- [ ] Existing frontend pages render without runtime errors.\n- [ ] Backend verification succeeds.\n- [ ] Frontend lint succeeds.\n- [ ] Frontend tests succeed.\n- [ ] Frontend production build succeeds.\n- [ ] The Pull Request is reviewed before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-canonical-domain-vocabulary\n```\n\n## Dependencies\n\nNone.\n\n## Technical Notes\n\n- Treat the existing SQL Server constraints and approved decision record as the source of truth.\n- Do not rename existing database values.\n- Do not edit existing Flyway migrations.\n- Keep display labels separate from stored/API codes so future localization does not alter application contracts.\n- Do not implement ticket transition behavior in this issue.\n- Do not implement dynamic-form validation logic in this issue.\n- Coordinate and merge this change early because several other M1 issues depend on the canonical constants.\n\n## Definition of Done\n\n- [ ] Canonical backend enums/value types are implemented.\n- [ ] Canonical frontend constants are implemented.\n- [ ] Obsolete role code `USER` has been removed from application source code.\n- [ ] Affected UI components are updated.\n- [ ] Affected validation schemas are updated.\n- [ ] Contract tests are implemented and pass.\n- [ ] Backend build has no errors.\n- [ ] Frontend build has no errors.\n- [ ] Contract documentation is updated if necessary.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #11\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:26:26Z",
+      "updated_at": "2026-10-17T14:25:25Z",
+      "closed_at": "2026-10-01T13:57:16Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/11",
+      "display_title": "[NEX-005] [BACKEND] Align Canonical Domain Vocabulary Across the Application"
+    },
+    "12": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/12",
+      "title": "[NEX-006] [BACKEND] Implement Dynamic Form Persistence Foundation",
+      "issue_number": 12,
+      "body": "#[BACKEND] Implement Dynamic Form Persistence Foundation\n\nID: #12\n\n## Objective\n\nImplement the relational persistence foundation for incident categories and versioned dynamic forms.\n\nThis foundation will support published-form retrieval, ticket submission, and form administration in later milestones without implementing those business workflows yet.\n\n## Requirements\n\n- Create JPA entities and repositories for:\n  - `incident_categories`\n  - `category_form_versions`\n  - `field_definitions`\n  - `field_options`\n  - `sla_policies`\n- Map category properties, including:\n  - Asset policy.\n  - Default priority.\n  - Active state.\n  - Location requirement.\n  - Creator.\n  - Timestamps.\n- Map form properties, including:\n  - Form status.\n  - Version number.\n  - Publishing metadata.\n  - Equipment requirement.\n  - Minimum attachment count.\n  - Default skill reference.\n  - Default SLA policy reference.\n- Map all canonical field types.\n- Preserve `validation_rules` as valid JSON without silently modifying its content.\n- Map field and option ordering.\n- Enforce the existing uniqueness boundaries in the domain/persistence model.\n- Provide repository queries for:\n  - Active categories.\n  - Resolving the single current `PUBLISHED` form for a category.\n- Ensure fields and options are retrieved in deterministic order using their `display_order` values.\n- Add persistence tests covering:\n  - Category/form relationships.\n  - Ordered fields and options.\n  - Active filtering.\n  - Published-form lookup.\n- Keep cross-module references such as creator and default skill narrowly mapped.\n- Avoid large bidirectional object graphs.\n- Do not place business validation inside entity callbacks.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Category and form data can be retrieved through stable repositories.\n- A published form can be loaded with its fields and options in deterministic order.\n- SLA and cross-module reference IDs are preserved for future ticket and assignment logic.\n- Later form-management and ticket-creation issues can build on tested persistence mappings.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] All required tables are mapped without modifying existing migrations.\n- [ ] `incident_categories` is mapped correctly.\n- [ ] `category_form_versions` is mapped correctly.\n- [ ] `field_definitions` is mapped correctly.\n- [ ] `field_options` is mapped correctly.\n- [ ] `sla_policies` is mapped correctly.\n- [ ] Active categories can be queried through repositories.\n- [ ] A category's current `PUBLISHED` form can be queried through repositories.\n- [ ] Fields are returned in deterministic `display_order`.\n- [ ] Options are returned in deterministic `display_order`.\n- [ ] `validation_rules` remains valid JSON.\n- [ ] `validation_rules` is not exposed as an unvalidated API contract.\n- [ ] Repository tests cover a category with a published form.\n- [ ] Repository tests cover multiple fields.\n- [ ] Repository tests cover select options.\n- [ ] Repository tests cover active filtering.\n- [ ] Repository tests cover published-form lookup.\n- [ ] No form editor is added as part of this issue.\n- [ ] No form publishing service is added as part of this issue.\n- [ ] No ticket-creation endpoint is added as part of this issue.\n- [ ] `./mvnw verify` succeeds.\n- [ ] The Pull Request receives schema review before merge.\n- [ ] The Pull Request receives integration review before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-dynamic-form-persistence\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-03 — Align Canonical Domain Vocabulary\n\n> Replace the planning ID above with the actual GitHub issue number after issue creation.\n\n## Technical Notes\n\n- Published and archived forms are immutable at the business layer.\n- This issue only establishes persistence mappings.\n- `default_sla_policy_id` is the authoritative SLA reference for new tickets in later milestones.\n- `default_skill_id` may be mapped as:\n  - A narrow association.\n  - A reference ID.\n- Coordinate the `default_skill_id` contract with M1-06.\n- Avoid creating duplicate `Skill` entities or repositories.\n- Do not implement the following in this issue:\n  - Form cloning.\n  - Form publishing.\n  - Form archiving.\n  - Ticket field values.\n  - Attachment validation.\n- Do not modify migrations V1–V8.\n\n## Definition of Done\n\n- [ ] All required entities are implemented.\n- [ ] All required repositories are implemented.\n- [ ] Persistence tests are complete.\n- [ ] Persistence tests pass.\n- [ ] Backend tests pass.\n- [ ] Backend build has no errors.\n- [ ] Persistence conventions are documented where needed.\n- [ ] No unrelated architecture change is included.\n- [ ] No unrelated dependency change is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #12\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        },
+        {
+          "name": "status: done",
+          "color": "0E8A16",
+          "description": "Task has been completed and verified."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:29:26Z",
+      "updated_at": "2026-10-17T14:25:33Z",
+      "closed_at": "2026-10-04T07:37:15Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/12",
+      "display_title": "[NEX-006] [BACKEND] Implement Dynamic Form Persistence Foundation"
+    },
+    "13": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "title": "[NEX-007] [BACKEND] Define Ticket Workflow Transition Contract",
+      "issue_number": 13,
+      "body": "#[BACKEND] Define Ticket Workflow Transition Contract\n\nID: #13\n\n## Objective\n\nRepresent the approved ticket lifecycle as an explicit and testable domain contract.\n\nThis foundation prevents later workflow endpoints from implementing inconsistent, unsupported, or unrestricted ticket status changes.\n\n## Requirements\n\n- Define canonical `TicketStatus` and `TicketAction` types in the ticket workflow package.\n- Represent every approved MVP transition:\n  - Submit.\n  - Begin review.\n  - Reject.\n  - Cancel before assignment.\n  - Assign.\n  - Start work.\n  - Unassign.\n  - Reassign.\n  - Cancel after assignment.\n  - Resolve.\n  - Close.\n  - Force close.\n  - Reopen.\n- For each action, define:\n  - Allowed source status.\n  - Target status.\n  - Permitted actor roles.\n  - Whether a non-blank reason is required.\n  - Any other mandatory input required by the transition.\n- Treat the following statuses as terminal states with no outgoing MVP transitions:\n  - `CLOSED`\n  - `REJECTED`\n  - `CANCELLED`\n- Prevent a generic `\"set any status\"` path from becoming part of the domain contract.\n- Add unit tests for:\n  - Every valid transition.\n  - Representative invalid status/action combinations.\n  - Required-reason metadata.\n  - Terminal-state rejection.\n- Keep the transition contract independent from:\n  - Controllers.\n  - Persistence.\n- Ensure later workflow services can reuse the contract without depending on Spring MVC.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- The complete MVP ticket lifecycle is represented in one testable location.\n- Workflow services and endpoint issues can depend on an approved transition model.\n- Invalid or unsupported state changes can be rejected consistently in later milestones.\n- The contract is ready for future integration with:\n  - Optimistic locking.\n  - Status history.\n  - Assignment changes.\n  - Timestamp updates.\n  - SLA recalculation.\n\nThese side effects are not implemented as part of this issue.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] Canonical `TicketStatus` is defined.\n- [ ] Canonical `TicketAction` is defined.\n- [ ] Every approved MVP action has an explicit transition definition.\n- [ ] Every transition defines its allowed source status.\n- [ ] Every transition defines its target status.\n- [ ] Every transition defines its permitted actor roles.\n- [ ] Required reason or mandatory-input metadata is defined where applicable.\n- [ ] Source and target states match the approved transition matrix.\n- [ ] Actor roles match the approved permission matrix.\n- [ ] `CLOSED` does not allow outgoing MVP actions.\n- [ ] `REJECTED` does not allow outgoing MVP actions.\n- [ ] `CANCELLED` does not allow outgoing MVP actions.\n- [ ] Unit tests cover all valid transitions.\n- [ ] Unit tests cover representative invalid transitions.\n- [ ] Unit tests cover required-reason metadata.\n- [ ] Unit tests cover terminal-state rejection.\n- [ ] No generic status-update endpoint is introduced.\n- [ ] No workflow controller is introduced.\n- [ ] Backend tests succeed.\n- [ ] Backend build succeeds.\n- [ ] Workflow contract documentation is updated when code naming differs from existing documentation.\n- [ ] The Pull Request is reviewed before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-ticket-workflow-contract\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-03 — Align Canonical Domain Vocabulary\n\n> Replace the planning ID above with the actual GitHub issue number after issue creation.\n\n## Technical Notes\n\n- Place workflow types under:\n\n```text\ncom.nexora.ticket.workflow\n```\n\n- The workflow contract should express policy only.\n- Do not mutate a ticket entity as part of this issue.\n- Side effects such as the following should be documented as expectations, not implemented prematurely:\n  - Assignment changes.\n  - Status-history creation.\n  - Timestamp updates.\n  - SLA recalculation.\n- `DUPLICATE` resolution behavior is outside the MVP, even though the database constraint retains the value.\n- Do not add Spring MVC dependencies to the workflow domain contract.\n- Keep the transition model reusable by later application/service-layer implementations.\n\n## Definition of Done\n\n- [ ] The complete transition contract is implemented.\n- [ ] All approved MVP transitions are represented.\n- [ ] Valid-transition tests pass.\n- [ ] Invalid-transition tests pass.\n- [ ] Required-reason tests pass.\n- [ ] Terminal-state tests pass.\n- [ ] Backend build has no errors.\n- [ ] Documentation is updated where required.\n- [ ] No unrelated controller or persistence implementation is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #13\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:32:37Z",
+      "updated_at": "2026-10-17T14:25:40Z",
+      "closed_at": "2026-10-01T13:57:09Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+      "display_title": "[NEX-007] [BACKEND] Define Ticket Workflow Transition Contract"
+    },
+    "14": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/14",
+      "title": "[NEX-008] [BACKEND] Implement Technician Workforce Persistence Foundation",
+      "issue_number": 14,
+      "body": "#[BACKEND] Implement Technician Workforce Persistence Foundation\n\nID: #14\n\n## Objective\n\nImplement the persistence model for technician profiles, skills, technician skill assignments, and service-area coverage.\n\nThis foundation will support manual assignment eligibility and technician capacity rules in later milestones.\n\n## Requirements\n\n- Create JPA entities and repositories for:\n  - `technician_profiles`\n  - `skills`\n  - `technician_skills`\n  - `technician_service_areas`\n- Map the technician profile as an extension of an existing user.\n- Use the referenced user ID as the technician profile's primary key.\n- Map technician profile properties, including:\n  - `available`\n  - `max_active_tickets`\n  - Timestamps.\n  - Optimistic-lock `version`.\n- Map technician skill proficiency from **1 through 5**.\n- Preserve technician-skill assignment timestamps.\n- Map technician service areas to existing locations.\n- Provide repository queries for:\n  - Loading a technician with assigned skills.\n  - Loading a technician with configured service areas.\n  - Finding active skills.\n  - Checking direct configured coverage for a location.\n- Add persistence tests for:\n  - Technician profile creation.\n  - Multiple skill assignments.\n  - Skill proficiency validation.\n  - Service-area assignments.\n  - Optimistic-lock version handling.\n- Coordinate the shared `Skill` model with the dynamic-form module.\n- Ensure there is only one authoritative `Skill` entity/repository definition.\n- Do not implement the following in this issue:\n  - Capacity calculation.\n  - Descendant-location traversal.\n  - Assignment selection.\n  - Override behavior.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Technician configuration data can be persisted and retrieved reliably.\n- Skills and service areas are available for later assignment-eligibility logic.\n- The workforce model reuses the existing identity and location foundations instead of duplicating them.\n- Future technician-administration and assignment issues have stable repository contracts.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] `technician_profiles` is mapped according to the existing SQL Server schema.\n- [ ] `skills` is mapped according to the existing SQL Server schema.\n- [ ] `technician_skills` is mapped according to the existing SQL Server schema.\n- [ ] `technician_service_areas` is mapped according to the existing SQL Server schema.\n- [ ] A technician profile references an existing user.\n- [ ] A technician profile cannot exist without its referenced user.\n- [ ] The user ID is used correctly as the technician profile's primary key.\n- [ ] `available` is mapped correctly.\n- [ ] `max_active_tickets` is mapped correctly.\n- [ ] Positive technician capacity constraints are represented and tested.\n- [ ] Skill proficiency values from `1` through `5` are represented and validated.\n- [ ] Technician-skill assignment timestamps are preserved.\n- [ ] Technician service areas reference existing locations.\n- [ ] A technician can be loaded with all assigned skills.\n- [ ] A technician can be loaded with all configured service areas.\n- [ ] Active skills can be queried through repositories.\n- [ ] Direct configured coverage for a location can be checked through repositories.\n- [ ] Optimistic locking is configured for technician-profile updates.\n- [ ] Persistence tests cover profile creation.\n- [ ] Persistence tests cover multiple skills.\n- [ ] Persistence tests cover proficiency validation.\n- [ ] Persistence tests cover service-area assignments.\n- [ ] Persistence tests cover version handling.\n- [ ] No assignment algorithm is introduced.\n- [ ] No technician-management API is introduced.\n- [ ] `./mvnw verify` succeeds.\n- [ ] The Pull Request receives identity review where applicable.\n- [ ] The Pull Request receives schema review where applicable.\n- [ ] The Pull Request receives integration review where applicable.\n\n## Suggested Branch\n\n```text id=\"gqt1cb\"\nfeature/<issue-number>-technician-persistence\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-01 — Implement User and Role Persistence Foundation.\n- M1-03 — Align Canonical Domain Vocabulary.\n- M1-07 — Implement Location and Equipment Type Persistence Foundation.\n\n> Replace the planning IDs above with the actual GitHub issue numbers after issue creation.\n\n## Technical Notes\n\n- A user must eventually have the `TECHNICIAN` role to be operationally eligible.\n- Role eligibility belongs to a later service issue and is not implemented here.\n- Service-area descendant traversal is a business-query/service concern and is out of scope for this issue.\n- Reuse the existing shared mappings for:\n  - `AppUser`\n  - `Location`\n  - `Skill`\n- Do not duplicate these mappings across feature packages.\n- Do not add automatic assignment behavior.\n- MVP assignment remains manual and will use eligibility validation in later milestones.\n- Do not modify migrations V1–V8.\n\n## Definition of Done\n\n- [ ] Technician workforce entities are complete.\n- [ ] Required repositories are complete.\n- [ ] Shared `Skill` model usage is aligned with the dynamic-form module.\n- [ ] Persistence tests are complete.\n- [ ] Persistence tests pass.\n- [ ] Backend build has no errors.\n- [ ] Shared-model decisions are documented where needed.\n- [ ] No duplicate `AppUser`, `Location`, or `Skill` mappings are introduced.\n- [ ] No unrelated assignment logic is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text id=\"k1pqvh\"\nCloses #14\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:34:45Z",
+      "updated_at": "2026-10-17T14:25:48Z",
+      "closed_at": "2026-10-01T13:54:00Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/14",
+      "display_title": "[NEX-008] [BACKEND] Implement Technician Workforce Persistence Foundation"
+    },
+    "15": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/15",
+      "title": "[NEX-009] [BACKEND] Implement Location and Equipment Type Persistence Foundation",
+      "issue_number": 15,
+      "body": "#[BACKEND] Implement Location and Equipment Type Persistence Foundation\n\nID: #15\n\n## Objective\n\nImplement the persistence foundation for the campus location hierarchy and equipment-type reference data.\n\nThese references are required by asset management, technician coverage, and future ticket-submission flows.\n\n## Requirements\n\n- Create JPA entities and repositories for:\n  - `locations`\n  - `equipment_types`\n- Use the existing SQL Server schema without changing the current database contract.\n- Map the canonical location types:\n  - `CAMPUS`\n  - `BUILDING`\n  - `FLOOR`\n  - `ROOM`\n  - `AREA`\n- Map the self-referencing parent/child relationship for locations.\n- Ensure the self-referencing hierarchy does not introduce unsafe recursive behavior in:\n  - Serialization.\n  - `toString`.\n  - Equality operations.\n- Map location properties, including:\n  - Active state.\n  - Code.\n  - Name.\n  - Description.\n  - Timestamps.\n- Map equipment-type properties, including:\n  - Active state.\n  - Code.\n  - Name.\n  - Description.\n  - Brand/model-related fields.\n  - Timestamps.\n- Provide repository queries for:\n  - Active root locations.\n  - Active direct child locations.\n  - Location lookup by unique code.\n  - Active equipment types.\n- Ensure repository queries use deterministic ordering suitable for future:\n  - Selector APIs.\n  - Tree APIs.\n- Add persistence tests covering:\n  - Multi-level location hierarchy.\n  - Location code lookup.\n  - Active filtering.\n  - Equipment-type persistence.\n- Do not expose JPA entities directly through REST responses.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- The backend can retrieve the campus location hierarchy through stable repositories.\n- Equipment types are available as stable reference data.\n- Asset-management features can reuse the same location model.\n- Technician service-area features can reuse the same location model.\n- Existing schema and Flyway migrations remain unchanged.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] `locations` is mapped according to the existing SQL Server schema.\n- [ ] `equipment_types` is mapped according to the existing SQL Server schema.\n- [ ] All canonical location types are represented:\n  - [ ] `CAMPUS`\n  - [ ] `BUILDING`\n  - [ ] `FLOOR`\n  - [ ] `ROOM`\n  - [ ] `AREA`\n- [ ] The parent/child location relationship is mapped correctly.\n- [ ] A hierarchy containing at least campus, building, floor, and room levels can be persisted in automated tests.\n- [ ] The same hierarchy can be queried successfully in automated tests.\n- [ ] Active root locations can be queried.\n- [ ] Active direct child locations can be queried.\n- [ ] Location lookup by unique code works correctly.\n- [ ] Active equipment types can be queried.\n- [ ] Repository queries return deterministic ordering.\n- [ ] The mapping does not cause recursive `toString` failures.\n- [ ] The mapping does not cause recursive equality failures.\n- [ ] The mapping does not cause recursive serialization failures.\n- [ ] Persistence tests cover location hierarchy behavior.\n- [ ] Persistence tests cover code lookup.\n- [ ] Persistence tests cover active filtering.\n- [ ] Persistence tests cover equipment-type persistence.\n- [ ] No CRUD controller is introduced.\n- [ ] No location-management UI is introduced.\n- [ ] JPA entities are not exposed directly as REST responses.\n- [ ] `./mvnw verify` succeeds.\n- [ ] The Pull Request receives schema review before merge.\n- [ ] The Pull Request receives integration review before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-location-equipment-persistence\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-03 — Align Canonical Domain Vocabulary\n\n> Replace the planning ID above with the actual GitHub issue number after issue creation.\n\n## Technical Notes\n\n- Follow the existing package boundaries under:\n  - `com.nexora.location`\n  - `com.nexora.asset`\n- Keep entity relationships focused on persistence concerns.\n- Future REST APIs must use DTOs instead of exposing entities directly.\n- Do not implement recursive descendant business queries unless they are required for a repository test.\n- Coordinate the shared `Location` entity contract with:\n  - M1-06 — Implement Technician Workforce Persistence Foundation.\n  - M1-08 — Implement Asset and Asset Status History Persistence Foundation.\n- Avoid introducing duplicate location mappings across modules.\n- Do not modify migrations V1–V8.\n- Any unavoidable schema correction should be handled through a new migration and reviewed separately.\n\n## Definition of Done\n\n- [ ] Location entity implementation is complete.\n- [ ] Equipment-type entity implementation is complete.\n- [ ] Required repositories are complete.\n- [ ] Repository queries use deterministic ordering.\n- [ ] Persistence tests are complete.\n- [ ] Persistence tests pass.\n- [ ] Backend build has no errors.\n- [ ] Shared location conventions are documented where needed.\n- [ ] No duplicate location model is introduced in dependent modules.\n- [ ] No unrelated schema change is included.\n- [ ] No unrelated architecture change is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #15\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: medium",
+          "color": "FBCA04",
+          "description": "Important task with normal development priority."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:37:08Z",
+      "updated_at": "2026-10-17T14:26:02Z",
+      "closed_at": "2026-10-01T13:53:41Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/15",
+      "display_title": "[NEX-009] [BACKEND] Implement Location and Equipment Type Persistence Foundation"
+    },
+    "16": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/16",
+      "title": "[NEX-010] [BACKEND] Implement Asset and Asset Status History Persistence Foundation",
+      "issue_number": 16,
+      "body": "#[BACKEND] Implement Asset and Asset Status History Persistence Foundation\n\nID: #16\n\n## Objective\n\nImplement the persistence model for campus assets and their status history.\n\nThis foundation will support asset administration, ticket asset selection, and audited status changes in later milestones.\n\n## Requirements\n\n- Create JPA entities and repositories for:\n  - `assets`\n  - `asset_status_history`\n- Use the existing SQL Server schema without changing the current database contract.\n- Map the canonical asset statuses:\n  - `ACTIVE`\n  - `UNDER_MAINTENANCE`\n  - `OUT_OF_SERVICE`\n  - `RETIRED`\n- Map asset properties, including:\n  - Asset code.\n  - Optional serial number.\n  - Equipment type.\n  - Location.\n  - Description.\n  - Purchase date.\n  - Warranty date.\n  - Timestamps.\n  - Optimistic-lock `version`.\n- Map asset status-history properties, including:\n  - Source status.\n  - Target status.\n  - Required reason.\n  - User who performed the change.\n  - Optional related ticket.\n  - Change timestamp.\n- Provide repository queries for:\n  - Asset lookup by asset code.\n  - Assets by location.\n  - Assets by status.\n  - Assets by location and status.\n  - Assets by equipment type.\n  - Asset status history ordered newest first.\n- Add persistence tests covering:\n  - Asset persistence.\n  - Unique business identifiers where supported.\n  - Location relationships.\n  - Equipment-type relationships.\n  - Optimistic locking.\n  - Ordered status-history retrieval.\n- Keep status-changing business logic out of entity setters.\n- Keep status-history creation out of entity setters.\n- Status transitions and history creation must be handled by a later transactional service issue.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Assets can be stored and queried through stable repositories.\n- Asset status history can be retrieved in deterministic chronological order.\n- The asset model is ready for future status-transition services.\n- The asset model is ready for future ticket-eligibility services.\n- Existing location and identity mappings are reused consistently.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] `assets` is mapped according to the current SQL Server schema.\n- [ ] `asset_status_history` is mapped according to the current SQL Server schema.\n- [ ] Fields introduced by migration V6 are mapped correctly.\n- [ ] All canonical asset statuses are represented:\n  - [ ] `ACTIVE`\n  - [ ] `UNDER_MAINTENANCE`\n  - [ ] `OUT_OF_SERVICE`\n  - [ ] `RETIRED`\n- [ ] Asset code is mapped correctly.\n- [ ] Optional serial number is mapped correctly.\n- [ ] Equipment-type relationship is mapped correctly.\n- [ ] Location relationship is mapped correctly.\n- [ ] Purchase date is mapped correctly.\n- [ ] Warranty date is mapped correctly.\n- [ ] Asset timestamps are mapped correctly.\n- [ ] Optimistic locking is configured for asset updates.\n- [ ] Status history preserves the source status.\n- [ ] Status history preserves the target status.\n- [ ] Status history preserves the reason.\n- [ ] Status history preserves the actor/user.\n- [ ] Status history preserves the optional related ticket reference.\n- [ ] Status history preserves the change timestamp.\n- [ ] Assets can be queried by location.\n- [ ] Assets can be queried by eligible status values.\n- [ ] Assets can be queried by equipment type.\n- [ ] Asset lookup by asset code works correctly.\n- [ ] Status history is returned newest first.\n- [ ] Automated tests cover asset relationships.\n- [ ] Automated tests cover optimistic locking.\n- [ ] Automated tests cover newest-first status-history retrieval.\n- [ ] No asset CRUD API is introduced.\n- [ ] No asset status-change endpoint is introduced.\n- [ ] No asset-management UI is introduced.\n- [ ] `./mvnw verify` succeeds.\n- [ ] The Pull Request receives schema review before merge.\n- [ ] The Pull Request receives integration review before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-asset-persistence\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-01 — Implement User and Role Persistence Foundation.\n- M1-03 — Align Canonical Domain Vocabulary.\n- M1-07 — Implement Location and Equipment Type Persistence Foundation.\n\n> Replace the planning IDs above with the actual GitHub issue numbers after issue creation.\n\n## Technical Notes\n\n- Reuse the existing shared entities for:\n  - `Location`\n  - `EquipmentType`\n  - User\n- Do not create package-local duplicates of these entities.\n- Only the following asset statuses are eligible for new tickets in later milestones:\n  - `ACTIVE`\n  - `UNDER_MAINTENANCE`\n- Ticket eligibility is a business rule and must not be implemented as part of this persistence issue.\n- Avoid cascade settings that could accidentally delete:\n  - Reference data.\n  - Asset status history.\n  - Related identity data.\n- Do not edit already-applied Flyway migrations.\n- Any required schema correction must:\n  - Use a new migration.\n  - Receive explicit review before merge.\n- Do not implement asset status changes through generic direct entity updates.\n- Future status transitions should be implemented through a dedicated transactional service.\n\n## Definition of Done\n\n- [ ] Asset entity implementation is complete.\n- [ ] Asset status-history entity implementation is complete.\n- [ ] Required repositories are complete.\n- [ ] Asset query methods are implemented.\n- [ ] Status-history query methods are implemented.\n- [ ] Persistence tests are complete.\n- [ ] Persistence tests pass.\n- [ ] Optimistic-lock tests pass.\n- [ ] History-query tests pass.\n- [ ] Backend build has no errors.\n- [ ] Existing `Location`, `EquipmentType`, and user mappings are reused.\n- [ ] No duplicate shared entities are introduced.\n- [ ] Documentation is updated if new persistence conventions are introduced.\n- [ ] No unrelated business logic is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #16\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: medium",
+          "color": "FBCA04",
+          "description": "Important task with normal development priority."
+        },
+        {
+          "name": "status: done",
+          "color": "0E8A16",
+          "description": "Task has been completed and verified."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:39:33Z",
+      "updated_at": "2026-10-17T14:26:09Z",
+      "closed_at": "2026-10-04T07:37:16Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/16",
+      "display_title": "[NEX-010] [BACKEND] Implement Asset and Asset Status History Persistence Foundation"
+    },
+    "17": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/17",
+      "title": "[NEX-011] [BACKEND] Standardize Shared API Error, Pagination, and Concurrency Contracts",
+      "issue_number": 17,
+      "body": "#[BACKEND] Standardize Shared API Error, Pagination, and Concurrency Contracts\n\nID: #17\n\n## Objective\n\nCreate reusable API contracts for errors, pagination, sorting validation, and optimistic-concurrency failures.\n\nThese shared conventions must be stable before business endpoints are implemented by multiple module owners.\n\n## Requirements\n\n- Keep `/api/v1` as the base path for business APIs.\n- Standardize API error responses using:\n  - RFC 9457.\n  - Spring `ProblemDetail`.\n- Error responses should provide:\n  - Stable problem types.\n  - Readable titles.\n  - Readable details.\n  - Field-level validation errors where applicable.\n- Add consistent handling for:\n  - Malformed requests.\n  - Missing resources.\n  - Business-rule violations.\n  - Access denied.\n  - Unauthenticated requests.\n  - Optimistic-lock conflicts.\n- Define a reusable zero-based pagination response containing:\n  - `content`\n  - `page`\n  - `size`\n  - `totalElements`\n  - `totalPages`\n- Define pagination limits:\n  - Default page size: `20`\n  - Maximum page size: `100`\n- Provide a reusable approach for endpoint-specific sort allowlists.\n- Reject unsupported or unknown sort values with HTTP `400`.\n- Reject unsupported or unknown filter values with HTTP `400`.\n- Define the concurrency convention that mutating request DTOs include the expected entity `version`.\n- Return HTTP `409 Conflict` when a stale write is detected.\n- Add focused MVC/unit tests verifying:\n  - HTTP response status.\n  - Response content type.\n  - Stable problem type.\n  - Field-error structure.\n- Add reusable OpenAPI examples or shared project documentation for:\n  - Error response shapes.\n  - Pagination response shapes.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Feature teams can implement endpoints using one consistent error format.\n- Feature teams can implement list endpoints using one consistent pagination format.\n- Clients can distinguish between:\n  - Validation failures.\n  - Authentication failures.\n  - Authorization failures.\n  - Business-rule violations.\n  - Not-found failures.\n  - Stale-write conflicts.\n- Ticket search and dashboard features can reuse a stable list-response contract.\n- API conventions are verified by automated tests instead of existing only in documentation.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] `/api/v1` remains the base path for business APIs.\n- [ ] RFC 9457 / Spring `ProblemDetail` is used as the shared error-response format.\n- [ ] Validation errors return HTTP `400`.\n- [ ] Validation errors include a stable problem type.\n- [ ] Validation errors include a field-error object where applicable.\n- [ ] Malformed requests are handled consistently.\n- [ ] Missing resources return HTTP `404`.\n- [ ] Business-rule violations return the agreed HTTP status.\n- [ ] Unauthenticated requests are handled consistently.\n- [ ] Access-denied responses are handled consistently.\n- [ ] Stale-write conflicts return HTTP `409 Conflict`.\n- [ ] Mutating request DTOs follow the expected entity `version` convention.\n- [ ] Pagination uses zero-based page numbering.\n- [ ] Pagination responses contain:\n  - [ ] `content`\n  - [ ] `page`\n  - [ ] `size`\n  - [ ] `totalElements`\n  - [ ] `totalPages`\n- [ ] Default page size is `20`.\n- [ ] Maximum page size is `100`.\n- [ ] Invalid page-size values are rejected consistently.\n- [ ] Endpoint-specific sort allowlists are supported.\n- [ ] Unknown sort values return HTTP `400`.\n- [ ] Unknown filter values return HTTP `400`.\n- [ ] Authentication and authorization errors do not expose sensitive implementation details.\n- [ ] Tests verify HTTP status codes.\n- [ ] Tests verify response content types.\n- [ ] Tests verify stable problem types.\n- [ ] Tests verify field-error structures.\n- [ ] Tests verify pagination response contracts.\n- [ ] Tests verify optimistic-concurrency conflict handling.\n- [ ] OpenAPI or project documentation contains reusable error examples.\n- [ ] OpenAPI or project documentation contains reusable pagination examples.\n- [ ] `./mvnw verify` succeeds.\n- [ ] The Pull Request is reviewed before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-shared-api-contracts\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-03 — Align Canonical Domain Vocabulary\n\nCore error-handling and pagination work may begin in parallel with M1-03, but this issue must not be closed until the canonical vocabulary contract is stable.\n\n> Replace the planning ID above with the actual GitHub issue number after issue creation.\n\n## Technical Notes\n\n- Extend the existing `GlobalExceptionHandler`.\n- Do not introduce a second competing exception format.\n- Do not expose sensitive implementation details such as:\n  - Stack traces.\n  - SQL error messages.\n  - JWT internals.\n  - Internal exception class names.\n- Keep pagination DTOs independent from JPA entities.\n- Business endpoints are outside the scope of this issue.\n- When a concrete endpoint is required for contract verification, use:\n  - Focused test controllers.\n  - Unit tests.\n- Avoid introducing a generic response envelope around non-list successful responses unless separately approved.\n- Keep shared API contracts reusable across all feature modules.\n\n## Definition of Done\n\n- [ ] Shared API error contracts are implemented.\n- [ ] Shared pagination contracts are implemented.\n- [ ] Shared sorting-validation conventions are implemented.\n- [ ] Shared concurrency conventions are implemented.\n- [ ] Error-contract tests pass.\n- [ ] Pagination-contract tests pass.\n- [ ] Sorting-validation tests pass.\n- [ ] Optimistic-concurrency tests pass.\n- [ ] OpenAPI/project documentation is updated.\n- [ ] Backend build has no errors.\n- [ ] Error responses expose no sensitive implementation details.\n- [ ] No unrelated business endpoint implementation is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #17\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": [
+        {
+          "name": "backend",
+          "color": "6F42C1",
+          "description": "Tasks related to server-side logic, APIs, and backend services."
+        },
+        {
+          "name": "priority: high",
+          "color": "B60205",
+          "description": "Critical task that should be completed as soon as possible."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:41:10Z",
+      "updated_at": "2026-10-17T14:26:17Z",
+      "closed_at": "2026-10-01T13:53:29Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/17",
+      "display_title": "[NEX-011] [BACKEND] Standardize Shared API Error, Pagination, and Concurrency Contracts"
+    },
+    "18": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/18",
+      "title": "[NEX-012] [TEST] Establish Shared Test Fixtures and Demo Bootstrap Strategy",
+      "issue_number": 18,
+      "body": "#[TEST] Establish Shared Test Fixtures and Demo Bootstrap Strategy\n\nID: #18\n\n## Objective\n\nCreate a consistent test-data foundation and document a safe local/demo bootstrap strategy.\n\nThis issue reduces duplicated test setup across modules and prepares the project for authentication and reference-data integration in the next milestone.\n\n## Requirements\n\n- Define reusable test builders or fixtures for the following entities as their M1 mappings become available:\n  - Users.\n  - Roles.\n  - Locations.\n  - Equipment types.\n  - Categories.\n  - Form versions.\n  - Fields.\n  - Options.\n  - Skills.\n  - SLA policies.\n- Keep fixtures deterministic and independent.\n- Ensure tests do not depend on:\n  - Execution order.\n  - Shared mutable state.\n- Provide representative test users for all four canonical roles:\n  - `REQUESTER`\n  - `TECHNICIAN`\n  - `MANAGER`\n  - `ADMIN`\n- Do not embed real credentials in test fixtures.\n- Document the local/demo Admin bootstrap contract:\n  - It runs only when no Admin user exists.\n  - Credentials are read from environment variables.\n  - It is disabled by default outside local/demo profiles.\n- Add placeholder/example bootstrap variables to `.env.example` only when required by application configuration introduced by this issue.\n- Use clearly non-production example values in `.env.example`.\n- Create or improve shared integration-test support for:\n  - Loading the Spring test profile.\n  - Safely resetting owned test data.\n- Confirm the fixture strategy works with the fast H2 test profile.\n- Ensure the fixture strategy does not prevent existing SQL Server Testcontainers verification from running.\n- Preserve compatibility with existing MongoDB integration tests.\n- Add a short testing document or documentation section explaining when to use:\n  - Unit tests.\n  - Repository tests.\n  - SQL Server migration tests.\n  - MongoDB integration tests.\n- Run the complete backend and frontend quality commands.\n- Record and fix M1 integration failures that fall within the scope of this issue.\n\n## Expected Outcomes\n\nAfter this issue is completed:\n\n- Module owners can create consistent test data without duplicating large setup blocks.\n- Local/demo bootstrap requirements are documented without committing passwords or real credentials.\n- Cross-module persistence tests use compatible reference data.\n- The project has a repeatable quality baseline for M2 development.\n\n## Acceptance Criteria\n\nThe issue is considered complete when:\n\n- [ ] Shared fixtures/builders exist for every merged M1 entity that requires cross-module test data.\n- [ ] Shared fixtures exist for users where required.\n- [ ] Shared fixtures exist for roles where required.\n- [ ] Shared fixtures exist for locations where required.\n- [ ] Shared fixtures exist for equipment types where required.\n- [ ] Shared fixtures exist for categories where required.\n- [ ] Shared fixtures exist for form versions where required.\n- [ ] Shared fixtures exist for fields and options where required.\n- [ ] Shared fixtures exist for skills where required.\n- [ ] Shared fixtures exist for SLA policies where required.\n- [ ] Fixture-created users use canonical role codes.\n- [ ] Fixture-created users use safe test-only password values.\n- [ ] No real credentials are embedded in fixtures.\n- [ ] No personal email addresses are embedded in fixtures.\n- [ ] Tests remain independent.\n- [ ] Tests can run in any order.\n- [ ] Tests do not rely on shared mutable state.\n- [ ] The local/demo Admin bootstrap strategy is documented.\n- [ ] Admin bootstrap only runs when no Admin exists.\n- [ ] Admin bootstrap reads credentials from environment variables.\n- [ ] Admin bootstrap is restricted to local/demo profiles.\n- [ ] Admin bootstrap is disabled by default outside local/demo profiles.\n- [ ] No real secret is committed.\n- [ ] The fixture strategy works with the H2 test profile.\n- [ ] Existing SQL Server Testcontainers tests remain runnable using their documented flags.\n- [ ] Existing MongoDB integration tests remain runnable using their documented flags.\n- [ ] Backend quality checks pass.\n- [ ] Frontend lint passes.\n- [ ] Frontend tests pass.\n- [ ] Frontend production build passes.\n- [ ] CI is green, or any external CI blocker is clearly documented before milestone review.\n- [ ] The Pull Request is reviewed before merge.\n\n## Suggested Branch\n\n```text\nfeature/<issue-number>-test-fixtures-bootstrap\n```\n\n## Dependencies\n\nDepends on:\n\n- M1-01 — Implement User and Role Persistence Foundation.\n- M1-04 — Implement Dynamic Form Persistence Foundation.\n- M1-07 — Implement Location and Equipment Type Persistence Foundation.\n- M1-09 — Standardize Shared API Contracts.\n\nThe fixture design may begin before all dependencies are completed, but the final implementation must use the merged entity contracts.\n\n> Replace the planning IDs above with the actual GitHub issue numbers after issue creation.\n\n## Technical Notes\n\n- This issue owns shared test and integration infrastructure.\n- Feature-specific tests remain the responsibility of each module owner.\n- Never use:\n  - Production-like secrets.\n  - Real credentials.\n  - Personal email addresses.\n- Do not make normal tests depend on Docker.\n- Tests that require Docker must be explicitly marked or configured as integration tests.\n- Preserve the existing opt-in flags for:\n  - SQL Server Testcontainers tests.\n  - MongoDB Testcontainers tests.\n- Keep fast local tests separate from heavier integration tests where possible.\n- Do not implement a production Admin-provisioning endpoint in this issue.\n- Keep shared fixtures reusable across feature modules without introducing unnecessary coupling.\n\n## Definition of Done\n\n- [ ] Shared test fixtures are implemented.\n- [ ] Shared fixture conventions are documented.\n- [ ] Local/demo bootstrap strategy is documented.\n- [ ] Spring test-profile support is working.\n- [ ] Shared test-data reset support is working safely.\n- [ ] Fast backend tests pass.\n- [ ] SQL Server integration tests remain runnable.\n- [ ] MongoDB integration tests remain runnable.\n- [ ] Frontend lint passes.\n- [ ] Frontend tests pass.\n- [ ] Frontend production build passes.\n- [ ] Backend and frontend quality commands complete successfully.\n- [ ] CI configuration remains usable.\n- [ ] Any external CI blocker is documented if applicable.\n- [ ] No secret or real credential is committed.\n- [ ] No unrelated feature-specific business logic is included.\n- [ ] A Pull Request has been created.\n- [ ] The Pull Request has been reviewed.\n- [ ] The PR links this issue using:\n\n```text\nCloses #18\n```",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": [
+        {
+          "name": "testing",
+          "color": "FBCA04",
+          "description": "Tasks related to unit testing, integration testing, or system testing."
+        },
+        {
+          "name": "priority: medium",
+          "color": "FBCA04",
+          "description": "Important task with normal development priority."
+        }
+      ],
+      "milestone": 2,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-09-25T15:47:22Z",
+      "updated_at": "2026-10-17T14:26:25Z",
+      "closed_at": "2026-10-01T13:52:54Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/18",
+      "display_title": "[NEX-012] [TEST] Establish Shared Test Fixtures and Demo Bootstrap Strategy"
+    },
+    "27": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+      "title": "[NEX-013] [Backend] Xây dựng API đăng nhập và phát hành JWT",
+      "issue_number": 27,
+      "body": "`[Backend] Xây dựng API đăng nhập và phát hành JWT`\n\n## 1. Thông tin issue\n\n**Module:** `auth`, `user`, `config`  \n**Bắt đầu:** 02/10/2026  \n**Hoàn thành:** 05/10/2026  \n**Branch gợi ý:** `feature/19-auth-login-jwt`  \n**Phụ thuộc:** Milestone 1 — Identity Persistence và Auth Skeleton đã hoàn thành.\n\n## 2. Mục tiêu\n\nThay thế đăng nhập demo bằng đăng nhập thật sử dụng email, mật khẩu BCrypt và access JWT.\n\n## 3. API\n\n### `POST /api/v1/auth/login`\n\nRequest:\n\n```json\n{\n  \"email\": \"requester@nexora.local\",\n  \"password\": \"example-password\"\n}\n```\n\nResponse thành công `200 OK`:\n\n```json\n{\n  \"accessToken\": \"<jwt>\",\n  \"tokenType\": \"Bearer\",\n  \"expiresIn\": 28800,\n  \"user\": {\n    \"id\": 10,\n    \"email\": \"requester@nexora.local\",\n    \"fullName\": \"Nguyễn Văn A\",\n    \"roles\": [\"REQUESTER\"]\n  }\n}\n```\n\nSai thông tin đăng nhập trả `401 Unauthorized` bằng `ProblemDetail` và không cho biết email hay mật khẩu sai.\n\n## 4. Công việc\n\n- [ ] Tìm user bằng normalized email.\n- [ ] Kiểm tra mật khẩu bằng BCrypt.\n- [ ] Phát hành HS256 JWT có thời hạn 8 giờ.\n- [ ] JWT `sub` là user ID và chứa danh sách role code.\n- [ ] Cấu hình JWT secret từ environment, không đặt secret thật trong source.\n- [ ] Ghi log an toàn; không log mật khẩu hoặc token đầy đủ.\n- [ ] Cập nhật OpenAPI cho endpoint login.\n\n## 5. Business rule\n\n- Chỉ user `ACTIVE` được đăng nhập.\n- User `LOCKED` hoặc `DISABLED` bị từ chối.\n- Role hợp lệ chỉ gồm `REQUESTER`, `TECHNICIAN`, `MANAGER`, `ADMIN`.\n- Không có refresh token trong MVP.\n- User không được tự chọn hoặc tự gửi role khi đăng nhập.\n\n## 6. Đạt yêu cầu khi\n\n- [ ] Email/mật khẩu hợp lệ trả JWT sử dụng được.\n- [ ] Mật khẩu sai, email không tồn tại và user không active đều trả lỗi an toàn.\n- [ ] Response không chứa `passwordHash`.\n- [ ] JWT có đúng `sub`, role và thời gian hết hạn.\n- [ ] Endpoint public duy nhất được thêm là login; các API nghiệp vụ vẫn được bảo vệ.\n\n## 7. Cách test\n\n- [ ] Unit test password verification và JWT claims.\n- [ ] MVC/integration test login thành công.\n- [ ] Test email viết hoa/thường được normalize đúng.\n- [ ] Test sai mật khẩu, email không tồn tại, user `LOCKED`, user `DISABLED`.\n- [ ] Test JWT hết hạn và JWT sai chữ ký bị từ chối.\n\n## 8. Ngoài phạm vi\n\n- Refresh token.\n- Quên mật khẩu.\n- Xác minh email.\n- OAuth/Google login.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:12:06Z",
+      "updated_at": "2026-10-17T14:26:32Z",
+      "closed_at": "2026-10-04T05:49:32Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+      "display_title": "[NEX-013] [Backend] Xây dựng API đăng nhập và phát hành JWT"
+    },
+    "28": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+      "title": "[NEX-014]  Xây dựng API Current User và kết nối phiên đăng nhập Frontend",
+      "issue_number": 28,
+      "body": "Xây dựng API Current User và kết nối phiên đăng nhập Frontend\n\n## 1. Thông tin issue\n\n**Module:** `auth`, `user`, `config` \n**Bắt đầu:** 06/10/2026  \n**Hoàn thành:** 07/10/2026 \n**Branch gợi ý:** `feature/20-current-user-session`  \n**Phụ thuộc:** #27.\n\n## 2. Mục tiêu\n\nCho frontend biết người đang đăng nhập là ai, có role gì và duy trì phiên đăng nhập trong tab trình duyệt hiện tại.\n\nMục tiêu Frontend\nThay thế hoàn toàn demo session bằng phiên đăng nhập sử dụng JWT thật. Người dùng phải đăng nhập bằng email/password, được phục hồi phiên khi refresh trang trong cùng tab và được điều hướng theo trạng thái đăng nhập/role do backend trả về.\n\nYêu cầu Frontend\n\n- Cập nhật LoginForm để chỉ nhận email và password, gọi API login của M2-01 và không cho người dùng tự chọn role.\n- Lưu access token trong sessionStorage; không lưu token trong HTML, URL hoặc local state không cần thiết.\n- Sau khi có token, gọi GET /api/v1/auth/me để lấy user và roles chính thức từ backend.\n- Khi ứng dụng khởi động lại trong cùng tab, đọc token rồi gọi /auth/me trước khi quyết định trạng thái đăng nhập.\n- Cấu hình Axios gửi Authorization: Bearer <token> và giữ withCredentials=false.\n- Khi nhận 401, xóa token/user và chuyển về trang login; khi nhận 403, hiển thị trang không có quyền nhưng không xóa phiên hợp lệ.\n- Hoàn thiện logout, ProtectedRoute, RequireRole và trạng thái đang kiểm tra session để tránh nháy sai màn hình.\n- Hiển thị loading, invalid-credentials error, network error và trạng thái đăng nhập thành công bằng tiếng Việt.\n- Viết frontend test cho login thành công/thất bại, restore session, logout, 401, 403 và role guard.\n\n\n## 3. API\n\n### `GET /api/v1/auth/me`\n\nHeader:\n\n```http\nAuthorization: Bearer <access-token>\n```\n\nResponse `200 OK`:\n\n```json\n{\n  \"id\": 10,\n  \"email\": \"requester@nexora.local\",\n  \"fullName\": \"Nguyễn Văn A\",\n  \"status\": \"ACTIVE\",\n  \"roles\": [\"REQUESTER\"]\n}\n```\n\n## 4. Công việc\n\n- [ ] Lấy user ID từ JWT và tải lại user từ database.\n- [ ] Kiểm tra user vẫn tồn tại và vẫn `ACTIVE`.\n- [ ] Frontend lưu access token trong `sessionStorage`.\n- [ ] Axios gửi `Authorization: Bearer <token>` và không bật `withCredentials`.\n- [ ] Khi mở lại trang trong cùng tab, frontend gọi `/auth/me` để phục hồi session.\n- [ ] Khi token hết hạn hoặc `/auth/me` trả `401`, xóa session và chuyển về trang login.\n- [ ] Hoàn thiện `ProtectedRoute` và `RequireRole`.\n\n## 5. Business rule\n\n- Quyền backend dựa trên user hiện tại trong database, không chỉ dựa vào role cũ trong JWT.\n- Ẩn nút trên frontend không thay thế kiểm tra quyền ở backend.\n- `sessionStorage` chỉ giữ token trong phiên tab hiện tại.\n\n## 6. Đạt yêu cầu khi\n\n- [ ] Sau login, frontend hiển thị đúng tên và role.\n- [ ] Refresh trang không làm mất phiên nếu token còn hạn.\n- [ ] Token sai/hết hạn đưa user về login.\n- [ ] Route không đúng role hiển thị trạng thái không có quyền.\n- [ ] Demo login và chức năng tự chọn role được loại bỏ.\n\n## 7. Cách test\n\n- [ ] Backend test `/auth/me` với token hợp lệ, thiếu token, token hết hạn và user bị disable sau khi token được phát hành.\n- [ ] Frontend test login, restore session, logout, `401`, `403` và role guard.\n- [ ] Kiểm tra token không xuất hiện trong log hoặc HTML render.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:20:53Z",
+      "updated_at": "2026-10-17T14:26:40Z",
+      "closed_at": "2026-10-04T07:36:49Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+      "display_title": "[NEX-014]  Xây dựng API Current User và kết nối phiên đăng nhập Frontend"
+    },
+    "29": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "title": "[NEX-015] [Backend] Xây dựng chức năng quản lý User, Role và Technician",
+      "issue_number": 29,
+      "body": "[Backend] Xây dựng chức năng quản lý User, Role và Technician\n\n## 1. Thông tin issue\n\n**Module:** `user`, `auth`  \n**Bắt đầu:** 08/10/2026  \n**Hoàn thành:** 09/10/2026 \n**Branch gợi ý:** `feature/21-user-technician-management`  \n**Phụ thuộc:** #28.\n\n## 2. Mục tiêu\n\nCung cấp chức năng quản trị tối thiểu để tạo tài khoản demo, gán role và cấu hình technician cho quá trình assignment ở milestone sau.\n\n## 3. API chính\n\n```http\nGET   /api/v1/admin/users\nPOST  /api/v1/admin/users\nGET   /api/v1/admin/users/{userId}\nPATCH /api/v1/admin/users/{userId}/status\nPUT   /api/v1/admin/users/{userId}/roles\n\nGET   /api/v1/skills?active=true\nGET   /api/v1/technicians/{technicianId}\nPUT   /api/v1/technicians/{technicianId}\nPUT   /api/v1/technicians/{technicianId}/skills\nPUT   /api/v1/technicians/{technicianId}/service-areas\n```\n\nVí dụ cập nhật technician:\n\n```json\n{\n  \"available\": true,\n  \"maxActiveTickets\": 5,\n  \"version\": 0\n}\n```\n\n## 4. Phân quyền\n\n- Chỉ `ADMIN` được tạo user, đổi trạng thái user và gán role.\n- `MANAGER` và `ADMIN` được cấu hình technician, skill và service area.\n- Technician chỉ được đọc hồ sơ của chính mình.\n- Người dùng authenticated được đọc danh sách skill active khi nghiệp vụ cần.\n\n## 5. Business rule\n\n- Email user là duy nhất sau khi normalize.\n- Không xóa vật lý user; sử dụng trạng thái `ACTIVE`, `LOCKED`, `DISABLED`.\n- Technician profile chỉ được tạo cho user có role `TECHNICIAN`.\n- `maxActiveTickets` phải lớn hơn 0.\n- Proficiency level nằm trong khoảng 1–5.\n- Service area phải tham chiếu location đang tồn tại.\n- Không trả password hash qua bất kỳ API nào.\n\n## 6. Đạt yêu cầu khi\n\n- [ ] Admin có thể tạo tài khoản và gán role.\n- [ ] Manager/Admin có thể cấu hình technician, skill và service area.\n- [ ] Sai quyền trả `403`; dữ liệu không tồn tại trả `404`; version cũ trả `409`.\n- [ ] Danh sách user có phân trang và không tải toàn bộ dữ liệu một lần.\n\n## 7. Cách test\n\n- [ ] Test tạo user hợp lệ và email trùng.\n- [ ] Test Admin, Manager, Technician và Requester theo permission matrix.\n- [ ] Test không thể tạo technician cho user thiếu role `TECHNICIAN`.\n- [ ] Test proficiency, capacity, service area và optimistic locking.\n- [ ] Frontend/API smoke test cấu hình một technician dùng được cho milestone sau.\n\n## 8. Ngoài phạm vi\n\n- Password reset.\n- Xóa user.\n- Tự động chọn technician.\n- Tính eligibility hoàn chỉnh khi assign.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:23:35Z",
+      "updated_at": "2026-10-17T14:26:47Z",
+      "closed_at": "2026-10-09T06:57:18Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+      "display_title": "[NEX-015] [Backend] Xây dựng chức năng quản lý User, Role và Technician"
+    },
+    "30": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/30",
+      "title": "[NEX-016] [Backend] Xây dựng API đọc Category, Published Form và SLA",
+      "issue_number": 30,
+      "body": "[Backend] Xây dựng API đọc Category, Published Form và SLA\n\n## 1. Thông tin issue\n\n**Module:** `category`  \n**Bắt đầu:** 02/10/2026  \n**Hoàn thành:** 05/10/2026 \n**Branch gợi ý:** `feature/22-category-form-read-api`  \n**Phụ thuộc:** Milestone 1 — Dynamic Form Persistence đã hoàn thành.\n\n## 2. Mục tiêu\n\nCung cấp dữ liệu category và form đang được phát hành để frontend chuẩn bị màn hình tạo Ticket trong milestone sau.\n\n## 3. API\n\n```http\nGET /api/v1/categories?active=true\nGET /api/v1/categories/{categoryId}/published-form\nGET /api/v1/sla-policies?active=true\n```\n\nResponse published form cần chứa:\n\n- category và asset policy;\n- form version;\n- `requiresEquipment`, `minAttachments`;\n- default skill và SLA policy;\n- danh sách field đúng `displayOrder`;\n- option active đúng `displayOrder`;\n- field type và validation rules cần thiết cho frontend render.\n\n## 4. Business rule\n\n- Requester chỉ thấy category active và form `PUBLISHED` hiện tại.\n- Không trả draft hoặc archived form qua API public/reference.\n- Field/option inactive không được sử dụng cho Ticket mới.\n- `validationRules` phải được trả dưới dạng JSON có kiểm soát, không sửa nội dung âm thầm.\n- SLA của Ticket mới sau này lấy từ `default_sla_policy_id` của published form.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Frontend có thể dựng form chỉ từ response của backend.\n- [ ] Category không có published form trả lỗi nghiệp vụ rõ ràng.\n- [ ] Thứ tự field và option ổn định.\n- [ ] API không gây vòng lặp JSON từ quan hệ entity.\n\n## 6. Cách test\n\n- [ ] Test category active/inactive.\n- [ ] Test chỉ lấy đúng một published form hiện tại.\n- [ ] Test field/option ordering.\n- [ ] Test category không tồn tại và chưa có published form.\n- [ ] Test authenticated user được đọc; anonymous bị từ chối.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:26:23Z",
+      "updated_at": "2026-10-17T14:26:55Z",
+      "closed_at": "2026-10-07T00:47:12Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/30",
+      "display_title": "[NEX-016] [Backend] Xây dựng API đọc Category, Published Form và SLA"
+    },
+    "31": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "title": "[NEX-017] [Backend] Xây dựng API quản trị Category và Dynamic Form",
+      "issue_number": 31,
+      "body": " `[Backend] Xây dựng API quản trị Category và Dynamic Form`\n\n## 1. Thông tin issue\n\n**Module:** `category`  \n**Bắt đầu:** 06/10/2026  \n**Hoàn thành:** 07/10/2026  \n**Branch gợi ý:** `feature/23-category-form-admin-api`  \n**Phụ thuộc:** #30 .\n\n## 2. Mục tiêu\n\nCho phép Admin tạo category, tạo draft form, sửa field/option và publish một form hợp lệ.\n\n## 3. API chính\n\n```http\nGET  /api/v1/admin/categories\nPOST /api/v1/admin/categories\nPUT  /api/v1/admin/categories/{categoryId}\n\nGET  /api/v1/admin/categories/{categoryId}/form-versions\nPOST /api/v1/admin/categories/{categoryId}/form-versions/drafts\nGET  /api/v1/admin/form-versions/{formVersionId}\nPUT  /api/v1/admin/form-versions/{formVersionId}\nPOST /api/v1/admin/form-versions/{formVersionId}/publish\nPOST /api/v1/admin/form-versions/{formVersionId}/archive\n```\n\n`PUT` draft form có thể nhận toàn bộ cấu trúc field và option trong một transaction để giảm số request và tránh lưu form dở dang.\n\n## 4. Business rule\n\n- Chỉ `ADMIN` được quản trị category/form.\n- Chỉ draft form được sửa.\n- Published và archived form là immutable.\n- Tạo draft mới dùng version number tiếp theo do server sinh.\n- Publish form mới và archive published form cũ phải cùng transaction.\n- Publish chỉ thành công khi:\n  - category active;\n  - field key không trống và không trùng;\n  - field type và validation rule hợp lệ;\n  - `SELECT`/`MULTI_SELECT` có option active;\n  - field không phải select không có option;\n  - asset policy không mâu thuẫn `requiresEquipment`;\n  - default skill và SLA policy đang active;\n  - `minAttachments` không âm.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Admin có thể hoàn thành vòng đời draft → published → archived.\n- [ ] Form cũ đã gắn Ticket sau này không bị thay đổi.\n- [ ] Publish lỗi trả field errors dễ hiểu.\n- [ ] Hai request publish đồng thời không tạo hai published form.\n\n## 6. Cách test\n\n- [ ] Test quyền Admin và từ chối các role khác.\n- [ ] Test create/update draft.\n- [ ] Test published form không sửa được.\n- [ ] Test từng nhóm publish validation.\n- [ ] Integration test transaction archive cũ + publish mới.\n- [ ] Test stale version trả `409` nếu form có optimistic locking.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:38:58Z",
+      "updated_at": "2026-10-17T14:27:09Z",
+      "closed_at": "2026-10-07T00:47:12Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+      "display_title": "[NEX-017] [Backend] Xây dựng API quản trị Category và Dynamic Form"
+    },
+    "32": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/32",
+      "title": "[NEX-018] [Frontend] Xây dựng giao diện quản trị Category và Dynamic Form",
+      "issue_number": 32,
+      "body": "`[Frontend] Xây dựng giao diện quản trị Category và Dynamic Form`\n\n## 1. Thông tin issue\n\n**Module:** frontend `categories`  \n**Bắt đầu:** 08/10/2026  \n**Hoàn thành:** 09/10/2026  \n**Branch gợi ý:** `feature/24-category-form-admin-ui`  \n**Phụ thuộc:** #31 .\n\n## 2. Mục tiêu\n\nCung cấp giao diện tiếng Anh để Admin quản lý category và thiết kế dynamic form mà không cần thao tác trực tiếp trong database.\n\n## 3. Công việc\n\n- [ ] Trang danh sách category và trạng thái active.\n- [ ] Trang xem các form version của category.\n- [ ] Form tạo/chỉnh sửa draft.\n- [ ] Thêm, xóa, sắp xếp field và option.\n- [ ] Cấu hình field type, required, validation rules, default skill, SLA và attachment tối thiểu.\n- [ ] Nút publish có bước xác nhận.\n- [ ] Hiển thị lỗi publish theo đúng field.\n\n## 4. Business rule UI\n\n- Chỉ hiển thị chức năng quản trị cho Admin, nhưng backend vẫn là nơi quyết định quyền.\n- Published/archived form chỉ đọc.\n- Không cho nhập option với field không phải select.\n- Không cho publish nếu client biết chắc form chưa hợp lệ; backend vẫn phải validate lại.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Admin tạo và publish được một form từ giao diện.\n- [ ] Refresh trang không làm mất dữ liệu đã lưu.\n- [ ] Có loading, empty, error, success và confirm states.\n- [ ] Giao diện dùng được ở desktop và tablet.\n\n## 6. Cách test\n\n- [ ] Component test thêm/xóa/sắp xếp field và option.\n- [ ] Test validation theo field type.\n- [ ] Test hiển thị backend field errors.\n- [ ] Test role guard.\n- [ ] Test luồng tạo draft → sửa → publish bằng MSW hoặc backend integration environment.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:43:39Z",
+      "updated_at": "2026-10-17T14:27:16Z",
+      "closed_at": "2026-10-07T00:46:50Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/32",
+      "display_title": "[NEX-018] [Frontend] Xây dựng giao diện quản trị Category và Dynamic Form"
+    },
+    "33": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/33",
+      "title": "[NEX-019] [Backend] Xây dựng Persistence nền tảng cho Ticket",
+      "issue_number": 33,
+      "body": " `[Backend] Xây dựng Persistence nền tảng cho Ticket`\n\n## 1. Thông tin issue\n\n**Module:** `ticket`  \n**Bắt đầu:** 02/10/2026  \n**Hoàn thành:** 05/10/2026  \n**Branch gợi ý:** `feature/25-ticket-core-persistence`  \n\n## 2. Mục tiêu\n\nMapping bảng `tickets` và repository nền tảng để milestone sau có thể triển khai Create Ticket và workflow mà không phải thiết kế lại persistence.\n\n## 3. Công việc\n\n- [ ] Tạo `Ticket` entity khớp schema SQL Server.\n- [ ] Mapping reporter, category, form version, location và optional asset.\n- [ ] Mapping status, priority, description, SLA due time, resolution/closed timestamps và `version`.\n- [ ] Không tạo quan hệ hai chiều lớn gây tải toàn bộ aggregate.\n- [ ] Tạo repository tìm theo ID và ticket number.\n- [ ] Chuẩn bị query foundation cho ticket visibility nhưng chưa triển khai workflow ghi.\n\n## 4. Business rule cần thể hiện ở model\n\n- Ticket luôn có reporter, category/form version và location.\n- Asset có thể null tùy policy; validation nghiệp vụ thực hiện ở create service sau.\n- Ticket mới sau này bắt đầu ở `SUBMITTED`.\n- Ticket giữ form version cố định để render lịch sử.\n- `version` dùng cho optimistic locking.\n- Ticket number là duy nhất nhưng generator được kết nối ở milestone sau.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Entity mapping khớp Flyway schema hiện tại.\n- [ ] Lưu/đọc được Ticket bằng repository test.\n- [ ] Optimistic locking hoạt động.\n- [ ] Không có controller create/update Ticket trong issue này.\n\n## 6. Cách test\n\n- [ ] Repository test lưu Ticket đầy đủ và Ticket không có optional asset.\n- [ ] Test unique ticket number.\n- [ ] Test quan hệ reporter/form/location/asset.\n- [ ] Test stale update gây optimistic-lock conflict.\n- [ ] SQL Server integration test kiểm tra mapping thực tế.\n\n## 7. Ngoài phạm vi\n\n- Create Ticket API.\n- Review/assignment/workflow.\n- SLA runtime calculation.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:46:34Z",
+      "updated_at": "2026-10-17T14:27:23Z",
+      "closed_at": "2026-10-12T02:39:47Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/33",
+      "display_title": "[NEX-019] [Backend] Xây dựng Persistence nền tảng cho Ticket"
+    },
+    "34": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/34",
+      "title": "[NEX-020] [Backend] Persistence dữ liệu động, lịch sử và Attachment của Ticket",
+      "issue_number": 34,
+      "body": " `[Backend] Persistence dữ liệu động, lịch sử và Attachment của Ticket`\n\n## 1. Thông tin issue\n\n**Module:** `ticket`  \n**Bắt đầu:** 06/10/2026  \n**Hoàn thành:** 07/10/2026  \n**Branch gợi ý:** `feature/26-ticket-supporting-persistence`  \n**Phụ thuộc:** #33 .\n\n## 2. Mục tiêu\n\nMapping các bảng phụ thuộc trực tiếp vào Ticket để luồng tạo và xử lý Ticket ở milestone sau chỉ cần bổ sung service nghiệp vụ.\n\n## 3. Công việc\n\n- [ ] Mapping `ticket_field_values`.\n- [ ] Mapping `ticket_status_history`.\n- [ ] Mapping metadata `ticket_attachments`.\n- [ ] Repository lấy dynamic values theo field order.\n- [ ] Repository lấy status history theo thời gian tăng dần.\n- [ ] Repository lấy attachment metadata theo Ticket và attachment type.\n- [ ] Không lưu binary file vào SQL Server.\n\n## 4. Business rule\n\n- `value_json` giữ đúng JSON contract của từng field type.\n- `IMAGE` được biểu diễn bằng attachment liên kết field; không bắt buộc có scalar value row.\n- Mỗi workflow transition sau này phải ghi status history cùng transaction với Ticket update.\n- Attachment chỉ lưu metadata và opaque storage key.\n- Original filename chỉ là dữ liệu hiển thị, không được dùng làm filesystem path.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Lưu/đọc được dynamic value, history và attachment metadata.\n- [ ] Kết quả trả theo thứ tự ổn định.\n- [ ] Mapping không kéo binary content vào database.\n- [ ] Không có upload endpoint hoặc workflow service trong issue này.\n\n## 6. Cách test\n\n- [ ] Test từng dạng JSON đại diện: string, number, boolean, array và date string.\n- [ ] Test ordered history.\n- [ ] Test attachment type `REPORT_EVIDENCE`, field-linked `IMAGE`, `WORK_RESULT`.\n- [ ] Test FK và cascade behavior không xóa nhầm reference data.\n- [ ] SQL Server integration test cho tên cột và constraint.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:50:50Z",
+      "updated_at": "2026-10-17T14:27:31Z",
+      "closed_at": "2026-10-12T02:39:44Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/34",
+      "display_title": "[NEX-020] [Backend] Persistence dữ liệu động, lịch sử và Attachment của Ticket"
+    },
+    "35": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+      "title": "[NEX-021] [Backend] Xây dựng API đọc danh sách và chi tiết Ticket",
+      "issue_number": 35,
+      "body": " `[Backend] Xây dựng API đọc danh sách và chi tiết Ticket`\n\n## 1. Thông tin issue\n\n**Module:** `ticket`  \n**Bắt đầu:** 08/10/2026  \n**Hoàn thành:** 09/10/2026  \n**Branch gợi ý:** `feature/27-ticket-read-api`  \n**Phụ thuộc:** #28 , #33 , #34 .\n\n## 2. Mục tiêu\n\nCho phép kiểm tra dữ liệu Ticket đã seed/fixture và chuẩn bị màn hình list/detail trước khi triển khai Create Ticket và workflow ở milestone sau.\n\nMục tiêu Frontend\n\nThay thế Ticket List mẫu bằng dữ liệu API thật và bổ sung trang Ticket Detail chỉ đọc. Giao diện phải phản ánh đúng phạm vi Ticket mà backend cho phép user hiện tại xem, nhưng không được giả lập các action workflow chưa được triển khai.\n\nYêu cầu Frontend\n\n- Cập nhật ticketApi và TanStack Query hooks để gọi API list/detail thật.\n- Trang danh sách hiển thị ticket number, status, priority, category, location, optional asset, SLA due time và created time.\n- Đồng bộ page, size, sort và filter được hỗ trợ với URL/search params để refresh trang không làm mất bộ lọc.\n- Trang chi tiết hiển thị description, stored form version, dynamic values theo field type, status history và attachment metadata.\n- Dùng badge/label tiếng Việt nhưng giữ nguyên enum code tiếng Anh trong request/response.\n- Hiển thị loading, empty, 400, 401, 403/404 an toàn và lỗi mạng.\n- Không hiển thị nút Review/Assign/Start/Resolve hoạt động giả; có thể để placeholder bị vô hiệu hóa nếu được ghi rõ là chưa hỗ trợ.\n- Viết frontend test cho list success/empty/error, filter/pagination, detail success/not-found và render dynamic values/history/attachments.\n\n## 3. API\n\n```http\nGET /api/v1/tickets?page=0&size=20&sort=createdAt,desc&status=SUBMITTED&priority=HIGH&locationId=1\nGET /api/v1/tickets/{ticketId}\n```\n\nDanh sách trả dữ liệu tóm tắt:\n\n- ID và ticket number;\n- status, priority;\n- category, location và optional asset;\n- reporter;\n- SLA due time;\n- created/updated time.\n\nChi tiết trả thêm:\n\n- description;\n- stored form version;\n- dynamic values;\n- status history;\n- attachment metadata;\n- `version` để frontend dùng cho action ở milestone sau.\n\n## 4. Business rule về quyền xem\n\n- `REQUESTER`: chỉ Ticket do chính mình báo.\n- `TECHNICIAN`: Ticket được phân công hiện tại hoặc đã từng phân công.\n- `MANAGER`: xem tất cả.\n- `ADMIN`: xem tất cả.\n- Visibility phải được áp dụng trong query, không tải tất cả rồi lọc bằng Java.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] API phân trang đúng contract chung.\n- [ ] Sort/filter không được hỗ trợ trả `400`, không bỏ qua âm thầm.\n- [ ] User không có quyền xem một Ticket trả `404` hoặc response an toàn theo convention, không làm lộ sự tồn tại của Ticket.\n- [ ] Frontend Ticket List dùng API thật và có trang detail chỉ đọc.\n- [ ] Chưa xuất hiện nút workflow hoạt động giả.\n\n## 6. Cách test\n\n- [ ] Integration test visibility cho bốn role.\n- [ ] Test pagination, sort allowlist và filter.\n- [ ] Test Ticket không tồn tại và Ticket không có quyền xem.\n- [ ] Test detail render dynamic values/history/attachment metadata.\n- [ ] Frontend test loading, empty, error và success.\n\n## 7. Ngoài phạm vi\n\n- `POST /tickets`.\n- Review, assign, start, resolve, close.\n- Comment và feedback.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T15:56:27Z",
+      "updated_at": "2026-10-17T14:27:38Z",
+      "closed_at": "2026-10-12T02:39:39Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+      "display_title": "[NEX-021] [Backend] Xây dựng API đọc danh sách và chi tiết Ticket"
+    },
+    "36": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+      "title": "[NEX-022] [Backend] Xây dựng CRUD Location và Equipment Type",
+      "issue_number": 36,
+      "body": "`Xây dựng CRUD Location và Equipment Type`\n\n## 1. Thông tin issue\n\n**Module:** `location`, `asset`  \n**Bắt đầu:** 02/10/2026  \n**Hoàn thành:** 05/10/2026  \n**Branch gợi ý:** `feature/28-location-equipment-crud`  \n**Phụ thuộc:** Milestone 1 — Location/Equipment Persistence đã hoàn thành.\n\n## 2. Mục tiêu\n\nCho phép quản trị cây campus/building/floor/room/area và equipment type dùng cho Asset và Ticket.\nTrang quản trị Location/Equipment Type tối thiểu.\nComponent chọn Location theo cấp:\nCampus → Building → Floor → Room.\nTrạng thái loading, empty, error và success.\n\n## 3. API\n\n```http\nGET  /api/v1/locations?parentId={id}&active=true\nGET  /api/v1/locations/{locationId}\nPOST /api/v1/admin/locations\nPUT  /api/v1/admin/locations/{locationId}\n\nGET  /api/v1/equipment-types?active=true\nPOST /api/v1/admin/equipment-types\nPUT  /api/v1/admin/equipment-types/{equipmentTypeId}\n```\n\n## 4. Business rule\n\n- Chỉ `ADMIN` quản trị reference catalog.\n- Authenticated user được đọc location/equipment active khi nghiệp vụ cần.\n- Location code và equipment type code là duy nhất.\n- Không tạo vòng lặp trong cây location.\n- Parent phải phù hợp với hierarchy đã chấp nhận.\n- Không xóa vật lý record đã được tham chiếu; sử dụng `active=false`.\n- API cây location tải theo parent hoặc DTO tree có giới hạn, không serialize entity đệ quy vô hạn.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Admin tạo/sửa/deactivate được location và equipment type.\n- [x] Anonymous bị từ chối; role không phải Admin không được thay đổi dữ liệu.\n- [ ] Không thể tạo hierarchy cycle.\n\n## 6. Cách test\n\n- [ ] Test CAMPUS → BUILDING → FLOOR → ROOM/AREA.\n- [ ] Test duplicate code và parent không tồn tại.\n- [ ] Test cycle detection.\n- [ ] Test active filtering và quyền truy cập.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": [
+        {
+          "name": "status: done",
+          "color": "0E8A16",
+          "description": "Task has been completed and verified."
+        }
+      ],
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T16:00:10Z",
+      "updated_at": "2026-10-17T14:27:46Z",
+      "closed_at": "2026-10-12T14:52:04Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+      "display_title": "[NEX-022] [Backend] Xây dựng CRUD Location và Equipment Type"
+    },
+    "37": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+      "title": "[NEX-023] [Backend] Xây dựng CRUD Asset và lịch sử trạng thái",
+      "issue_number": 37,
+      "body": "`Xây dựng CRUD Asset và lịch sử trạng thái`\n\n## 1. Thông tin issue\n\n**Module:** `asset`  \n**Bắt đầu:** 06/10/2026  \n**Hoàn thành:** 07/10/2026  \n**Branch gợi ý:** `feature/29-asset-crud-status-history`  \n**Phụ thuộc:** #36 .\n\n## 2. Mục tiêu\n\nCung cấp API backend để Manager/Admin quản lý Asset và bảo đảm mọi thay đổi trạng thái đều được ghi lịch sử trong cùng transaction. Giao diện Asset Administration được triển khai riêng trong Milestone 3.\n\n## 3. API\n\n```http\nGET  /api/v1/assets?page=0&size=20&locationId={id}&status=ACTIVE\nGET  /api/v1/assets/{assetId}\nPOST /api/v1/assets\nPUT  /api/v1/assets/{assetId}\nPOST /api/v1/assets/{assetId}/status\nGET  /api/v1/assets/{assetId}/status-history\n```\n\nVí dụ đổi trạng thái:\n\n```json\n{\n  \"targetStatus\": \"UNDER_MAINTENANCE\",\n  \"reason\": \"Thiết bị cần kiểm tra nguồn điện\",\n  \"version\": 2\n}\n```\n\n## 4. Business rule\n\n- `MANAGER` và `ADMIN` được quản lý Asset/status.\n- Asset code là duy nhất; serial number nếu có phải tuân thủ uniqueness của schema.\n- Asset phải tham chiếu location và equipment type hợp lệ.\n- Status chỉ gồm `ACTIVE`, `UNDER_MAINTENANCE`, `OUT_OF_SERVICE`, `RETIRED`.\n- Không cho đổi sang chính trạng thái hiện tại.\n- Đổi status và ghi `asset_status_history` phải cùng transaction.\n- Reason đổi trạng thái không được để trống.\n- Update gửi `version`; stale version trả `409`.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Tạo/sửa/xem Asset được qua API và UI.\n- [ ] Mỗi lần đổi status có lịch sử gồm trạng thái cũ, mới, lý do, người thực hiện và thời gian.\n- [ ] Role không hợp lệ bị từ chối.\n- [ ] Không hard-delete Asset đã được sử dụng.\n\n## 6. Cách test\n\n- [ ] Test CRUD Asset và duplicate code.\n- [ ] Test quyền Manager/Admin và từ chối Requester/Technician.\n- [ ] Test status history được ghi atomically.\n- [ ] Test blank reason, invalid status và stale version.\n\nNgoài phạm vi\nAsset list/form/detail/status-history UI; chuyển sang M3-FE06.\nModal đổi trạng thái và frontend component tests.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": [
+        {
+          "name": "status: done",
+          "color": "0E8A16",
+          "description": "Task has been completed and verified."
+        }
+      ],
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T16:02:37Z",
+      "updated_at": "2026-10-17T14:27:54Z",
+      "closed_at": "2026-10-12T14:52:05Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+      "display_title": "[NEX-023] [Backend] Xây dựng CRUD Asset và lịch sử trạng thái"
+    },
+    "38": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/38",
+      "title": "[NEX-024] [Backend] Xây dựng API lấy Asset hợp lệ theo Location",
+      "issue_number": 38,
+      "body": " `[Backend] Xây dựng API lấy Asset hợp lệ theo Location`\n\n## 1. Thông tin issue\n\n**Module:** `asset`, `location`  \n**Bắt đầu:** 08/10/2026  \n**Hoàn thành:** 09/10/2026  \n**Branch gợi ý:** `feature/30-eligible-assets-by-location`  \n**Phụ thuộc:** #37 .\n\n## 2. Mục tiêu\n\nCung cấp API backend trả danh sách Asset mà Requester có thể chọn khi tạo Ticket ở milestone sau. Component chọn Asset được triển khai riêng trong Milestone 3.\n\n## 3. API\n\n```http\nGET /api/v1/locations/{locationId}/eligible-assets?page=0&size=20&equipmentTypeId={id}&query={text}\n```\n\nResponse chỉ cần dữ liệu chọn lựa:\n\n- asset ID và code;\n- equipment type;\n- location;\n- current status;\n- tên/mô tả ngắn cần cho UI.\n\n## 4. Business rule\n\n- Asset phải thuộc **đúng location** được chọn, không tự động lấy asset của location cha/con.\n- Chỉ `ACTIVE` và `UNDER_MAINTENANCE` là eligible cho Ticket mới.\n- `OUT_OF_SERVICE` và `RETIRED` không xuất hiện trong API eligible.\n- Chỉ authenticated user được gọi.\n- Filter equipment type phải thuộc allowlist hỗ trợ.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] API không trả Asset của location khác.\n- [ ] API không trả Asset có trạng thái không hợp lệ.\n- [ ] Có phân trang và tìm kiếm cơ bản theo code/tên.\n- [ ] OpenAPI mô tả đầy đủ query parameters và response lựa chọn Asset.\n\n## 6. Cách test\n\n- [ ] Test đủ bốn status.\n- [ ] Test hai location khác nhau.\n- [ ] Test equipment type filter và pagination.\n- [ ] Test location không tồn tại.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": [
+        {
+          "name": "status: done",
+          "color": "0E8A16",
+          "description": "Task has been completed and verified."
+        }
+      ],
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-01T16:06:19Z",
+      "updated_at": "2026-10-17T14:28:01Z",
+      "closed_at": "2026-10-12T14:52:06Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/38",
+      "display_title": "[NEX-024] [Backend] Xây dựng API lấy Asset hợp lệ theo Location"
+    },
+    "39": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/39",
+      "title": "[NEX-025] Tạo SQL Server Sequence cho Ticket Number",
+      "issue_number": 39,
+      "body": " `Tạo SQL Server Sequence cho Ticket Number`\n\n## 1. Thông tin issue\n\n**Module:** `migration`, `common`  \n**Bắt đầu:** 02/10/2026  \n**Hoàn thành:** 05/10/2026  \n**Branch gợi ý:** `feature/31-ticket-number-sequence`  \n\n## 2. Mục tiêu\n\nChuẩn bị cơ chế sinh ticket number an toàn khi có nhiều request đồng thời.\n\n## 3. Công việc\n\n- [ ] Thêm Flyway migration với version kế tiếp đang còn trống.\n- [ ] Tạo SQL Server sequence làm bộ đếm toàn cục.\n- [ ] Bổ sung component đọc `NEXT VALUE FOR` bằng native SQL/JDBC phù hợp.\n- [ ] Format kết quả theo `NX-{year}-{six-digit-sequence}`.\n- [ ] Viết tài liệu ngắn về việc sequence không reset theo năm.\n\n## 4. Business rule\n\n- Ví dụ hợp lệ: `NX-2026-000123`.\n- Năm là năm tạo Ticket theo timezone Asia/Bangkok.\n- Phần sequence tăng toàn cục và không reset mỗi năm.\n- Không dùng `MAX(id) + 1`.\n- Không yêu cầu số Ticket liên tục tuyệt đối; transaction rollback có thể tạo gap.\n\n## 5. Đạt yêu cầu khi\n\n- [ ] Database sạch migrate thành công.\n- [ ] Gọi đồng thời không tạo ticket number trùng.\n- [ ] Format đúng và có unique constraint/index hiện hành hỗ trợ.\n- [ ] Không sửa migration V1–V8.\n\n## 6. Cách test\n\n- [ ] Test Flyway migration trên SQL Server Testcontainers.\n- [ ] Test sinh nhiều sequence value liên tiếp.\n- [ ] Test concurrency bằng nhiều thread/request.\n- [ ] Test format năm và padding sáu chữ số.\n\n## 7. Ngoài phạm vi\n\n- Create Ticket transaction.\n- Idempotency của Create Ticket.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 1,
+      "created_at": "2026-10-01T16:10:19Z",
+      "updated_at": "2026-10-17T14:28:16Z",
+      "closed_at": "2026-10-11T12:00:59Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/39",
+      "display_title": "[NEX-025] Tạo SQL Server Sequence cho Ticket Number"
+    },
+    "40": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/40",
+      "title": "[NEX-026] Xây dựng nền tảng lưu trữ File đính kèm",
+      "issue_number": 40,
+      "body": " ` Xây dựng nền tảng lưu trữ File đính kèm`\n\n## 1. Thông tin issue\n\n**Module:** `common`, `config`  \n**Bắt đầu:** 06/10/2026  \n**Hoàn thành:** 07/10/2026  \n**Branch gợi ý:** `feature/32-local-file-storage`  \n\n## 2. Mục tiêu\n\nXây dựng service lưu file an toàn để milestone sau dùng cho report evidence và work-result attachment.\n\n## 3. Contract nội bộ\n\nService tối thiểu hỗ trợ:\n\n```text\nstore(file) -> storageKey + metadata\nopen(storageKey) -> stream/resource\ndelete(storageKey)\n```\n\nChưa tạo public upload/download endpoint trong issue này.\n\n## 4. Công việc\n\n- [ ] Tạo `FileStorageService` và local-filesystem implementation.\n- [ ] Thư mục lưu file lấy từ cấu hình/environment và nằm ngoài public web root.\n- [ ] Sinh opaque storage key ngẫu nhiên.\n- [ ] Validate MIME type, kích thước và số lượng ở reusable validator.\n- [ ] Chuẩn bị cơ chế cleanup file khi business transaction thất bại.\n- [ ] Không ghép đường dẫn trực tiếp từ filename do người dùng gửi.\n\n## 5. Business rule\n\n- Chỉ chấp nhận `image/jpeg` và `image/png`.\n- Tối đa 5 MiB mỗi file.\n- Tối đa 5 file trong một upload request sau này.\n- Original filename chỉ để hiển thị.\n- Không lưu binary file trong SQL Server.\n- Download sau này chỉ qua API có authorization.\n\n## 6. Đạt yêu cầu khi\n\n- [ ] Lưu, đọc và xóa file bằng storage key.\n- [ ] Không thể path traversal bằng filename hoặc storage key giả.\n- [ ] File vượt dung lượng hoặc sai MIME type bị từ chối.\n- [ ] Không có public static route làm lộ file.\n\n## 7. Cách test\n\n- [ ] Unit test JPEG/PNG hợp lệ.\n- [ ] Test MIME type sai, file quá lớn và storage key không tồn tại.\n- [ ] Test filename chứa `../`, ký tự đặc biệt và Unicode.\n- [ ] Test hai file trùng tên gốc không ghi đè nhau.\n- [ ] Test cleanup trong thư mục tạm.\n\n## 8. Ngoài phạm vi\n\n- Ticket upload controller.\n- Cloud/S3 storage.\n- Thumbnail và media preview.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 1,
+      "created_at": "2026-10-01T16:11:28Z",
+      "updated_at": "2026-10-17T14:28:24Z",
+      "closed_at": "2026-10-11T12:01:02Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/40",
+      "display_title": "[NEX-026] Xây dựng nền tảng lưu trữ File đính kèm"
+    },
+    "41": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/41",
+      "title": "[NEX-027] Xây dựng Contract và giao diện khung Dashboard",
+      "issue_number": 41,
+      "body": "` Xây dựng Contract và giao diện khung Dashboard`\n\n## 1. Thông tin issue\n\n**Module:** `dashboard`, frontend `dashboard`  \n**Bắt đầu:** 08/10/2026  \n**Hoàn thành:** 09/10/2026  \n**Branch gợi ý:** `feature/33-dashboard-contract-shell`  \n**Phụ thuộc:** Không phụ thuộc luồng ghi Ticket; sử dụng mock/test data cho UI.\n\n## 2. Mục tiêu\n\nChốt contract và giao diện Dashboard để milestone sau chỉ cần kết nối query dữ liệu Ticket thật.\n\n## 3. API contract dự kiến cho milestone sau\n\n```http\nGET /api/v1/dashboard/summary\n```\n\nResponse contract:\n\n```json\n{\n  \"openTickets\": 12,\n  \"inProgressTickets\": 4,\n  \"slaAtRiskTickets\": 2,\n  \"resolvedThisWeek\": 7,\n  \"generatedAt\": \"2026-10-09T10:30:00+07:00\"\n}\n```\n\nM2 chỉ tạo DTO/port/service boundary và frontend client contract. **Không đăng ký controller trả số liệu giả hoặc hard-code số liệu trong runtime.** API thật được kích hoạt ở milestone sau khi Ticket workflow có dữ liệu.\n\n## 4. Định nghĩa metric\n\n- `openTickets`: Ticket không ở trạng thái terminal và không phải `RESOLVED`.\n- `inProgressTickets`: status `IN_PROGRESS`.\n- `slaAtRiskTickets`: Ticket active có `slaDueAt` trong 2 giờ tiếp theo hoặc đã quá hạn theo contract hiển thị đã thống nhất.\n- `resolvedThisWeek`: `resolvedAt` thuộc ISO week hiện tại, hiển thị theo Asia/Bangkok.\n\nPhạm vi dữ liệu tương lai:\n\n- Requester: Ticket của chính mình.\n- Technician: Ticket được phân công hiện tại hoặc trong lịch sử.\n- Manager/Admin: toàn bộ Ticket.\n\n## 5. Công việc\n\n- [ ] Tạo `DashboardSummaryResponse` hoặc contract tương đương.\n- [ ] Tạo query port/interface để tránh Dashboard phụ thuộc trực tiếp vào controller/repository của Ticket.\n- [ ] Tạo frontend API client/hook theo contract.\n- [ ] Hoàn thiện bốn metric card với loading, empty, error và success state.\n- [ ] Dùng MSW/mock data trong test và Story/demo development; không hard-code dữ liệu sản xuất.\n\n## 6. Đạt yêu cầu khi\n\n- [ ] Contract bốn metric được chốt và có test serialization.\n- [ ] Dashboard UI render đúng bốn trạng thái.\n- [ ] Không có endpoint production trả dữ liệu giả.\n- [ ] Code sẵn sàng để Member 5 nối implementation thật ở milestone sau.\n\n## 7. Cách test\n\n- [ ] Backend contract/serialization test.\n- [ ] Frontend component test bốn metric.\n- [ ] Test loading, empty, API error và success bằng MSW.\n- [ ] Test role-aware layout nhưng chưa khẳng định authorization bằng mock frontend.\n\n## 8. Ngoài phạm vi\n\n- Query dữ liệu Dashboard thật.\n- Notification và Audit UI.\n- Chart nâng cao, export và báo cáo lịch sử.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 1,
+      "created_at": "2026-10-01T16:13:05Z",
+      "updated_at": "2026-10-17T14:28:31Z",
+      "closed_at": "2026-10-15T14:52:58Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/41",
+      "display_title": "[NEX-027] Xây dựng Contract và giao diện khung Dashboard"
+    },
+    "51": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "title": "[NEX-028] Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role",
+      "issue_number": 51,
+      "body": "# Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role\n\n**Module:** frontend `auth`, `administration`, `app/routes`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/42-auth-admin-user-ui`  \n**Phụ thuộc:** #27, #28, #29.\n\n## Mục tiêu\n\nHoàn thiện login thật và UI để Admin tạo tài khoản, xem user, đổi trạng thái và gán role. User không tự đăng ký hoặc tự chọn role lúc đăng nhập.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Đăng nhập và xác định người dùng hiện tại\n\nĐã có trong issue trước **“Xây dựng API đăng nhập và phát hành JWT”** và **“Xây dựng API Current User và kết nối phiên đăng nhập Frontend”**; tái sử dụng, không làm lại backend.\n\n| API sử dụng | Đầu vào | Đầu ra |\n|---|---|---|\n| `POST /api/v1/auth/login` | `{email,password}` | 200 `{accessToken,tokenType,expiresIn,user:{id,email,fullName,roles}}` |\n| `GET /api/v1/auth/me` | Bearer JWT; không có body | 200 `{id,email,fullName,status,roles}` |\n\n### Quản trị tài khoản\n\nCác API đã được mô tả trong issue trước **“Xây dựng chức năng quản lý User, Role và Technician”**. Chưa có endpoint trong code hiện tại; phần backend tiếp tục hoàn tất trong issue quản lý User, Role và Technician đã được giao. UI dùng mock đúng contract khi chưa có API thật; không mở nhiệm vụ backend trùng.\n\n| API cần dùng | Đầu vào dự kiến | Đầu ra dự kiến |\n|---|---|---|\n| `GET /api/v1/admin/users?page=0&size=20` | page/size; filter/sort chỉ khi backend hỗ trợ | 200 page DTO chứa identity, status, roles |\n| `POST /api/v1/admin/users` | `{email,fullName,password,roles}`; confirm password chỉ ở UI | 201 user DTO, mặc định ACTIVE, không password/hash |\n| `GET /api/v1/admin/users/{userId}` | userId | 200 user DTO |\n| `PATCH /api/v1/admin/users/{userId}/status` | `{status}`; thêm version nếu contract backend hỗ trợ | 200 user DTO mới |\n| `PUT /api/v1/admin/users/{userId}/roles` | `{roles:[...]}`; thêm version nếu có | 200 user DTO với roles mới |\n\nĐầu vào/đầu ra quản trị phải chốt cùng backend trước tích hợp. Lỗi cần hiển thị: 400 validation, 401 phiên không hợp lệ, 403 sai quyền, 404 user không tồn tại, 409 email trùng hoặc dữ liệu cũ nếu có optimistic lock.\n\n## Frontend/UI\n\n- **Login:** card hiện tại; email/password, hiện/ẩn password, nút Đăng nhập, required/field errors, pending và alert sai credentials/lỗi mạng.\n- **Session:** loading restore, tên/roles trong account menu, logout, thông báo hết phiên và trang 403.\n- **User List:** header/nút Tạo tài khoản; bảng fullName/email/roles/status/actions, result count và pagination.\n- **Create User modal/form:** fullName/email/password/confirm password/roles; Hủy/Tạo, pending và success/error; xóa password khỏi state khi đóng hoặc tạo thành công.\n- **User Detail:** identity card, status/role badges; modal đổi status và gán role với confirmation.\n- Routes đề xuất `/administration/users`, `/administration/users/:userId`; Administration không còn placeholder.\n\n### Đồng nhất với UI hiện có\n\nGiữ LoginPage/LoginForm và account menu; list/table/pagination theo Ticket List, modal/form theo Category List, status badges và AppLayout/tokens chung.\n\n## Công việc\n\n- Hoàn thiện login email/password, validation tiếng Việt, loading, lỗi sai thông tin đăng nhập, lỗi mạng và phản hồi thành công.\n- Kiểm tra login, `/auth/me`, refresh cùng tab, logout, token hết hạn và trạng thái user bị khóa/disable.\n- Hoàn thiện 401/403, loading khi phục hồi phiên, navigation và các thao tác theo role do backend trả về.\n- Thay placeholder Administration bằng user list có phân trang, tạo user, xem chi tiết, đổi status và gán role.\n- Form tạo tài khoản gồm thông tin identity, mật khẩu ban đầu và role theo contract API quản lý User, Role và Technician; có xác nhận mật khẩu tại UI, lỗi email trùng và validation từng trường.\n- Không trả hoặc lưu password hash; sau tạo thành công xóa mật khẩu khỏi form. Không bổ sung đăng ký công khai, reset password hoặc OAuth.\n\n## Business rule\n\n- Chỉ ADMIN tạo tài khoản, gán role và đổi trạng thái user; frontend guard không thay kiểm tra quyền backend.\n- Email được normalize và unique; trạng thái chỉ ACTIVE, LOCKED, DISABLED; không xóa vật lý user.\n- Roles chỉ REQUESTER, TECHNICIAN, MANAGER, ADMIN; user có nhiều role được hiển thị đúng.\n- 401 xóa phiên; 403 giữ phiên hợp lệ. Không lưu/log password hoặc token trong URL/HTML.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, Login/Session đầy đủ controls/states trên API thật hiện có; Admin User/Role đủ màn list/create/detail/status/roles.\n- Khi API User chưa sẵn sàng, admin UI được demo/test bằng mock đúng contract, ghi rõ chưa lưu backend thật.\n- Client/hook sẵn sàng nối API provisioning; hành trình Admin tạo Requester rồi Requester đăng nhập thật được nghiệm thu khi backend hoàn tất.\n\n## Cách test\n\n- Login hợp lệ/sai thông tin/lỗi mạng; restore/logout/401/403 và trạng thái checking session.\n- Create user với confirm password sai/email trùng; list/pagination/detail/status/roles và quyền Admin bằng API thật hoặc mock.\n- Khi backend sẵn sàng, nghiệm thu Admin tạo Requester rồi Requester đăng nhập bằng tài khoản đó.\n\n## Ngoài phạm vi\n\nĐăng ký công khai, reset password, OAuth, refresh token; không viết lại API quản lý tài khoản đã giao.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": null,
+      "milestone": 3,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T16:58:21Z",
+      "updated_at": "2026-10-17T14:28:39Z",
+      "closed_at": "2026-10-14T14:21:52Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+      "display_title": "[NEX-028] Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role"
+    },
+    "52": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "title": "[NEX-029] Xây dựng UI quản lý Technician, Skill và Service Area",
+      "issue_number": 52,
+      "body": "# Xây dựng UI quản lý Technician, Skill và Service Area\n\n**Owner:** Member 1  \n**Module:** frontend `technicians`, `locations`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/43-technician-configuration-ui`  \n**Phụ thuộc:** #29, #36, #47, #57.\n\n## Mục tiêu\n\nManager/Admin cấu hình lực lượng Technician; Technician đọc hồ sơ của chính mình.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Profile, skill và vùng phục vụ\n\nAPI đã được mô tả trong issue trước **“Xây dựng chức năng quản lý User, Role và Technician”**. Chưa có endpoint trong code hiện tại; backend sẽ tiếp tục hoàn tất trong issue **“Xây dựng chức năng quản lý User, Role và Technician”** đã được giao. Không gọi endpoint quản trị Admin bằng quyền Manager.\n\n| API cần dùng | Đầu vào dự kiến | Đầu ra dự kiến |\n|---|---|---|\n| `GET /api/v1/technicians/{technicianId}` | Technician user ID | Profile identity, available, maxActiveTickets, version, skills/serviceAreas theo DTO chốt |\n| `PUT /api/v1/technicians/{technicianId}` | `{available,maxActiveTickets,version}` | Profile và version mới |\n| `GET /api/v1/skills?active=true` | active | Array `{id,code,name,active}` |\n| `PUT /api/v1/technicians/{technicianId}/skills` | `{skills:[{skillId,proficiencyLevel}],version}` | Profile hoặc skill list cùng version mới |\n| `PUT /api/v1/technicians/{technicianId}/service-areas` | `{locationIds:[...],version}` | Profile hoặc areas cùng version mới |\n\n### Danh sách Technician\n\n**Chưa có API này.** Sẽ thực hiện ở issue sau **“Xây dựng API danh sách Technician phục vụ UI Manager/Admin”**, dự kiến thuộc Milestone 3.\n\n- API: `GET /api/v1/technicians?page=0&size=20&query=an&available=true`.\n- Đầu vào: page, size, query theo tên/email, available tùy chọn.\n- Đầu ra: page DTO; mỗi item gồm technicianId, fullName, email, status, available, maxActiveTickets, version.\n- API Location phục vụ chọn Service Area đã có trong issue trước **“Xây dựng CRUD Location và Equipment Type”**: `GET /api/v1/locations?parentId={parentId}&active=true` → LocationResponse array.\n- Cần xử lý 400/401/403/404/409; profile list phục vụ cấu hình, không tự coi là danh sách đủ điều kiện phân công.\n\n## Frontend/UI\n\n- **List:** header, query/available filters, bảng tên/email/available/capacity/actions, result count/pagination.\n- **Profile:** identity card, availability switch, input maxActiveTickets, nút Lưu và feedback.\n- **Skills panel:** skill select, proficiency 1–5, bảng skills đã chọn, thêm/bỏ/Lưu.\n- **Service Areas panel:** location tree/selector, vùng đã chọn, bỏ chọn/Lưu và giải thích coverage bao gồm descendants.\n- **Technician own-profile view:** chỉ đọc, không có edit controls.\n- 409 có thông báo và tải lại; loading/empty/error/success cho mỗi nhóm dữ liệu.\n\n### Đồng nhất với UI hiện có\n\nList giống Ticket List; detail Cards/Row/Col như Ticket Detail; forms theo Category editor; dùng selector Location Selector và Eligible Asset Selector và AppLayout.\n\n## Công việc\n\n- Danh sách/chi tiết Technician; cấu hình available, maxActiveTickets, skill/proficiency và service area.\n- Technician chỉ đọc hồ sơ chính mình; Manager/Admin cấu hình theo API quản lý User, Role và Technician.\n- Tái sử dụng các endpoint profile/skills/service-areas của API quản lý User, Role và Technician và location reference API Location và Equipment Type.\n- Hỗ trợ validation capacity > 0, proficiency 1–5, location tồn tại và stale version 409.\n- Profile chỉ được tạo/cấu hình cho user có role TECHNICIAN. Contract query bổ sung phục vụ UI cấu hình, chưa khẳng định technician eligible để assign.\n\n## Business rule\n\n- MANAGER/ADMIN cấu hình; TECHNICIAN chỉ đọc hồ sơ chính mình.\n- Profile chỉ cho user có role TECHNICIAN; maxActiveTickets > 0, proficiencyLevel từ 1 đến 5, location tồn tại.\n- Danh sách profile phục vụ quản trị không phải kết quả kiểm tra eligibility cho assignment.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, có list/detail và ba nhóm cấu hình availability/capacity, skills, service areas; Technician own profile chỉ đọc.\n- Validation, loading/empty/error/success, pagination và conflict UI hoạt động bằng API thật hoặc mock đúng contract.\n- Lưu/đọc lại cấu hình qua backend sẽ nghiệm thu khi API profile/list sẵn sàng.\n\n## Cách test\n\n- List/query/page; đổi available/capacity; thêm/bỏ skill và service area.\n- Dữ liệu sai, 403/404/409; Technician own-profile chỉ đọc; layout tablet.\n- Khi API sẵn sàng, lưu và đọc lại cấu hình thật.\n\n## Ngoài phạm vi\n\nTự động phân công, eligibility engine, CRUD Skill/SLA mới; không viết lại API profile đã giao.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "Huytran2903",
+          "name": "Huytran2903",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/158266571?v=4",
+          "id": 158266571
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:05:30Z",
+      "updated_at": "2026-10-26T12:34:04Z",
+      "closed_at": "2026-10-15T08:16:32Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+      "display_title": "[NEX-029] Xây dựng UI quản lý Technician, Skill và Service Area"
+    },
+    "53": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "title": "[NEX-030] Hoàn thiện UI Category và Dynamic Form",
+      "issue_number": 53,
+      "body": "# Hoàn thiện UI Category và Dynamic Form\n\n**Module:** frontend `categories`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/44-category-form-ui-completion`  \n**Phụ thuộc:** #30, #31, #32, #48.\n\n## Mục tiêu\n\nTiếp tục từ giao diện quản trị Category và Dynamic Form đã hoàn thành: bổ sung preview đúng controls, thống nhất tiếng Việt, xử lý lỗi và trải nghiệm còn thiếu. Không dựng lại chức năng đã có.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Quản trị Category và Dynamic Form\n\nĐã có trong issue trước **“Xây dựng API quản trị Category và Dynamic Form”**. Giao diện quản trị cũng đã có trong issue trước **“Xây dựng giao diện quản trị Category và Dynamic Form”**; issue hiện tại chỉ hoàn thiện preview, trải nghiệm, tiếng Việt và các trạng thái còn thiếu.\n\n| API sử dụng | Đầu vào | Đầu ra |\n|---|---|---|\n| `GET /api/v1/admin/categories` | Không body | CategoryResponse array; không phải page DTO |\n| `POST /api/v1/admin/categories` | `{code,name,description,assetPolicy,locationRequired,defaultPriority,active}` | 201 CategoryResponse |\n| `PUT /api/v1/admin/categories/{categoryId}` | CategoryRequest theo DTO hiện có | 200 CategoryResponse |\n| `GET /api/v1/admin/categories/{categoryId}/form-versions` | categoryId | VersionResponse array gồm id/versionNumber/status/revision/timestamps |\n| `POST /api/v1/admin/categories/{categoryId}/form-versions/drafts` | Không body | 201 FormResponse |\n| `GET /api/v1/admin/form-versions/{formVersionId}` | formVersionId | 200 FormResponse |\n| `PUT /api/v1/admin/form-versions/{formVersionId}` | `{revision,requiresEquipment,minAttachments,defaultSkillId,defaultSlaPolicyId,fields}` | 200 FormResponse |\n| `POST /api/v1/admin/form-versions/{formVersionId}/publish` | `{revision}` | 200 FormResponse mới |\n| `POST /api/v1/admin/form-versions/{formVersionId}/archive` | `{revision}` | 200 FormResponse mới |\n| `GET /api/v1/admin/skills` | Không body, quyền Admin | SkillResponse array |\n\nAPI SLA đã có trong issue trước **“Xây dựng API đọc Category, Published Form và SLA”**: `GET /api/v1/sla-policies?active=true` → SLA policy array.\n\nField dùng fieldKey/label/fieldType/helpText/placeholder/required/active/displayOrder/validationRules/options; option dùng optionValue/optionLabel/displayOrder/active. Giữ đúng `revision` của API hiện có.\n\nPhần đồng bộ backend quy tắc IMAGE/DATETIME chưa thuộc UI này; sẽ thực hiện ở issue sau **“Xây dựng validation dynamic values/evidence và đồng bộ contract form”**. UI và mock theo contract thống nhất trước khi tích hợp thật.\n\n## Frontend/UI\n\n- **Category List:** bảng tên/code/asset policy/status/actions; modal category đủ fields request; link versions.\n- **Versions:** header category, nút Tạo draft, bảng version/status/ngày tạo/ngày publish và Sửa/Xem.\n- **Editor:** requirements/defaults card; field list thêm/bỏ/di chuyển; editor key/label/type/required/active/help/placeholder/rules.\n- **Options editor:** chỉ SELECT/MULTI_SELECT; value/label/active/order.\n- **Preview:** controls đúng chín field types, required marker/help/options; panel cạnh editor hoặc tab trên tablet/mobile, không chỉ badge liệt kê type.\n- **Action bar:** Lưu draft/Preview/Publish/Archive theo state; confirmation/dirty warning/field errors/409 reload.\n- Labels/alerts/loading/empty/error/success tiếng Việt.\n\n### Đồng nhất với UI hiện có\n\nMở rộng pages/FieldEditor/FormPreview hiện có; giữ Card/Form/Modal và tokens; chuẩn hóa header theo Ticket pages, chia sẻ dynamic renderer với UI Create Ticket nếu phù hợp.\n\n## Công việc\n\n- Hoàn thiện controls, ordering, preview và labels trong implementation hiện có.\n- Dùng API thật cho contract hiện có; UI/mock theo contract chuẩn validator submission backend cho phần backend chưa sửa.\n- Backend IMAGE/DATETIME alignment nằm ở validator submission backend, không gộp hạn API vào issue UI.\n- Khi publish/read-only/conflict, feedback rõ và không làm mất draft vô tình.\n\n## Business rule\n\n- Chỉ ADMIN quản trị; chỉ DRAFT được sửa, PUBLISHED/ARCHIVED chỉ đọc.\n- Server cấp versionNumber; API dùng revision cho optimistic lock.\n- Publish form mới và archive form cũ theo contract đã có; không sửa âm thầm published form cũ.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, hoàn thiện UI đang có, không mở lại một implementation CRUD/form editor trùng.\n- Preview đúng controls, field/option ordering, dirty warning, publish/archive/read-only và lỗi revision có kiểm thử.\n- API Category/Form hiện hữu dùng thật; phần rules mới chờ backend được mô phỏng theo contract và ghi rõ.\n\n## Cách test\n\n- Tạo/sửa category; thêm/sửa/di chuyển field/option; preview tất cả field types.\n- Published/archived read-only; lỗi publish, conflict revision và cảnh báo draft chưa lưu.\n- Kiểm tra tiếng Việt, loading/empty/error/success và layout desktop/tablet.\n\n## Ngoài phạm vi\n\nViết lại Category API/UI đã hoàn thành, sửa phá hủy published form, Ticket workflow và CRUD Skill/SLA mới.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:07:05Z",
+      "updated_at": "2026-10-26T12:34:05Z",
+      "closed_at": "2026-10-13T02:17:56Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/53",
+      "display_title": "[NEX-030] Hoàn thiện UI Category và Dynamic Form"
+    },
+    "54": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+      "title": "[NEX-031] Xây dựng UI quản trị Location và Equipment Type",
+      "issue_number": 54,
+      "body": "# Xây dựng UI quản trị Location và Equipment Type\n\n**Module:** frontend `locations`, `equipment-types`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/45-location-equipment-ui`  \n**Phụ thuộc:** #36.\n\n## Mục tiêu\n\nAdmin quản lý cây địa điểm và danh mục equipment type; dữ liệu dùng được cho Asset, Technician và Ticket.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\nĐã có trong issue trước **“Xây dựng CRUD Location và Equipment Type”**; tái sử dụng các endpoint hiện có.\n\n| API sử dụng | Đầu vào | Đầu ra |\n|---|---|---|\n| `GET /api/v1/locations?parentId={parentId}&active=true` | parentId tùy chọn; thiếu parentId lấy roots | LocationResponse array |\n| `GET /api/v1/locations/{locationId}` | locationId | LocationResponse |\n| `POST /api/v1/admin/locations` | `{code,name,type,parentId,description}` | 201 LocationResponse |\n| `PUT /api/v1/admin/locations/{locationId}` | `{name,parentId,description,active}` | 200 LocationResponse |\n| `GET /api/v1/equipment-types?active=true` | active | EquipmentTypeResponse array |\n| `POST /api/v1/admin/equipment-types` | `{code,name,description}` | 201 EquipmentTypeResponse |\n| `PUT /api/v1/admin/equipment-types/{equipmentTypeId}` | `{name,description,active}` | 200 EquipmentTypeResponse |\n\nLocationResponse gồm id/code/name/type/parentId/description/active/createdAt/updatedAt; EquipmentTypeResponse tương tự, không có type/parentId. Code không sửa khi update; API này chưa dùng version. UI không gửi code hoặc version trong update.\n\n## Frontend/UI\n\n- **Locations:** header/nút thêm, cây lazy load bên trái, selected detail/children bên phải, breadcrumb và active filter.\n- **Location form/modal:** code lúc tạo, name/type/parent/description; active switch lúc sửa, hierarchy hints/field errors.\n- **Equipment Types:** table code/name/description/status/actions; create/edit modal và confirm deactivate.\n- Loading khi expand, empty children/catalog, retry tại nhánh lỗi, success khi lưu; deactivate thay vì delete.\n- Routes đề xuất `/administration/locations`, `/administration/equipment-types`.\n\n### Đồng nhất với UI hiện có\n\nHeader/Card theo Ticket List, table/modal/badges theo Category List; React Bootstrap Forms và AppLayout; reference mapping dùng chung Location Selector và Eligible Asset Selector.\n\n## Công việc\n\n- Location tree/list tải theo parent: CAMPUS → BUILDING → FLOOR → ROOM/AREA.\n- Admin tạo/sửa/deactivate location; chọn parent hợp lệ và xử lý lỗi duplicate/hierarchy/cycle từ backend.\n- Equipment type list/create/edit/deactivate theo API hiện có.\n- Áp dụng quyền Admin cho thao tác quản trị; catalog/selector đọc theo quyền authenticated của API.\n- Có loading/empty/error/success; không tải toàn bộ cây không giới hạn.\n\n## Business rule\n\n- ADMIN quản trị; authenticated user đọc reference theo quyền API.\n- Hierarchy CAMPUS → BUILDING → FLOOR → ROOM/AREA; không tạo cycle.\n- Code unique và readonly sau tạo theo DTO hiện có; deactivate thay vì hard-delete.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, location tree/children/detail và equipment catalog có đầy đủ create/edit/deactivate trên API hiện có.\n- Code readonly lúc update; tree tải theo parent, states/errors/hierarchy hints rõ và responsive.\n- UI không gửi field/query mà API chưa hỗ trợ.\n\n## Cách test\n\n- Tree expand/breadcrumb/children; tạo/sửa/deactivate Location và Equipment Type.\n- Duplicate code, hierarchy/cycle/parent lỗi; active filter và sai quyền.\n- Keyboard access, loading tại nhánh cây, retry và layout tablet.\n\n## Ngoài phạm vi\n\nAPI xóa vật lý, hierarchy/schema/version mới; component chọn Location được làm ở nhiệm vụ selector.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:15:00Z",
+      "updated_at": "2026-10-26T12:34:05Z",
+      "closed_at": "2026-10-15T05:31:27Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+      "display_title": "[NEX-031] Xây dựng UI quản trị Location và Equipment Type"
+    },
+    "55": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+      "title": "[NEX-032] Xây dựng UI quản trị Asset và lịch sử trạng thái",
+      "issue_number": 55,
+      "body": "# Xây dựng UI quản trị Asset và lịch sử trạng thái\n \n**Module:** frontend `assets`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/46-asset-management-ui`  \n**Phụ thuộc:** #36, #37.\n\n## Mục tiêu\n\nThay Asset placeholder bằng list/form/detail/status-history thật cho Manager/Admin.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\nĐã có trong issue trước **“Xây dựng CRUD Asset và lịch sử trạng thái”**; location/equipment selectors dùng API của issue trước **“Xây dựng CRUD Location và Equipment Type”**.\n\n| API sử dụng | Đầu vào | Đầu ra |\n|---|---|---|\n| `GET /api/v1/assets` | page/size/locationId/status/sort | Page AssetResponse |\n| `GET /api/v1/assets/{assetId}` | assetId | AssetResponse |\n| `POST /api/v1/assets` | `{assetCode,equipmentTypeId,locationId,serialNumber,description,purchasedAt,warrantyUntil}` | 201 AssetResponse |\n| `PUT /api/v1/assets/{assetId}` | `{version,equipmentTypeId,locationId,serialNumber,description,purchasedAt,warrantyUntil}` | 200 AssetResponse |\n| `POST /api/v1/assets/{assetId}/status` | `{targetStatus,reason,version}` | 200 AssetResponse với trạng thái/version mới |\n| `GET /api/v1/assets/{assetId}/status-history` | assetId | History array gồm trạng thái cũ/mới, reason, actor và thời gian |\n| `GET /api/v1/locations?parentId={parentId}&active=true` | parentId/active | LocationResponse array |\n| `GET /api/v1/equipment-types?active=true` | active | EquipmentTypeResponse array |\n\nAssetResponse gồm id/assetCode/serialNumber/equipmentType/location/status/description/purchasedAt/warrantyUntil/version/createdAt/updatedAt. Không có field name; assetCode không sửa, status đổi bằng action riêng. Sort allowlist: createdAt/updatedAt/assetCode/id. Chưa có list search hay equipmentType filter nên UI không tự gửi các query này.\n\n## Frontend/UI\n\n- **List:** header/nút Tạo, location/status/sort/size filters, table code/type/location/serial/status/actions, count/pagination; URL filters.\n- **Create/Edit:** fields đúng request, location/equipment selectors, date inputs; code readonly khi edit, không đổi status trong form edit thường.\n- **Detail:** metadata cards, status badge, history timeline/table với reason/actor/time.\n- **Status modal:** targetStatus, reason, Hủy/Xác nhận, pending; loại status hiện tại khỏi lựa chọn.\n- Duplicate/reference errors, 403/404/409 reload, empty list/history và success/refetch.\n\n### Đồng nhất với UI hiện có\n\nTái sử dụng AssetStatusBadge; list/pagination như Ticket List; Cards/history như Ticket Detail; form/modal như Category editor, tokens chung.\n\n## Công việc\n\n- Asset list phân trang/filter/sort theo allowlist backend; create/edit/detail và status history.\n- Chọn location/equipment type từ API; hiển thị code, serial, name và status.\n- Modal đổi trạng thái gửi targetStatus, reason và version; reason bắt buộc, không chọn lại status hiện tại.\n- Xử lý duplicate code/serial, reference không hợp lệ và 409 bằng thông báo cùng lựa chọn tải lại dữ liệu.\n- Manager/Admin thực hiện thao tác theo API; thay placeholder Asset hiện tại.\n\n## Business rule\n\n- MANAGER/ADMIN quản lý Asset theo permission API đã có.\n- Asset code/serial unique; không sửa assetCode trong update, không hard-delete.\n- Status chỉ ACTIVE, UNDER_MAINTENANCE, OUT_OF_SERVICE, RETIRED; reason bắt buộc và không đổi sang status hiện tại.\n- Update/status mutation gửi version; stale version 409; history phải đọc lại sau thành công.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, list/form/detail/history/status modal hoàn chỉnh, thay Asset placeholder.\n- API hiện có tạo/sửa/đổi status và đọc lại history; version/refetch/error handling đúng contract.\n- Filters/sort/pagination theo allowlist, không thêm name/search unsupported; keyboard/tablet dùng được.\n\n## Cách test\n\n- Create/edit/detail; location/status filters, sort/page; duplicate code/serial.\n- Status modal với reason trống/status hiện tại; 403/409 và history refetch.\n- Loading/empty/error/success, responsive table và keyboard.\n\n## Ngoài phạm vi\n\nXóa vật lý, bulk import, thêm name/search API; API Asset hợp lệ theo Location tiếp tục ở nhiệm vụ backend đã giao.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:19:05Z",
+      "updated_at": "2026-10-26T12:34:06Z",
+      "closed_at": "2026-10-15T05:31:27Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+      "display_title": "[NEX-032] Xây dựng UI quản trị Asset và lịch sử trạng thái"
+    },
+    "56": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/56",
+      "title": "[NEX-033] Xây dựng Location Selector và Eligible Asset Selector",
+      "issue_number": 56,
+      "body": "# Xây dựng Location Selector và Eligible Asset Selector\n\n**Module:** frontend `locations`, `assets`, shared selectors  \n**Loại issue:** UI component  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/47-location-eligible-asset-selectors`  \n**Phụ thuộc:** #36, #38.\n\n## Mục tiêu\n\nTạo controls tái sử dụng để chọn địa điểm/asset đúng policy, dùng trong Create Ticket và quản trị.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Chọn Location\n\nĐã có trong issue trước **“Xây dựng CRUD Location và Equipment Type”**:\n\n- `GET /api/v1/locations?parentId={parentId}&active=true`: đầu vào parentId/active; trả LocationResponse array, tải từng cấp.\n- `GET /api/v1/locations/{locationId}`: đầu vào locationId; trả chi tiết location.\n- `GET /api/v1/equipment-types?active=true`: trả equipment type array để lọc asset.\n\n### Chọn Asset hợp lệ\n\nAPI đã được mô tả trong issue trước **“Xây dựng API lấy Asset hợp lệ theo Location”**. Chưa có endpoint trong code hiện tại; backend sẽ tiếp tục thực hiện trong issue **“Xây dựng API lấy Asset hợp lệ theo Location”** đã được giao.\n\n- API cần dùng: `GET /api/v1/locations/{locationId}/eligible-assets?page=0&size=20&equipmentTypeId={equipmentTypeId}&query={text}`.\n- Đầu vào: locationId bắt buộc; page/size; equipmentTypeId/query tùy chọn.\n- Đầu ra dự kiến: page DTO với item `{id,assetCode,equipmentType:{id,code,name},location:{id,code,name},status,description}`; DTO chính thức chốt với backend.\n- Chỉ asset đúng location, ACTIVE/UNDER_MAINTENANCE; 404 location không tồn tại, 400 query sai/không hỗ trợ, 401 phiên không hợp lệ.\n- UI dùng mock đúng contract đến khi backend hoàn tất; không thay bằng endpoint list toàn bộ asset rồi lọc tùy ý ở frontend.\n\n## Frontend/UI\n\n- **LocationSelector:** dependent selects campus/building/floor/room-or-area, labels/breadcrumb, clear/reset, loading/error từng cấp; node selector mode cho service area/quản trị.\n- **EligibleAssetSelector:** search code/tên nếu DTO/allowlist gốc có tên; nếu không thì label code + description, equipment filter, list/select và pagination.\n- Selected asset summary với code/type/status; missing-location hint, empty/no match, retry và disabled khi submit.\n- Đổi location bỏ asset cũ và cấp con; REQUIRED/OPTIONAL/FORBIDDEN kết hợp requiresEquipment đúng policy.\n- Controls render field errors từ Create Ticket validator; asset hết hiệu lực yêu cầu chọn lại.\n\n### Đồng nhất với UI hiện có\n\nForm.Select/Control/Label/Feedback, AssetStatusBadge, LoadingSpinner/EmptyState; spacing theo TicketFilters/TicketLocationFilter; nhúng trong Card/Form của page đang dùng.\n\n## Công việc\n\n- Component chọn campus/building/floor/room/area tái sử dụng cho Ticket và các màn quản trị.\n- Eligible Asset Selector dùng `GET /api/v1/locations/{locationId}/eligible-assets` của API Asset hợp lệ theo Location.\n- Hỗ trợ search, equipment type filter và pagination đúng contract API.\n- Khi đổi location phải bỏ asset cũ; asset chỉ thuộc đúng location, status ACTIVE/UNDER_MAINTENANCE.\n- REQUIRED/OPTIONAL/FORBIDDEN kết hợp requiresEquipment theo quy tắc đã duyệt.\n- Loading/empty/error, không có asset phù hợp và reference vừa mất hiệu lực có thông báo rõ.\n\n## Business rule\n\n- Asset phải thuộc đúng Location và có status ACTIVE hoặc UNDER_MAINTENANCE; không lấy asset cha/con.\n- REQUIRED/OPTIONAL/FORBIDDEN kết hợp requiresEquipment; đổi Location phải bỏ asset cũ.\n- UI kiểm tra selection để hỗ trợ nhập liệu; API tạo Ticket vẫn kiểm tra lại eligibility khi submit.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, location/asset selectors đủ controls, cascade resets, required/policy/states.\n- Location dùng API hiện có; Eligible Asset dùng thật nếu sẵn sàng hoặc mock đúng contract đã giao.\n- Khi đổi location/parent không giữ selection sai; lựa chọn asset vẫn phải được backend kiểm tra lại lúc tạo Ticket.\n\n## Cách test\n\n- Cascade reset khi đổi parent/location; required/optional/forbidden asset policy.\n- Hai Location và đủ bốn asset statuses; search/equipment filter/page, selected asset mất hiệu lực.\n- Field errors, loading/no-match/retry, keyboard và nhúng selector trong các form.\n\n## Ngoài phạm vi\n\nViết lại Eligible Asset API, lấy asset theo ancestor/descendant và service tạo Ticket.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "OanhPhiTo",
+          "name": "OanhPhiTo",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/211948615?v=4",
+          "id": 211948615
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:22:53Z",
+      "updated_at": "2026-10-26T12:34:07Z",
+      "closed_at": "2026-10-15T09:08:01Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/56",
+      "display_title": "[NEX-033] Xây dựng Location Selector và Eligible Asset Selector"
+    },
+    "57": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/57",
+      "title": "[NEX-034] Xây dựng UI Create Ticket theo published dynamic form",
+      "issue_number": 57,
+      "body": "# Xây dựng UI Create Ticket theo published dynamic form\n\n**Module:** frontend `tickets`, `categories`, `locations`, `assets`  \n**Loại issue:** UI  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/50-create-ticket-ui`  \n**Phụ thuộc:** #28, #30, #35, #44.\n\n## Mục tiêu\n\nRequester điền published form, chọn location/asset và ảnh để gửi Ticket; UI đầy đủ ngày 15 bằng contract/mock, API thật nối sau API tạo Ticket.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Dữ liệu để dựng form\n\nĐã có trong issue trước **“Xây dựng API đọc Category, Published Form và SLA”** và **“Xây dựng CRUD Location và Equipment Type”**:\n\n| API sử dụng | Đầu vào | Đầu ra |\n|---|---|---|\n| `GET /api/v1/categories?active=true` | active | CategoryResponse array |\n| `GET /api/v1/categories/{categoryId}/published-form` | categoryId | FormResponse với version/fields/options/policy/defaults |\n| `GET /api/v1/locations?parentId={parentId}&active=true` | parentId/active | LocationResponse array |\n\n`GET /api/v1/locations/{locationId}/eligible-assets` đã có kế hoạch trong issue trước **“Xây dựng API lấy Asset hợp lệ theo Location”**, nhưng endpoint chưa có trong code hiện tại; backend tiếp tục hoàn tất ở issue đó. Đầu vào/đầu ra theo contract selector đã mô tả.\n\n### Gửi Ticket mới\n\n**Chưa có API này.** Sẽ thực hiện ở issue sau **“Xây dựng API tạo Ticket với sequence, SLA và ảnh minh chứng”**, dự kiến thuộc Milestone 3. UI chuẩn bị API client và mock multipart đúng contract.\n\n- API: `POST /api/v1/tickets`.\n- Đầu vào: multipart gồm part `ticket` (JSON) và part `files` (JPEG/PNG nếu có).\n- JSON: `{categoryId,formVersionId,locationId,assetId?,title,description,dynamicValues:[{fieldKey,value}],attachments:[{fileIndex,fieldKey?}]}`.\n- Đầu ra 201: `{id,ticketNumber,status:\"SUBMITTED\",version}`, header Location tới chi tiết Ticket.\n- Client không gửi reporterId, ticketNumber, status, priority, SLA hoặc storageKey; backend quyết định.\n- Lỗi cần dựng UI: 400 fieldErrors; 401/403 quyền; 404 reference; 409 form đổi version; 413 quá dung lượng; 415 media type sai.\n- Validation backend sẽ thực hiện ở issue sau **“Xây dựng validation dynamic values/evidence và đồng bộ contract form”**. Không coi submit mock là Ticket đã được lưu thật.\n\n## Frontend/UI\n\n- **Route `/tickets/new`:** header/back link, sections/cards theo trình tự Thông tin sự cố → Địa điểm/tài sản → Nội dung biểu mẫu → Ảnh minh chứng.\n- **Thông tin:** category select, title, description, published version summary và hướng dẫn.\n- **Location/Asset:** selectors Location Selector và Eligible Asset Selector, required/optional/forbidden hints.\n- **Dynamic fields:** TEXT input; TEXTAREA; NUMBER; SELECT; MULTI_SELECT; DATE; DATETIME; BOOLEAN; IMAGE; active/order/labels/help/validation rules.\n- **Ảnh:** file picker, thumbnail, filename/size, bỏ ảnh, count/limits và field-linked photos; accessible validation.\n- **Action bar:** Hủy/Quay lại và Gửi phiếu, pending/disabled, dirty warning; error summary + field errors; form conflict có tải lại giữ input tương thích.\n- **Success:** ticketNumber và chuyển Detail/invalidate List; mock preview chuyển tới fixture detail nhất quán, không trộn mock mutation vào runtime thật.\n\n### Đồng nhất với UI hiện có\n\nHeader/summary/form Cards theo Ticket Detail, back-link hiện có; React Bootstrap Form như Category editor, shared dynamic renderer và selectors; TicketStatusBadge/priority labels, tokens/AppLayout.\n\n## Công việc\n\n- Route Create Ticket cho REQUESTER; nút tạo từ Ticket List và navigation phù hợp.\n- Chọn active category và tải current published form; chọn location/eligible asset qua Location Selector và Eligible Asset Selector.\n- Nhập title/description; render chín field type theo backend contract, active fields/options và displayOrder.\n- DATE/DATETIME serialize đúng contract; BOOLEAN/NUMBER/MULTI_SELECT không mất giá trị hợp lệ.\n- Chọn/preview/xóa ảnh trước submit; ánh xạ ảnh minh chứng chung và ảnh liên kết field IMAGE.\n- Gửi multipart theo API tạo Ticket, hiển thị validation tại field, lỗi file, lỗi mạng và form version conflict.\n- Chống double-submit; khi lỗi giữ input còn phù hợp, khi đổi category reset dữ liệu phụ thuộc có xác nhận nếu đã nhập.\n- Tạo thành công hiển thị ticket number, điều hướng detail thật và invalidate list/query liên quan.\n\n## Business rule\n\n- Chỉ REQUESTER có action tạo; UI lấy current published form, không lấy draft.\n- BOOLEAN false, NUMBER 0, dates/options và IMAGE giữ đúng contract; IMAGE không scalar value.\n- Đổi category/location reset dữ liệu phụ thuộc có cảnh báo khi mất input; chống double-submit.\n- Client không gửi reporter/roles/status/priority/SLA/storageKey do server quyết định.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, Create Ticket UI có đầy đủ published form, location/asset, chín field types, preview ảnh và submit/error/success flows.\n- Nếu API tạo chưa có, multipart payload và các lỗi được kiểm thử bằng mock; không báo đã lưu SQL Server trong production.\n- Client/hook có thể nối API thật mà không thiết kế lại màn hình; hành trình lưu/đọc ảnh thật nghiệm thu sau.\n\n## Cách test\n\n- Chín field types, đổi category/form, asset policy và location reset.\n- Ảnh add/preview/remove/limits; payload multipart, fieldErrors, form conflict, lỗi mạng và pending.\n- Success routing/fixture detail, giữ input khi lỗi và mobile submission; lưu/đọc thật nghiệm thu khi API có.\n\n## Ngoài phạm vi\n\nDraft Ticket lưu server, workflow, WORK_RESULT upload và implementation API tạo Ticket.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "thoaithanh-web",
+          "name": "thoaithanh-web",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/248394015?v=4",
+          "id": 248394015
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:32:17Z",
+      "updated_at": "2026-10-26T12:34:07Z",
+      "closed_at": "2026-10-13T02:17:11Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/57",
+      "display_title": "[NEX-034] Xây dựng UI Create Ticket theo published dynamic form"
+    },
+    "58": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+      "title": "[NEX-035] Hoàn thiện UI Manager review và assignment",
+      "issue_number": 58,
+      "body": "# Hoàn thiện UI Manager review và assignment\n\n**Module:** frontend `tickets`, contract workflow  \n**Loại issue:** UI + contract/mock  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/52-manager-ticket-workflow-ui`  \n**Phụ thuộc:** #29, #35.\n\n## Mục tiêu\n\nManager/Admin có action panel/form đầy đủ để demo review/reject/assign/reassign/unassign theo contract, không chờ API workflow.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Dữ liệu đọc hiện có\n\nĐã có trong issue trước **“Xây dựng API đọc danh sách và chi tiết Ticket”**:\n\n- `GET /api/v1/tickets`: page/size và các filter/sort được hỗ trợ → page TicketSummaryResponse.\n- `GET /api/v1/tickets/{ticketId}`: ticketId → TicketDetailResponse, gồm trạng thái, version và history.\n\n### Review và assignment\n\n**Các API dưới đây chưa có.** Mô tả đầu vào/đầu ra để dựng UI/mock; sẽ thực hiện ở các issue backend sau **“API review, reject và cancel Ticket”** và **“API phân công, đổi và gỡ phân công Technician”**. Các issue backend workflow này chưa có số được xác nhận trong ảnh, không tự gán số.\n\n| API dự kiến | Đầu vào dự kiến | Đầu ra dự kiến |\n|---|---|---|\n| `POST /api/v1/tickets/{ticketId}/review` | `{version}` | `{id,status,version}` sau action |\n| `POST /api/v1/tickets/{ticketId}/reject` | `{version,reason}` | Action result |\n| `POST /api/v1/tickets/{ticketId}/cancel` | `{version,reason}` | Action result |\n| `GET /api/v1/tickets/{ticketId}/eligible-technicians` | page/size/query theo contract chốt | Page candidate DTO với identity, availability, capacity, eligibility reasons |\n| `POST /api/v1/tickets/{ticketId}/assign` | `{version,technicianId,overrideReason?}` | Action result và assignment DTO |\n| `POST /api/v1/tickets/{ticketId}/reassign` | `{version,technicianId,reason,overrideReason?}` | Action result và assignment mới |\n| `POST /api/v1/tickets/{ticketId}/unassign` | `{version,reason}` | Action result |\n\nDựng các lỗi 400/403/404/409, mock cập nhật status/history/assignment nhất quán. API danh sách Technician phục vụ quản trị không thay thế API kiểm tra eligibility cho assignment.\n\n## Frontend/UI\n\n- Action panel trên Detail: chỉ actions role/state cho phép; current status/assignee context.\n- Review action confirmation; Reject/Cancel modal có reason.\n- Assignment dialog: search/filter candidates, bảng identity/availability/current workload/capacity và mismatch reasons, chọn technician.\n- Override section: reason bắt buộc khi mismatch có thể override; không cho override thiếu role/profile hoặc inactive user.\n- Reassign/Unassign có reason và confirmation; pending/success/error/409 reload.\n- Panel không làm lỗi đọc Detail thật khi future query/action chưa khả dụng; production có thông báo chưa hỗ trợ.\n\n### Đồng nhất với UI hiện có\n\nGắn vào TicketDetailPage existing Cards/badges/history, Form/Modal giống Category publish; candidate table theo Ticket List; không tạo second Detail layout.\n\n## Công việc\n\n- Bổ sung action panel trong Ticket Detail cho Manager/Admin theo role và trạng thái.\n- Form/modal begin review, reject, cancel, assign, reassign, unassign; reason bắt buộc theo transition matrix.\n- UI tìm/chọn technician, hiển thị eligibility/capacity/skills/service area và override reason theo contract dự kiến.\n- Phân biệt thông tin profile phục vụ UI cấu hình với kết quả eligibility phục vụ assignment; hai API có mục đích khác nhau.\n- Chốt DTO/query/action contracts cho backend milestone sau; mutations gửi expected version.\n- Development/test mock trả success/400/403/404/409 và cập nhật fixture/history nhất quán sau action.\n- Không triển khai workflow API thật trong issue này; production chưa có API phải thể hiện action chưa khả dụng.\n\n## Business rule\n\n- MANAGER/ADMIN thao tác đúng transition matrix; không generic status patch.\n- Mismatch availability/capacity/skill/coverage có thể override với reason theo contract; thiếu role/profile hoặc user inactive không bypass.\n- UI kiểm thử role/state presentation bằng mock không xác nhận authorization/concurrency backend.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, Manager/Admin action panel, review/reject/cancel và assignment dialogs đủ controls/validation/states theo role/state.\n- Preview/mock cập nhật fixture status/history/assignment nhất quán, có lỗi quyền/version/capacity.\n- Backend workflow chưa có được ghi rõ; production không giả lập mutation thành công.\n\n## Cách test\n\n- Actions theo role/state; Review/Reject/Cancel reason và Assignment/Reassign/Unassign dialogs.\n- Candidate search/selection, mismatch/override validation, 400/403/404/409 và reload.\n- Mock status/history/assignment nhất quán; detail thật không hỏng khi workflow API chưa có.\n\n## Ngoài phạm vi\n\nBackend workflow/eligibility/concurrency engine và tự động chọn Technician.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:35:04Z",
+      "updated_at": "2026-10-26T12:34:08Z",
+      "closed_at": "2026-10-12T02:40:03Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+      "display_title": "[NEX-035] Hoàn thiện UI Manager review và assignment"
+    },
+    "59": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+      "title": "[NEX-036] Xây dựng My Assigned Work và UI Technician xử lý Ticket",
+      "issue_number": 59,
+      "body": "# Xây dựng My Assigned Work và UI Technician xử lý Ticket\n\n**Module:** frontend `tickets`, `technician-work`  \n**Loại issue:** UI + contract/mock  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/53-technician-assigned-work-ui`  \n**Phụ thuộc:** #35.\n\n## Mục tiêu\n\nTechnician có màn công việc được giao và controls start/work-log/evidence/resolve hoàn chỉnh trong preview/test ngày 15.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Ticket đọc được\n\nĐã có trong issue trước **“Xây dựng API đọc danh sách và chi tiết Ticket”**: `GET /api/v1/tickets` → page summary; `GET /api/v1/tickets/{ticketId}` → detail. Visibility Technician gồm assignment hiện tại và lịch sử; không đủ để xác định riêng công việc đang được giao.\n\n### Công việc hiện tại và xử lý Ticket\n\n**Các API này chưa có.** UI/mock dùng contract dự kiến; sẽ thực hiện ở các issue backend sau **“API công việc hiện tại của Technician”**, **“API bắt đầu xử lý và Work Log”**, **“API ảnh kết quả và resolve Ticket”**. Chưa gán số cho các issue chưa xuất hiện trong ảnh.\n\n| API dự kiến | Đầu vào dự kiến | Đầu ra dự kiến |\n|---|---|---|\n| `GET /api/v1/technicians/me/assigned-tickets` | page/size và filter theo allowlist chốt | Page summary + current assignment |\n| `POST /api/v1/tickets/{ticketId}/start` | `{version}` | `{id,status,version}` và assignment result |\n| `GET /api/v1/tickets/{ticketId}/work-logs` | ticketId, phân trang nếu contract có | Ordered WorkLog DTO list/page |\n| `POST /api/v1/tickets/{ticketId}/work-logs` | `{version,logType,content,startedAt,endedAt,minutesSpent}` | 201 WorkLog DTO và version mới nếu aggregate contract yêu cầu |\n| `POST /api/v1/tickets/{ticketId}/attachments` | Multipart metadata `{attachmentType:\"WORK_RESULT\"}` + files | Attachment metadata |\n| `POST /api/v1/tickets/{ticketId}/resolve` | `{version,resolutionOutcome,resolutionSummary}` | Action result với status RESOLVED |\n\nChốt DTO/version và lỗi 400/403/404/409 trước tích hợp thật. Không báo work log, ảnh kết quả hoặc resolve đã lưu server khi chỉ chạy mock.\n\n## Frontend/UI\n\n- **`/my-work`:** header, current assignment filter/status/priority/sort theo future query allowlist; list/table hoặc mobile cards; SLA indicator/count/pagination.\n- **Work detail:** tái sử dụng Ticket Detail, current assignment card, nút Bắt đầu xử lý.\n- **Work Logs:** ordered list/timeline với type/content/time/minutes; add log form/modal với required/validation.\n- **Work Result images:** picker/preview/remove/limits và upload pending/error theo future contract.\n- **Resolve modal:** outcome dropdown FIXED/TEMPORARY_FIX/NO_FAULT_FOUND/UNRESOLVED, summary textarea, điều kiện tối thiểu một work log và confirmation.\n- Mất assignment/409 có feedback và reload; production missing APIs hiển thị chưa khả dụng.\n\n### Đồng nhất với UI hiện có\n\nTicket List filters/table/URL convention; Ticket Detail Cards/StatusBadge/time/history; form/modal/ảnh pattern dùng chung UI Create Ticket/UI Detail/actions/ảnh/comments/feedback, AppLayout nav có My Work theo role.\n\n## Công việc\n\n- Route My Assigned Work cho Technician; hiển thị assignment hiện tại, status, priority, location và SLA.\n- Tái sử dụng list/detail components hiện có. API read API danh sách/chi tiết Ticket cho thấy current/historical visibility, không mặc nhiên thay thế query current assignment; chốt query contract còn thiếu và dùng mock có phân biệt current/history.\n- UI start work, thêm/xem work log, thời gian thực hiện, ảnh kết quả và resolve với outcome/summary.\n- Resolve UI yêu cầu ít nhất một work log và các điều kiện đã duyệt; không hiển thị outcome DUPLICATE của P1.\n- Chốt DTO/query/action contracts; mock các trạng thái ASSIGNED/IN_PROGRESS/RESOLVED, stale version và mất assignment.\n- Production chưa có query/action API tương ứng thể hiện trạng thái chưa khả dụng.\n\n## Business rule\n\n- Chỉ current assigned TECHNICIAN thao tác Start/Work Log/Resolve đúng state; historical visibility không cho quyền làm việc.\n- Resolve có outcome/summary và tối thiểu một work log; không expose DUPLICATE của P1.\n- Work log end không trước start, minutesSpent > 0 khi gửi; dữ liệu/ảnh theo contract.\n- Các API chưa có dùng mock development/test; production không báo đã lưu work/ảnh/resolve thật.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, có My Assigned Work, current assignment view, Start, Work Log, ảnh kết quả và Resolve UI.\n- Preview phân biệt current/historical assignment, xử lý missing assignment/version và validation work-log/resolve.\n- Actions và dữ liệu work chưa có API dùng mock trong development/test; không tuyên bố đã lưu server thật.\n\n## Cách test\n\n- Current vs historical assignment; actions ở ASSIGNED/IN_PROGRESS/RESOLVED.\n- Work-log/time validation, ảnh pending/error; resolve thiếu work log/summary, mất assignment và 409.\n- List/page, mobile work controls, keyboard và trạng thái API chưa khả dụng.\n\n## Ngoài phạm vi\n\nAPI current assignment, Work Log, WORK_RESULT, Resolve và assignment engine thật.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:36:28Z",
+      "updated_at": "2026-10-26T12:34:09Z",
+      "closed_at": "2026-10-12T02:40:08Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+      "display_title": "[NEX-036] Xây dựng My Assigned Work và UI Technician xử lý Ticket"
+    },
+    "60": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+      "title": "[NEX-037] Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI",
+      "issue_number": 60,
+      "body": "# Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI\n\n**Module:** frontend `tickets`  \n**Loại issue:** UI + contract/mock  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/54-ticket-detail-collaboration-ui`  \n**Phụ thuộc:** #35, #50, #51, #52, #53.\n\n## Mục tiêu\n\nHoàn thiện Detail hiện có với preview/tải ảnh, actions theo role/state, comments và feedback; giữ phần đọc thật hoạt động khi subresource API chưa có.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n### Chi tiết Ticket hiện có\n\nĐã có trong issue trước **“Xây dựng API đọc danh sách và chi tiết Ticket”**: `GET /api/v1/tickets/{ticketId}` → TicketDetailResponse gồm summary, description, stored form, dynamic values, history và attachment metadata.\n\n### Xem/tải ảnh\n\n**Chưa có API đọc nội dung ảnh.** Sẽ thực hiện ở issue sau **“Xây dựng API đọc attachment có phân quyền”**:\n\n- `GET /api/v1/tickets/{ticketId}/attachments/{attachmentId}/content`: ticketId/attachmentId + Bearer JWT → binary JPEG/PNG với Content-Type, Content-Length, Content-Disposition.\n- UI lấy blob bằng HTTP client có Authorization; preview/tải bằng object URL, không gắn JWT vào URL ảnh.\n\n### Actions, comments và feedback\n\n**Các API này chưa có.** Sẽ thực hiện ở các issue backend sau **“API close, reopen và cancel Ticket”**, **“API comments Ticket”** và **“API feedback Ticket”**; chưa gán số khi chưa có issue xác nhận.\n\n| API dự kiến | Đầu vào dự kiến | Đầu ra dự kiến |\n|---|---|---|\n| `POST /api/v1/tickets/{ticketId}/cancel` | `{version,reason}` | Updated action result |\n| `POST /api/v1/tickets/{ticketId}/close` | `{version,reason?}`; Manager/Admin force-close bắt buộc reason | Updated action result |\n| `POST /api/v1/tickets/{ticketId}/reopen` | `{version,reason}` | Updated action result |\n| `GET /api/v1/tickets/{ticketId}/comments` | ticketId/page theo contract chốt | Visible comment list/page |\n| `POST /api/v1/tickets/{ticketId}/comments` | `{content,visibility}` | 201 Comment DTO |\n| `PUT /api/v1/tickets/{ticketId}/comments/{commentId}` | `{content}` + version nếu contract có | Updated Comment DTO |\n| `GET /api/v1/tickets/{ticketId}/feedback` | ticketId | Feedback DTO hoặc trạng thái chưa có feedback theo contract chốt |\n| `POST /api/v1/tickets/{ticketId}/feedback` | `{rating,comment?}` | 201 Feedback DTO |\n\nComment DTO gồm id/author/content/visibility/createdAt/editedAt; feedback gồm id/rating/comment/createdAt. Không có delete comment hoặc sửa/xóa feedback trong MVP. Mock không trả INTERNAL comments cho Requester; errors/unavailable subresource không làm hỏng detail đọc thật.\n\n## Frontend/UI\n\n- Giữ summary/description/stored form/dynamic values/history đang có; cùng back-link trở về list filters.\n- **Attachment section:** thumbnails/cards với filename/type/size/uploader/time; mở preview modal, nút Tải xuống, loading/missing-file/error/retry.\n- Fetch binary bằng Authorization client; tạo object URL, revoke khi đóng/unmount; không token trong img URL.\n- **Requester actions:** Cancel trước assignment, Close/Reopen RESOLVED; confirmation/reason/version conflict theo rule. Manager/Admin actions dùng chung panel action panel Manager, Technician UI công việc của Technician.\n- **Comments:** list/timeline author/time/visibility badge, composer textarea, PUBLIC/INTERNAL selector theo role, edit-own control và loading/empty/error/success.\n- **Feedback:** rating 1–5 keyboard accessible, optional comment, Gửi; existing feedback read-only, chỉ reporter CLOSED.\n- Failed/unavailable comments/feedback/ảnh không làm hỏng detail đọc thật. Preview dùng consistent fixtures cho CLOSED/RESOLVED/history.\n\n### Đồng nhất với UI hiện có\n\nMở rộng TicketDetailPage/TicketDetailSections và badges hiện có, giữ grid/cards/history; Modal/Form/Alert pattern thống nhất UI Category/Form hoàn thiện/UI Create Ticket, shared action panel không trùng controls.\n\n## Công việc\n\n- Giữ phần detail đọc thật, bổ sung action theo role/state: Requester cancel trước assignment, close/reopen từ RESOLVED; Manager/Admin cancel/force close/reopen theo matrix.\n- Dùng chung action panel/contracts với action panel Manager/UI công việc của Technician, không tạo hai bộ controls cùng chức năng.\n- Comments PUBLIC/INTERNAL và edit-own theo quyền/state; Requester chỉ public. Không có comment delete hoặc comment attachment trong MVP.\n- Feedback form 1–5 và optional comment cho reporter khi CLOSED; chỉ một feedback, không update/delete.\n- Chốt DTO/query contracts cho comments/feedback cùng visibility; MSW/mock cho pending/success/field errors/conflict và dữ liệu rỗng.\n- Tách lỗi phần comments/feedback chưa có API để không làm hỏng detail đọc thật.\n- Production chưa có backend tương ứng thể hiện chưa khả dụng; không fake comment/feedback submission.\n\n## Business rule\n\n- Ảnh theo Ticket visibility; JWT chỉ trong Authorization header.\n- Requester cancel trước assignment, close/reopen RESOLVED; Manager/Admin force-close cần reason theo matrix.\n- Comments PUBLIC/INTERNAL theo role; author edit trên Ticket nonterminal; không xóa comment/comment attachment.\n- Feedback chỉ reporter khi CLOSED, rating 1–5, một lần và không sửa/xóa trong MVP.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, phần Detail đọc hiện có vẫn hoạt động; bổ sung ảnh, actions, comments và feedback UI đủ states.\n- Preview/test có binary image/object URL lifecycle, role/state action matrix, comment visibility/edit và feedback rules.\n- Lỗi/missing API của từng subresource không làm hỏng Detail; tích hợp API thật được nghiệm thu riêng.\n\n## Cách test\n\n- Binary image preview/download, object URL revoke, missing file/permission errors.\n- Action role/state/reason/409; comments visibility/edit-own và feedback rating/one-only.\n- Lỗi/unavailable subresource không phá Detail thật; loading/empty/error/success và responsive.\n\n## Ngoài phạm vi\n\nBackend workflow/comments/feedback thật, COMMENT attachments và dựng một Detail page trùng.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "TuanThanh-dev19",
+          "name": "TuanThanh-dev19",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+          "id": 202233638
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:37:41Z",
+      "updated_at": "2026-10-26T12:34:09Z",
+      "closed_at": "2026-10-14T03:27:47Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+      "display_title": "[NEX-037] Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI"
+    },
+    "61": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+      "title": "[NEX-038] Hoàn thiện Dashboard shell theo role",
+      "issue_number": 61,
+      "body": "# Hoàn thiện Dashboard shell theo role\n\n**Module:** frontend `dashboard`, backend DTO contract hiện có  \n**Loại issue:** UI + contract/mock  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/55-dashboard-shell-ui`  \n**Phụ thuộc:** #41.\n\n## Mục tiêu\n\nDashboard đầy đủ bốn metric và state presentation theo contract, đồng nhất ngôn ngữ/layout.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\n**Đã có contract, API client và UI shell** trong issue trước **“Xây dựng Contract và giao diện khung Dashboard”**. **Chưa có endpoint/query dữ liệu thật.** API sẽ thực hiện ở issue backend sau **“API Dashboard summary theo role”**; chưa gán số khi issue chưa được tạo.\n\n- API dự kiến: `GET /api/v1/dashboard/summary`.\n- Đầu vào: Bearer JWT, không body; phạm vi dữ liệu backend xác định theo current user/role.\n- Đầu ra 200:\n```json\n{\n  \"openTickets\": 12,\n  \"inProgressTickets\": 4,\n  \"slaAtRiskTickets\": 2,\n  \"resolvedThisWeek\": 7,\n  \"generatedAt\": \"2026-10-15T10:30:00+07:00\"\n}\n```\n- Metrics là số nguyên không âm; generatedAt là ISO timestamp. Định nghĩa metrics giữ contract Dashboard đã thống nhất.\n- Preview/test dùng MSW cho loading, zero, success, error/retry. Production không đăng ký controller trả số liệu giả.\n\n## Frontend/UI\n\n- Header Tổng quan, scope text Requester own/Technician assigned-history/Manager-Admin all.\n- Four cards: Phiếu đang mở, Đang xử lý, Có nguy cơ trễ SLA, Đã giải quyết tuần này; icon/accent hiện có.\n- Skeleton/loading; zero/empty hint; error alert + Thử lại; success values.\n- Thời điểm cập nhật format vi-VN với timezone Asia/Bangkok explicit.\n- Desktop 4 cards; tablet/mobile grid dễ đọc; development preview scenarios theo MSW, runtime chưa có API thể hiện unavailable/error rõ.\n\n### Đồng nhất với UI hiện có\n\nGiữ DashboardPage/MetricCard/useDashboardSummary/dashboardApi; primary label/heading/spacing/tokens cùng Ticket pages, icon Fi và AppLayout.\n\n## Công việc\n\n- Hoàn thiện bốn metric card theo contract Dashboard đã có, label tiếng Việt và giải thích phạm vi dữ liệu của Requester/Technician/Manager/Admin.\n- Hiển thị generatedAt bằng timezone Asia/Bangkok rõ ràng, không phụ thuộc timezone thiết bị.\n- Hoàn thiện loading/skeleton, zero/empty, error/retry và success; responsive desktop/tablet.\n- Development preview và test dùng MSW/mock theo contract; production giữ client thật, hiển thị trạng thái chưa có dữ liệu khi API chưa triển khai.\n- Tài liệu hóa metric và role scope nhất quán với contract và Dashboard shell trước khi query thật được triển khai.\n\n## Business rule\n\n- Bốn metrics/field names theo Dashboard contract đã thống nhất.\n- Role scope ở UI chỉ là presentation; authorization backend vẫn phải triển khai khi có query thật.\n- Mock chỉ development/test; không hard-code success metrics trong production.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, bốn metric cards, role scope, timestamp và loading/zero/error/retry/success hoàn chỉnh.\n- Labels tiếng Việt, thời gian Asia/Bangkok và layout đồng nhất với UI hiện tại.\n- Success metrics lấy từ contract/mock preview/test; không hard-code dữ liệu giả trong production.\n\n## Cách test\n\n- Bốn cards với loading/zero/success/error/retry, role scope labels.\n- generatedAt format vi-VN/Asia-Bangkok khi thiết bị ở timezone khác.\n- Desktop/tablet/mobile layout và production chưa có API không trả số liệu giả.\n\n## Ngoài phạm vi\n\nDashboard query/controller thật, charts/export/advanced reporting và notification/audit UI.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 0,
+      "created_at": "2026-10-08T17:39:02Z",
+      "updated_at": "2026-10-26T12:34:10Z",
+      "closed_at": "2026-10-15T14:53:05Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+      "display_title": "[NEX-038] Hoàn thiện Dashboard shell theo role"
+    },
+    "62": {
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/62",
+      "title": "[NEX-039] Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP",
+      "issue_number": 62,
+      "body": "# Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP\n\n**Module:** frontend `app`, `shared`, toàn bộ feature UI  \n**Loại issue:** UI/QA  \n**Bắt đầu:** 09/10/2026  \n**Hoàn thành:** 15/10/2026 — hạn hoàn thành UI  \n**Branch gợi ý:** `feature/56-ui-navigation-quality`  \n**Phụ thuộc:** #42,  #52, #53, #54, #55.\n\n## Mục tiêu\n\nTất cả pages/components thuộc bổ sung được truy cập theo role, đồng nhất và demo UI được ngày 15.\n\n## API sử dụng — đầu vào/đầu ra và nơi thực hiện\n\nKhông tạo API mới. Rà soát các API client/hooks đã mô tả ở từng màn: sử dụng API hiện có, hoặc mock đúng request/response của API sẽ làm sau.\n\n- Auth: `POST /api/v1/auth/login`, `GET /api/v1/auth/me` — đã có ở các issue Auth trước.\n- Catalog/Asset/Category/Ticket read — đã có ở các issue backend trước với tên và endpoint ghi ở từng màn.\n- User/Technician/Eligible Asset chưa có endpoint thì theo kế hoạch backend đã giao.\n- Create Ticket, attachment content và workflow/comments/feedback/Dashboard thật — thực hiện ở các issue backend sau theo mô tả API của từng UI.\n\nNghiệm thu UI không xác nhận mutation/persistence/authorization backend của API chưa triển khai.\n\n## Frontend/UI\n\n- Navigation theo REQUESTER/TECHNICIAN/MANAGER/ADMIN và user nhiều role; link Administration/Users, Technicians, Locations/Equipment, Assets, Categories, Create Ticket/My Work đúng quyền.\n- Active nav, back-link/breadcrumb, account/logout, session checking; 403/404/error pages thống nhất, không redirect mọi lỗi khiến người dùng mất ngữ cảnh.\n- Đồng nhất titles/labels/button text/forms/tables/badges/date display; dùng cùng tokens và shared loading/empty/error/success.\n- Review desktop/tablet/mobile, keyboard/tab/focus, form errors và ảnh preview.\n- Preview routes/scenarios cho future workflows; ghi rõ mock, không mở mock trong production.\n\n### Đồng nhất với UI hiện có\n\nIssue nghiệm thu toàn bộ quy chuẩn UI chung; không thay palette/shell/UI framework hiện tại.\n\n## Công việc\n\n- Rà từng màn/components theo checklist UI chung và các acceptance của issue.\n- Chạy frontend lint/test/build; kiểm tra production build/mock guard.\n- Demo UI real where available và contract/mock where pending; lưu bảng coverage và trạng thái API dependency.\n- Chuyển backend verify/SQL Server/end-to-end thật sau API sang nghiệm thu tích hợp thật, không kéo hạn UI qua ngày 15.\n- Hướng dẫn bật preview và phân biệt dữ liệu thật/mock bằng tài liệu dễ hiểu.\n\n## Business rule\n\n- Navigation cho user nhiều role là hợp các quyền; từng action vẫn theo business preconditions.\n- Ẩn controls không xác nhận backend quyền; mock phải có explicit development/test gate.\n- Không fake production mutation; coverage luôn ghi API thật/mock/pending.\n\n## Đạt yêu cầu khi\n\n- Đến **15/10/2026**, navigation/guards, labels, badges, forms/states và responsive giữa các màn đồng nhất.\n- Có bảng coverage cho từng màn/hành trình ghi API thật, mock hoặc pending; frontend lint/test/build xanh.\n- Không cần chờ API backend sau để đóng phần UI; mock chỉ development/test, integration thật nghiệm thu riêng.\n\n## Cách test\n\n- Routes/roles/restore/logout/401/403/404; labels/badges/forms/states giữa các màn.\n- Desktop/tablet/mobile, keyboard/focus, loading/error/retry/empty.\n- Frontend lint/test/build và kiểm tra production build không bật mock.\n\n## Ngoài phạm vi\n\nBusiness API mới và nghiệm thu thật của backend chưa sẵn sàng.",
+      "state": "closed",
+      "user": {
+        "login": "TuanThanh-dev19",
+        "name": "TuanThanh-dev19",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/202233638?v=4",
+        "id": 202233638
+      },
+      "assignees": [
+        {
+          "login": "tranthaigin",
+          "name": "tranthaigin",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/242965146?v=4",
+          "id": 242965146
+        }
+      ],
+      "labels": null,
+      "milestone": 4,
+      "state_reason": "completed",
+      "comments": 1,
+      "created_at": "2026-10-08T17:39:41Z",
+      "updated_at": "2026-10-26T12:34:11Z",
+      "closed_at": "2026-10-15T14:53:10Z",
+      "display_url": "https://github.com/TuanThanh-dev19/Nexora/issues/62",
+      "display_title": "[NEX-039] Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP"
+    }
+  },
+  "featureMap": [
+    [
+      "Search and Filter Tickets",
+      35
+    ],
+    [
+      "View Ticket Details",
+      60
+    ],
+    [
+      "Login",
+      51
+    ],
+    [
+      "Logout",
+      51
+    ],
+    [
+      "Manage Users",
+      51
+    ],
+    [
+      "Manage User Roles",
+      51
+    ],
+    [
+      "Manage Locations",
+      54
+    ],
+    [
+      "Manage Equipment Types",
+      54
+    ],
+    [
+      "Manage Assets",
+      55
+    ],
+    [
+      "Change Asset Status",
+      55
+    ],
+    [
+      "View Asset Status History",
+      55
+    ],
+    [
+      "Manage Incident Categories",
+      53
+    ],
+    [
+      "View Form Versions",
+      53
+    ],
+    [
+      "Manage Dynamic Form Drafts",
+      53
+    ],
+    [
+      "Preview Dynamic Forms",
+      53
+    ],
+    [
+      "Publish Form Version",
+      53
+    ],
+    [
+      "Archive Form Version",
+      53
+    ],
+    [
+      "View Technician Profiles",
+      74
+    ],
+    [
+      "Configure Technician Availability and Capacity",
+      52
+    ],
+    [
+      "Configure Technician Skills",
+      52
+    ],
+    [
+      "Configure Technician Service Areas",
+      52
+    ],
+    [
+      "Submit Ticket",
+      78
+    ],
+    [
+      "View and Download Ticket Attachments",
+      76
+    ],
+    [
+      "Review Ticket",
+      79
+    ],
+    [
+      "Reject Ticket",
+      null
+    ],
+    [
+      "Cancel Ticket",
+      null
+    ],
+    [
+      "Add Ticket Comment",
+      null
+    ],
+    [
+      "Edit Own Ticket Comment",
+      null
+    ],
+    [
+      "Monitor Ticket SLA",
+      72
+    ],
+    [
+      "Assign Technician",
+      79
+    ],
+    [
+      "Reassign Technician",
+      null
+    ],
+    [
+      "Unassign Technician",
+      null
+    ],
+    [
+      "View Assigned Work",
+      75
+    ],
+    [
+      "Start Ticket Work",
+      75
+    ],
+    [
+      "Record Work Log",
+      81
+    ],
+    [
+      "Upload Work Result Images",
+      88
+    ],
+    [
+      "Resolve Ticket",
+      81
+    ],
+    [
+      "Close Ticket",
+      77
+    ],
+    [
+      "Reopen Ticket",
+      null
+    ],
+    [
+      "Submit Ticket Feedback",
+      null
+    ],
+    [
+      "View Ticket Feedback",
+      null
+    ],
+    [
+      "View Ticket Dashboard",
+      72
+    ],
+    [
+      "Shared Foundation and Integration",
+      62
+    ]
+  ],
+  "featureConfig": [
+    [
+      "Search and Filter Tickets",
+      "Phan Tuấn Thành",
+      "09/10/2026"
+    ],
+    [
+      "View Ticket Details",
+      "Phan Tuấn Thành",
+      "15/10/2026"
+    ],
+    [
+      "Login",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Logout",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage Users",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage User Roles",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage Locations",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Equipment Types",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Assets",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Change Asset Status",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "View Asset Status History",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Incident Categories",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "View Form Versions",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Dynamic Form Drafts",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Preview Dynamic Forms",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Publish Form Version",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Archive Form Version",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "View Technician Profiles",
+      "Trần Phan Nhật Huy",
+      "18/10/2026"
+    ],
+    [
+      "Configure Technician Availability and Capacity",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Configure Technician Skills",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Configure Technician Service Areas",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Submit Ticket",
+      "Lâm Thoại Thanh",
+      "18/10/2026"
+    ],
+    [
+      "View and Download Ticket Attachments",
+      "Trần Quốc Thái",
+      "18/10/2026"
+    ],
+    [
+      "Review Ticket",
+      "Phan Tuấn Thành",
+      "18/10/2026"
+    ],
+    [
+      "Reject Ticket",
+      "",
+      ""
+    ],
+    [
+      "Cancel Ticket",
+      "",
+      ""
+    ],
+    [
+      "Add Ticket Comment",
+      "",
+      ""
+    ],
+    [
+      "Edit Own Ticket Comment",
+      "",
+      ""
+    ],
+    [
+      "Monitor Ticket SLA",
+      "Trần Quốc Thái",
+      "23/10/2026"
+    ],
+    [
+      "Assign Technician",
+      "Phan Tuấn Thành",
+      "18/10/2026"
+    ],
+    [
+      "Reassign Technician",
+      "",
+      ""
+    ],
+    [
+      "Unassign Technician",
+      "",
+      ""
+    ],
+    [
+      "View Assigned Work",
+      "Tô Phi Oanh",
+      "20/10/2026"
+    ],
+    [
+      "Start Ticket Work",
+      "Tô Phi Oanh",
+      "20/10/2026"
+    ],
+    [
+      "Record Work Log",
+      "Tô Phi Oanh",
+      "22/10/2026"
+    ],
+    [
+      "Upload Work Result Images",
+      "Phan Tuấn Thành",
+      ""
+    ],
+    [
+      "Resolve Ticket",
+      "Tô Phi Oanh",
+      "22/10/2026"
+    ],
+    [
+      "Close Ticket",
+      "Phan Tuấn Thành",
+      "23/10/2026"
+    ],
+    [
+      "Reopen Ticket",
+      "",
+      ""
+    ],
+    [
+      "Submit Ticket Feedback",
+      "",
+      ""
+    ],
+    [
+      "View Ticket Feedback",
+      "",
+      ""
+    ],
+    [
+      "View Ticket Dashboard",
+      "Trần Quốc Thái",
+      "23/10/2026"
+    ],
+    [
+      "Shared Foundation and Integration",
+      "Trần Quốc Thái",
+      "15/10/2026"
+    ]
+  ]
+}

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nexora.common.pagination.PageResponse;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
+import com.nexora.ticket.dto.request.ReassignTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
 import com.nexora.ticket.dto.request.ReviewTicketRequest;
 import com.nexora.ticket.dto.request.StartTicketRequest;
@@ -83,6 +84,7 @@ public class TicketController {
 
     @GetMapping(value = "/{ticketId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Read a visible ticket", description = "Stored form, verbatim JSON values, ordered history "
+            + "and assignmentHistory ordered by assignedAt DESC, id DESC, including ended assignments. "
             + "and REPORT_EVIDENCE/WORK_RESULT metadata. currentAssignment is the active assignment (endedAt=null), "
             + "or explicitly null when none exists. No storage keys or file URLs. "
             + "Missing and invisible tickets return the same safe 404.")
@@ -171,6 +173,27 @@ public class TicketController {
             @PathVariable @Positive Long ticketId,
             @Valid @RequestBody AssignTicketRequest request) {
         return assignmentService.assign(jwt, ticketId, request);
+    }
+
+    @PostMapping(value = "/{ticketId}/reassign", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Reassign an assigned ticket to a different technician",
+            description = "MANAGER/ADMIN only, ASSIGNED only with an active assignment. Accepts only version (integer >=0), "
+                    + "technicianId (integer >0), and reason (1–1000 characters after trimming). No override. "
+                    + "Rechecks eligibility and capacity in the transaction; ends the old assignment and creates a new one atomically. "
+                    + "Keeps ASSIGNED, increments version once, and records REASSIGN history. "
+                    + "Historical assignees retain read access but cannot start work.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reassignment committed; updated version and current assignment"),
+            @ApiResponse(responseCode = "404", description = "Ticket or technician user unavailable", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Stale ticket version; reload and confirm again", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Invalid state, no active assignment, same technician, or ineligible candidate", content = @Content(
+                    mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    public TicketActionResultResponse reassign(@AuthenticationPrincipal Jwt jwt, @PathVariable @Positive Long ticketId,
+            @Valid @RequestBody ReassignTicketRequest request) {
+        return assignmentService.reassign(jwt, ticketId, request);
     }
 
     @PostMapping(value = "/{ticketId}/start", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

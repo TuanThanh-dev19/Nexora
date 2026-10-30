@@ -49,7 +49,7 @@ public class TicketResponseMapper {
 
     public TicketDetailResponse detail(Ticket ticket, List<FieldDefinition> fields, List<FieldOption> options,
             List<TicketFieldValue> values, List<TicketStatusHistory> history, List<TicketAttachment> attachments,
-            CurrentAssignmentResponse currentAssignment) {
+            CurrentAssignmentResponse currentAssignment, List<CurrentAssignmentResponse> assignmentHistory) {
         TicketSummaryResponse summary = summary(ticket);
         StoredForm storedForm = storedForm(ticket.getFormVersion(), fields, options);
         List<DynamicValue> dynamicValues = values.stream()
@@ -63,7 +63,7 @@ public class TicketResponseMapper {
         return new TicketDetailResponse(summary.id(), summary.ticketNumber(), summary.title(), summary.status(),
                 summary.priority(), summary.category(), summary.location(), summary.asset(), summary.reporter(),
                 summary.slaDueAt(), summary.createdAt(), summary.updatedAt(), ticket.getDescription(), ticket.getVersion(),
-                storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment,
+                storedForm, dynamicValues, statusHistory, attachmentMetadata, currentAssignment, assignmentHistory,
                 ticket.getResolutionOutcome(), ticket.getResolutionSummary(), ticket.getResolvedAt(), ticket.getClosedAt());
     }
 

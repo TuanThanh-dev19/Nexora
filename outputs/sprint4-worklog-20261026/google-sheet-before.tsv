@@ -1,0 +1,61 @@
+STT	Usecase liên quan	Việc cần làm	Trạng thái	Chủ sở hữu	Ngày đến hạn	Sprint	Tên nhánh	Ghi chú		Thành viên
+1	 Login; Manage Users; Manage User Roles	 Xây dựng Persistence nền tảng cho User và Role	Done	Phan Tuấn Thành	25/09/2026	1	 feature/<issue-number>-identity-persistence			Trần Phan Nhật Huy
+2	 Login; Logout	 Xây dựng Skeleton cho Authentication và Frontend Session	Done	Phan Tuấn Thành	26/09/2026	1	 feature/<issue-number>-auth-session-skeleton			Lâm Thoại Thanh
+3	 All Use Cases (shared support)	 Đồng bộ Canonical Domain Vocabulary trên toàn ứng dụng	Done	Phan Tuấn Thành	26/09/2026	1	 feature/<issue-number>-canonical-domain-vocabulary			Phan Tuấn Thành
+4	 Incident Category and Dynamic Form Management	 Xây dựng Persistence nền tảng cho Dynamic Form	Done	Phan Tuấn Thành	26/09/2026	1	 feature/<issue-number>-dynamic-form-persistence			Tô Phi Oanh
+5	 Review Ticket; Reject Ticket; Cancel Ticket; Assign Technician; Reassign Technician; Unassign Technician; Start Ticket Work; Resolve Ticket; Close Ticket; Reopen Ticket	 Định nghĩa Contract cho Ticket Workflow Transition	Done	Phan Tuấn Thành	29/09/2026	1	 feature/<issue-number>-ticket-workflow-contract			Trần Quốc Thái
+6	 View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician	 Xây dựng Persistence nền tảng cho Technician Workforce	Done	Phan Tuấn Thành	29/09/2026	1	 feature/<issue-number>-technician-persistence			Tổng cộng
+7	 Manage Locations; Manage Equipment Types	 Xây dựng Persistence nền tảng cho Location và Equipment Type	Done	Lâm Thoại Thanh	29/09/2026	1	 feature/<issue-number>-location-equipment-persistence			
+8	 Manage Assets; Change Asset Status	 Xây dựng Persistence nền tảng cho Asset và Asset Status History	Done	Lâm Thoại Thanh	29/09/2026	1	 feature/<issue-number>-asset-persistence			
+9	 All Use Cases (shared support)	 Chuẩn hóa Shared API Error, Pagination và Concurrency Contracts	Done	Trần Quốc Thái	30/09/2026	1	 feature/<issue-number>-shared-api-contracts			
+10	 All Use Cases (shared support)	 Thiết lập Shared Test Fixtures và Demo Bootstrap Strategy	Done	Trần Quốc Thái	30/09/2026	1	 feature/<issue-number>-test-fixtures-bootstrap			
+11	  View Asset Status History	 Implement Asset and Asset Status History Persistence Foundation	Done	Tô Phi Oanh	15/09/2026	1				
+12	 Archive Form Version; Submit Ticket	" Implement Dynamic Form Persistence Foundation
+"	Done	Tô Phi Oanh	15/09/2026	1				
+13	 Login	 Xây dựng API đăng nhập và phát hành JWT	Done	Trần Phan Nhật Huy	05/10/2026	2	 feature/<issue-number>-auth-login-jwt			
+14	 Login; Logout	 Xây dựng API Current User và kết nối phiên đăng nhập Frontend	Done	Trần Phan Nhật Huy	07/10/2026	2	 feature/<issue-number>-current-user-session			
+15	 Manage Users	 Xây dựng chức năng quản lý User, Role và Technician	Done	Trần Phan Nhật Huy	09/10/2026	2	 feature/<issue-number>-user-technician-management			
+16	 Submit Ticket; Manage Dynamic Form Drafts	 Xây dựng API đọc Category, Published Form và SLA	Done	Lâm Thoại Thanh	05/10/2026	2	 feature/<issue-number>-category-form-read-api			
+17	 Manage Incident Categories	 Xây dựng API quản trị Category và Dynamic Form	Done	Lâm Thoại Thanh	07/10/2026	2	 feature/<issue-number>-category-form-admin-api			
+18	 View Form Versions	 Xây dựng giao diện quản trị Category và Dynamic Form	Done	Lâm Thoại Thanh	07/10/2026	2				
+19	 Search and Filter Tickets; View Ticket Details;	 Xây dựng Persistence nền tảng cho Ticket	Done	Phan Tuấn Thành	05/10/2026	2	 feature/<issue-number>-ticket-core-persistence			
+20	 View Ticket Details; View and Download Ticket Attachments	 Persistence dữ liệu động, lịch sử và Attachment của Ticket	Done	Phan Tuấn Thành	07/10/2026	2	 feature/<issue-number>-ticket-supporting-persistence			
+21	 Search and Filter Tickets; View Ticket Details;	 Xây dựng API đọc danh sách và chi tiết Ticket	Done	Phan Tuấn Thành	09/10/2026	2	 feature/<issue-number>-ticket-read-api			
+22	 Manage Locations; Manage Equipment Types	 Xây dựng CRUD Location và Equipment Type	Done	Tô Phi Oanh	05/10/2026	2	 feature/<issue-number>-location-equipment-crud			
+23	 Manage Assets; Change Asset Status	 Xây dựng CRUD Asset và lịch sử trạng thái	Done	Tô Phi Oanh	07/10/2026	2	 feature/<issue-number>-asset-crud-status-history			
+24	 Submit Ticket	 Xây dựng API lấy Asset hợp lệ theo Location	Done	Tô Phi Oanh	09/10/2026	2	 feature/<issue-number>-eligible-assets-by-location			
+25	 Submit Ticket	 Tạo SQL Server Sequence cho Ticket Number	Done	Trần Quốc Thái	05/10/2026	2	 feature/<issue-number>-ticket-number-sequence			
+26	 Submit Ticket; Upload Work Result Images; View and Download Ticket Attachments	 Xây dựng nền tảng lưu trữ File đính kèm	Done	Trần Quốc Thái	07/10/2026	2	 feature/<issue-number>-local-file-storage			
+27	 View Ticket Dashboard	 Xây dựng Contract và giao diện khung Dashboard	Done	Trần Quốc Thái	09/10/2026	2	 feature/<issue-number>-dashboard-contract-shell			
+28	 Login; Logout; Manage Users; Manage User Roles	 Hoàn thiện Login/Session và UI Admin tạo, quản lý tài khoản/role	Done	Trần Phan Nhật Huy	15/10/2026	3	 feature/42-auth-admin-user-ui			
+29	 View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician	 Xây dựng UI quản lý Technician, Skill và Service Area	Done	Trần Phan Nhật Huy	15/10/2026	3	 feature/43-technician-configuration-ui			
+30	 Manage Dynamic Form Drafts	 Hoàn thiện UI Category và Dynamic Form	Done	Lâm Thoại Thanh	15/10/2026	3	 feature/44-category-form-ui-completion			
+31	 Location Management	 Xây dựng UI quản trị Location và Equipment Type	Done	Tô Phi Oanh	15/10/2026	3	 feature/45-location-equipment-ui			
+32	 View Asset Status History	 Xây dựng UI quản trị Asset và lịch sử trạng thái	Done	Tô Phi Oanh	15/10/2026	3	 feature/46-asset-management-ui			
+33	 Submit Ticket	 Xây dựng Location Selector và Eligible Asset Selector	Done	Tô Phi Oanh	15/10/2026	3	 feature/47-location-eligible-asset-selectors			
+34	 Submit Ticket	 Xây dựng UI Create Ticket theo published dynamic form	Done	Phan Tuấn Thành	15/10/2026	3	 feature/50-create-ticket-ui			
+35	 Review Ticket	 Hoàn thiện UI Manager review và assignment	Done	Phan Tuấn Thành	15/10/2026	3	 feature/52-manager-ticket-workflow-ui			
+36	 View Assigned Work; Start Ticket Work; Record Work Log; Upload Work Result Images; Resolve Ticket	 Xây dựng My Assigned Work và UI Technician xử lý Ticket	Done	Phan Tuấn Thành	15/10/2026	3	 feature/53-technician-assigned-work-ui			
+37	 View Ticket Details	 Hoàn thiện Ticket Detail actions, ảnh, comments và feedback UI	Done	Phan Tuấn Thành	18/10/2026	3	 feature/54-ticket-detail-collaboration-ui			
+38	 View Ticket Dashboard	 Hoàn thiện Dashboard shell theo role	Done	Trần Quốc Thái	18/10/2026	3	 feature/55-dashboard-shell-ui			
+39	 Chưa phân loại	 Tích hợp navigation, thống nhất UI và nghiệm thu UI MVP	Done	Trần Quốc Thái	18/10/2026	3	 feature/56-ui-navigation-quality			
+40	 Submit Ticket	 Xây dựng validation dynamic values/evidence và đồng bộ contract form	Done	Trần Quốc Thái	22/10/2026	4	 feature/48-ticket-submission-validation			
+41	 Submit Ticket	 Xây dựng API tạo Ticket với sequence, SLA và ảnh minh chứng	Done	Trần Quốc Thái	22/10/2026	4	 feature/49-create-ticket-api			
+42	 View and Download Ticket Attachments	 Xây dựng API đọc attachment có phân quyền	Done	Lâm Thoại Thanh	22/10/2026	4	 feature/51-ticket-attachment-content-api			
+43	 View Technician Profiles	 Xây dựng API danh sách Technician phục vụ UI Manager/Admin	Done	Lâm Thoại Thanh	15/10/2026	4	 feature/57-technician-list-api			
+44	 Shared Foundation and Integration	 Nghiệm thu tích hợp API thật và cập nhật tài liệu	Done	Tô Phi Oanh	22/10/2026	4	 feature/58-real-api-integration			
+45	 Review Ticket; Reject Ticket; Cancel Ticket	 API review, reject và cancel Ticket	Done	Tô Phi Oanh	23/10/2026	4				
+46	 Assign Technician; Reassign Technician; Unassign Technician	 API phân công, đổi và gỡ phân công Technician, gồm query eligibility	Done	Phan Tuấn Thành	21/10/2026	4				
+47	 View Assigned Work	 API công việc hiện tại của Technician	Done	Phan Tuấn Thành	23/10/2026	4				
+48	 Start Ticket Work; Record Work Log	 API bắt đầu xử lý và Work Log	Done	Trần Phan Nhật Huy	28/10/2026	4				
+49	 Upload Work Result Images; Resolve Ticket	 API ảnh kết quả và resolve Ticket	Done	Trần Phan Nhật Huy	28/10/2026	4				
+50	 Close Ticket; Reopen Ticket	 API close và reopen Ticket	Done	Phan Tuấn Thành	28/10/2026	4				
+51	 View Ticket Details; Add Ticket Comment	 API comments Ticket	To Do	Phan Tuấn Thành	30/10/2026	4				
+52	 Submit Ticket Feedback; View Ticket Feedback	 API feedback Ticket	To Do	Phan Tuấn Thành	30/10/2026	4				
+53	 View Ticket Dashboard; Monitor Ticket SLA	 API Dashboard summary theo role	To Do	Trần Phan Nhật Huy	30/10/2026	4				
+										
+										
+										
+										
+										
+										

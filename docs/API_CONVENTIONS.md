@@ -169,6 +169,7 @@ currentAssignment=null khi không còn phân công; không tự suy ra current a
 | ----------- | --------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | review      | MANAGER/ADMIN         | version                                                       | SUBMITTED → UNDER_REVIEW                                                      |
 | assign      | MANAGER/ADMIN         | version, technicianId                                         | Trạng thái hợp lệ theo contract; ứng viên còn eligible; tạo active assignment |
+| reassign    | MANAGER/ADMIN         | version, technicianId, reason                                 | Chỉ ASSIGNED; đổi sang Technician khác; giữ ASSIGNED và lưu lịch sử phân công |
 | start       | Current TECHNICIAN    | version                                                       | ASSIGNED → IN_PROGRESS; acceptedAt và history                                 |
 | work-logs   | Current TECHNICIAN    | version, logType, content, startedAt, endedAt?, minutesSpent? | IN_PROGRESS; tạo log, tăng Ticket version; response 201 có ticketVersion      |
 | resolve     | Current TECHNICIAN    | version, resolutionOutcome, resolutionSummary                 | IN_PROGRESS, ít nhất 1 log; kết thúc assignment; set resolvedAt; history      |
@@ -181,6 +182,26 @@ Work log types: DIAGNOSIS, PROGRESS, REPAIR, RESOLUTION, NO_FAULT_FOUND. content
 Resolution outcomes: FIXED, TEMPORARY_FIX, NO_FAULT_FOUND, UNRESOLVED. Summary nonblank theo DTO bounds. Close reason tùy chọn, tối đa 500 ký tự. Close không thay resolution timestamp/outcome/summary.
 
 Eligibility kiểm user/role/status, availability, capacity, skill và cây service area. Ghi assignment kiểm lại dưới khóa; không tin kết quả candidates đọc trước đó. Khi cần khóa cả Ticket và profile, thứ tự là Ticket → profile.
+
+### Đổi kỹ thuật viên — `POST /tickets/{ticketId}/reassign`
+
+Chỉ user ACTIVE có MANAGER/ADMIN. Body chỉ nhận `{"version":2,"technicianId":22,"reason":"Đổi ca trực"}`:
+version integer không âm, technicianId integer dương và khác người hiện tại, reason bắt buộc 1–1000 ký tự sau trim.
+Không nhận overrideReason/status/actor/timestamp. Chỉ hỗ trợ ASSIGNED có một active assignment; IN_PROGRESS và mọi trạng thái khác bị từ chối.
+
+Server khóa Ticket rồi profile người mới và kiểm lại eligibility/capacity. Trong một transaction: kết thúc assignment cũ với endedAt/endReason,
+flush trước insert để giữ filtered unique index, tạo assignment mới, touch Ticket để tăng version đúng một lần và ghi REASSIGN
+ASSIGNED → ASSIGNED với actor/reason/thời điểm server. Lỗi lưu assignment/history rollback toàn bộ, kể cả phần đã flush.
+Response 200 giữ shape `id/status/version/currentAssignment` của assign; assignment mới có acceptedAt/endedAt/endReason/overrideReason=null.
+
+Lỗi ProblemDetail hiện có: 400 path/JSON/field/validation; 401 identity; 403 sai role; 404 thiếu Ticket hoặc user đích;
+409 stale-write (kiểm trước state); 422 sai state, không active assignment, trùng người cũ hoặc candidate không eligible.
+UI khóa submit sau 409 đến khi tải lại/xác nhận mới; 422 tải lại candidates và chọn lại; không tự retry mutation.
+
+GET Ticket Detail bổ sung `assignmentHistory` (mảng cùng public assignment shape, assignedAt DESC rồi id DESC), kể cả assignment đã kết thúc.
+`currentAssignment` vẫn chỉ là row endedAt=null. Người cũ giữ quyền đọc theo historical assignment, không còn trong My Work;
+start bằng version mới trả 422 vì không phải current assignee, version cũ trả 409. Người mới thấy My Work và start theo luồng hiện có.
+Tải công việc tính từ endedAt=null, không có counter riêng. Reassign không đổi SLA và không phát notification trong phiên bản này.
 
 ## 8. Ảnh và nội dung file
 
@@ -257,4 +278,4 @@ Endpoint `GET /reports/tickets/export` xuất toàn bộ kết quả sau lọc:
 
 ## 11. Phạm vi chưa bật
 
-Reject/cancel/reassign/unassign/reopen/force-close, comments và feedback đang tắt trong demoScope. Mock handlers/DTO/schema cho các phần đó không phải cam kết API/UI thật. Chỉ bổ sung endpoint vào danh mục chính khi controller, service và kiểm thử tích hợp đã có bằng chứng.
+Reject/cancel/unassign/reopen/force-close, comments và feedback đang tắt trong demoScope. Reassign đã bật cho ASSIGNED khi có current assignment. Mock handlers/DTO/schema cho các phần hoãn không phải cam kết API/UI thật. Chỉ bổ sung endpoint vào danh mục chính khi controller, service và kiểm thử tích hợp đã có bằng chứng.

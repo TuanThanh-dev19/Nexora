@@ -109,7 +109,10 @@ describe('manager ticket workflow UI', () => {
         technicianId: 21,
       })
       expect(
-        screen.queryByRole('button', { name: 'Phân công lại', exact: true }),
+        screen.queryByRole('button', {
+          name: 'Đổi kỹ thuật viên',
+          exact: true,
+        }),
       ).not.toBeInTheDocument()
       expect(
         screen.getByRole('heading', { name: 'Lịch sử trạng thái' }),
@@ -183,7 +186,7 @@ describe('manager ticket workflow UI', () => {
       screen.getByText(/Kỹ thuật viên hiện tại: Nguyễn An/),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Phân công lại', exact: true }),
+      screen.getByRole('button', { name: 'Đổi kỹ thuật viên', exact: true }),
     ).toBeEnabled()
     const history = screen
       .getByRole('heading', { name: 'Lịch sử trạng thái' })
@@ -232,19 +235,19 @@ describe('manager ticket workflow UI', () => {
       })
     },
   )
-  it('reassigns an in-progress ticket and unassigns with separate confirmations and reasons', async () => {
+  it('reassigns an assigned ticket and preserves history, with separate unassignment confirmation', async () => {
     const reassign = vi.spyOn(ticketApi, 'reassign')
     const unassign = vi.spyOn(ticketApi, 'unassign')
-    await mount(13, { ...WORKFLOW_MOCK_MANAGER, roles: ['ADMIN'] })
-    const dialog = await openDialog('Phân công lại')
+    await mount(12, { ...WORKFLOW_MOCK_MANAGER, roles: ['ADMIN'] })
+    const dialog = await openDialog('Đổi kỹ thuật viên')
     expect(
-      dialog.getByText(/Kỹ thuật viên hiện tại: Phạm Dũng/),
+      dialog.getByText(/Kỹ thuật viên hiện tại: Nguyễn An/),
     ).toBeInTheDocument()
     await userEvent.click(
-      await dialog.findByRole('radio', { name: 'Chọn Nguyễn An' }),
+      await dialog.findByRole('radio', { name: 'Chọn Phan Nam' }),
     )
     await userEvent.click(
-      dialog.getByRole('button', { name: 'Xác nhận phân công lại' }),
+      dialog.getByRole('button', { name: 'Xác nhận đổi kỹ thuật viên' }),
     )
     expect(dialog.getByText('Vui lòng nhập lý do.')).toBeInTheDocument()
     await userEvent.type(
@@ -252,12 +255,12 @@ describe('manager ticket workflow UI', () => {
       'Đổi ca trực',
     )
     await userEvent.click(
-      dialog.getByRole('button', { name: 'Xác nhận phân công lại' }),
+      dialog.getByRole('button', { name: 'Xác nhận đổi kỹ thuật viên' }),
     )
-    await waitForSuccess('Phân công lại')
-    expect(reassign).toHaveBeenCalledExactlyOnceWith(13, {
-      version: 3,
-      technicianId: 21,
+    await waitForSuccess('Đổi kỹ thuật viên')
+    expect(reassign).toHaveBeenCalledExactlyOnceWith(12, {
+      version: 2,
+      technicianId: 29,
       reason: 'Đổi ca trực',
     })
     const unassignment = await openDialog('Gỡ phân công')
@@ -273,8 +276,8 @@ describe('manager ticket workflow UI', () => {
       unassignment.getByRole('button', { name: 'Xác nhận gỡ phân công' }),
     )
     await waitForSuccess('Gỡ phân công')
-    expect(unassign).toHaveBeenCalledExactlyOnceWith(13, {
-      version: 4,
+    expect(unassign).toHaveBeenCalledExactlyOnceWith(12, {
+      version: 3,
       reason: 'Cần xem xét lại',
     })
     expect(

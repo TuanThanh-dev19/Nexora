@@ -1,0 +1,296 @@
+{
+  "sources": [
+    {
+      "issue": 90,
+      "stt": 51,
+      "usecase": "Shared Foundation and Integration",
+      "title": "Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI",
+      "status": "In Progress",
+      "owner": "Trần Phan Nhật Huy",
+      "login": "Huytran2903",
+      "branch": "test/test-ticket-api-regression",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/90",
+      "githubTitle": "[NEX-051] [TEST] Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/90 — Assignee GitHub là Huytran2903; nội dung đề xuất còn ghi Phan Tuấn Thành. Giữ In Progress đã có trên backlog. Tiêu đề NEX-051 đang trùng #92; định danh bằng GitHub #90. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    },
+    {
+      "issue": 91,
+      "stt": 52,
+      "usecase": "Shared Foundation and Integration",
+      "title": "[E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật",
+      "status": "To Do",
+      "owner": "Phan Tuấn Thành",
+      "login": "TuanThanh-dev19",
+      "branch": "test/test-ticket-ui-e2e",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/91",
+      "githubTitle": "[NEX -056] [E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/91 — Kiểm thử E2E với API thật; không triển khai comments/feedback. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    },
+    {
+      "issue": 92,
+      "stt": 53,
+      "usecase": "Reassign Technician",
+      "title": "Đổi Technician được phân công cho Ticket",
+      "status": "To Do",
+      "owner": "Phan Tuấn Thành",
+      "login": "TuanThanh-dev19",
+      "branch": "feat/ticket-reassignment",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/92",
+      "githubTitle": "[NEX-051] Đổi Technician được phân công cho Ticket",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/92 — Chỉ đổi khi ASSIGNED; bắt buộc lý do và eligibility. Không gồm reopen/unassign. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    },
+    {
+      "issue": 93,
+      "stt": 54,
+      "usecase": "View Ticket Dashboard; View Ticket Report; Export Ticket Report",
+      "title": "Báo cáo Ticket theo khoảng thời gian và xuất CSV",
+      "status": "To Do",
+      "owner": "Trần Quốc Thái",
+      "login": "tranthaigin",
+      "branch": "feat/ticket-period-report",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/93",
+      "githubTitle": "[NEX-052] Báo cáo Ticket theo khoảng thời gian và xuất CSV",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/93 — Báo cáo nhóm Ticket theo ngày tạo, trạng thái hiện tại và xuất CSV; giữ dashboard summary cũ. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    },
+    {
+      "issue": 94,
+      "stt": 55,
+      "usecase": "View Notifications; Mark Notification as Read",
+      "title": "Thông báo trong ứng dụng khi phân công và giải quyết Ticket",
+      "status": "To Do",
+      "owner": "Tô Phi Oanh",
+      "login": "OanhPhiTo",
+      "branch": "codex/ticket-in-app-notifications",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/94",
+      "githubTitle": "[NEX-053]Thông báo trong ứng dụng khi phân công và giải quyết Ticket",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/94 — Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    },
+    {
+      "issue": 95,
+      "stt": 56,
+      "usecase": "Search and Filter Tickets",
+      "title": "Bổ sung tìm kiếm Ticket theo mã và tiêu đề",
+      "status": "To Do",
+      "owner": "Lâm Thoại Thanh",
+      "login": "thoaithanh-web",
+      "branch": "feat/ticket-keyword-search",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/95",
+      "githubTitle": "[NEX-054] Bổ sung tìm kiếm Ticket theo mã và tiêu đề",
+      "githubState": "open",
+      "milestone": "Sprint 4 – Tích hợp, kiểm thử và bàn giao hệ thống",
+      "due": "30/10/2026",
+      "note": "https://github.com/TuanThanh-dev19/Nexora/issues/95 — Bổ sung keyword theo mã/tiêu đề; giữ bộ lọc trạng thái/ưu tiên/vị trí đã có. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    }
+  ],
+  "backlogRows": [
+    [
+      51,
+      "Shared Foundation and Integration",
+      "Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI",
+      "In Progress",
+      "Trần Phan Nhật Huy",
+      "30/10/2026",
+      4,
+      "test/test-ticket-api-regression",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/90 — Assignee GitHub là Huytran2903; nội dung đề xuất còn ghi Phan Tuấn Thành. Giữ In Progress đã có trên backlog. Tiêu đề NEX-051 đang trùng #92; định danh bằng GitHub #90. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ],
+    [
+      52,
+      "Shared Foundation and Integration",
+      "[E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật",
+      "To Do",
+      "Phan Tuấn Thành",
+      "30/10/2026",
+      4,
+      "test/test-ticket-ui-e2e",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/91 — Kiểm thử E2E với API thật; không triển khai comments/feedback. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ],
+    [
+      53,
+      "Reassign Technician",
+      "Đổi Technician được phân công cho Ticket",
+      "To Do",
+      "Phan Tuấn Thành",
+      "30/10/2026",
+      4,
+      "feat/ticket-reassignment",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/92 — Chỉ đổi khi ASSIGNED; bắt buộc lý do và eligibility. Không gồm reopen/unassign. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ],
+    [
+      54,
+      "View Ticket Dashboard; View Ticket Report; Export Ticket Report",
+      "Báo cáo Ticket theo khoảng thời gian và xuất CSV",
+      "To Do",
+      "Trần Quốc Thái",
+      "30/10/2026",
+      4,
+      "feat/ticket-period-report",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/93 — Báo cáo nhóm Ticket theo ngày tạo, trạng thái hiện tại và xuất CSV; giữ dashboard summary cũ. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ],
+    [
+      55,
+      "View Notifications; Mark Notification as Read",
+      "Thông báo trong ứng dụng khi phân công và giải quyết Ticket",
+      "To Do",
+      "Tô Phi Oanh",
+      "30/10/2026",
+      4,
+      "codex/ticket-in-app-notifications",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/94 — Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ],
+    [
+      56,
+      "Search and Filter Tickets",
+      "Bổ sung tìm kiếm Ticket theo mã và tiêu đề",
+      "To Do",
+      "Lâm Thoại Thanh",
+      "30/10/2026",
+      4,
+      "feat/ticket-keyword-search",
+      "https://github.com/TuanThanh-dev19/Nexora/issues/95 — Bổ sung keyword theo mã/tiêu đề; giữ bộ lọc trạng thái/ưu tiên/vị trí đã có. Hạn 30/10 theo milestone Sprint 4. Nhánh kế hoạch theo mô tả issue, chưa tồn tại trên GitHub."
+    ]
+  ],
+  "configRows": [
+    [
+      "Reassign Technician",
+      "Phan Tuấn Thành",
+      "30/10/2026"
+    ],
+    [
+      "View Notifications",
+      "Tô Phi Oanh",
+      "30/10/2026"
+    ],
+    [
+      "Mark Notification as Read",
+      "Tô Phi Oanh",
+      "30/10/2026"
+    ],
+    [
+      "View Ticket Report",
+      "Trần Quốc Thái",
+      "30/10/2026"
+    ],
+    [
+      "Export Ticket Report",
+      "Trần Quốc Thái",
+      "30/10/2026"
+    ]
+  ],
+  "auditRows": [
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/90",
+      "GitHub #90",
+      51,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Assignee GitHub là Huytran2903; nội dung đề xuất còn ghi Phan Tuấn Thành. Giữ In Progress đã có trên backlog. Tiêu đề NEX-051 đang trùng #92; định danh bằng GitHub #90. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX-051] [TEST] Xây dựng bộ kiểm thử hồi quy API Ticket bằng Postman CLI",
+      "GitHub issue / Sprint 4",
+      "Trần Phan Nhật Huy",
+      "30/10/2026",
+      "test/test-ticket-api-regression",
+      "In Progress"
+    ],
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/91",
+      "GitHub #91",
+      52,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Kiểm thử E2E với API thật; không triển khai comments/feedback. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX -056] [E2E] Kiểm thử toàn luồng Ticket trên giao diện với API thật",
+      "GitHub issue / Sprint 4",
+      "Phan Tuấn Thành",
+      "30/10/2026",
+      "test/test-ticket-ui-e2e",
+      "To Do"
+    ],
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/92",
+      "GitHub #92",
+      53,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Chỉ đổi khi ASSIGNED; bắt buộc lý do và eligibility. Không gồm reopen/unassign. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX-051] Đổi Technician được phân công cho Ticket",
+      "GitHub issue / Sprint 4",
+      "Phan Tuấn Thành",
+      "30/10/2026",
+      "feat/ticket-reassignment",
+      "To Do"
+    ],
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/93",
+      "GitHub #93",
+      54,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Báo cáo nhóm Ticket theo ngày tạo, trạng thái hiện tại và xuất CSV; giữ dashboard summary cũ. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX-052] Báo cáo Ticket theo khoảng thời gian và xuất CSV",
+      "GitHub issue / Sprint 4",
+      "Trần Quốc Thái",
+      "30/10/2026",
+      "feat/ticket-period-report",
+      "To Do"
+    ],
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/94",
+      "GitHub #94",
+      55,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Thông báo trong ứng dụng cho assign/resolve; không gồm email/WebSocket. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX-053]Thông báo trong ứng dụng khi phân công và giải quyết Ticket",
+      "GitHub issue / Sprint 4",
+      "Tô Phi Oanh",
+      "30/10/2026",
+      "codex/ticket-in-app-notifications",
+      "To Do"
+    ],
+    [
+      "https://github.com/TuanThanh-dev19/Nexora/issues/95",
+      "GitHub #95",
+      56,
+      "Đồng bộ GitHub ngày 26/10/2026",
+      "Branch thực tế chưa tạo",
+      "Bổ sung keyword theo mã/tiêu đề; giữ bộ lọc trạng thái/ưu tiên/vị trí đã có. Hạn theo milestone Sprint 4; branch là kế hoạch, chưa tồn tại.",
+      "",
+      "[NEX-054] Bổ sung tìm kiếm Ticket theo mã và tiêu đề",
+      "GitHub issue / Sprint 4",
+      "Lâm Thoại Thanh",
+      "30/10/2026",
+      "feat/ticket-keyword-search",
+      "To Do"
+    ]
+  ],
+  "configGuides": {
+    "K3": "Tên usecase chuẩn tại Config!A2:A40. Backlog nhiều usecase phân tách bằng '; '; kiểm thử kỹ thuật dùng Shared Foundation and Integration.",
+    "K7": "Hạn kế hoạch trong issue; nếu dùng hạn milestone phải ghi rõ nguồn tại Ghi chú. Không lấy ngày đóng/merge. Hiển thị DD/MM/YYYY.",
+    "K10": "Ưu tiên branch thực tế trên GitHub/Git hoặc head PR. Nếu issue chưa có branch, dùng tên kế hoạch trong mô tả và ghi rõ 'chưa tồn tại trên GitHub' tại Ghi chú."
+  },
+  "backlogNoteUpdates": {
+    "I46": "https://github.com/TuanThanh-dev19/Nexora/issues/79 — Review, assign và current assignment. Reassign triển khai riêng tại #92; reject/cancel/unassign tiếp tục hoãn.",
+    "I49": "https://github.com/TuanThanh-dev19/Nexora/issues/88 — Upload ảnh kết quả xử lý; ảnh là tùy chọn, không bắt buộc để resolve hoặc close. Giữ hạn kế hoạch hiện có trong backlog."
+  }
+}

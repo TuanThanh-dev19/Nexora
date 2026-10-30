@@ -52,7 +52,8 @@ Luồng chính: tạo phiếu → tiếp nhận → phân công → bắt đầu
 | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Login/JWT, quản trị user/role, catalog, category/form, asset, technician                          | Có controller/service và giao diện tương ứng; kiểm tra theo test của từng module             |
 | Tạo/đọc Ticket, review/assign, start/work logs/resolve, upload/đọc ảnh, reporter close, Dashboard, báo cáo Ticket và xuất CSV | Có API thật và được bật cho luồng demo                                                       |
-| Reject, cancel, reassign, unassign, reopen, force-close; comments, feedback                       | Chưa bật trong demo; không trình bày là tính năng hoàn chỉnh                                 |
+| Đổi Technician                                                                               | Chỉ ASSIGNED; giữ lịch sử, kiểm lại eligibility và capacity, tăng version trong transaction |
+| Reject, cancel, unassign, reopen, force-close; comments, feedback                               | Chưa bật trong demo; không trình bày là tính năng hoàn chỉnh                                 |
 | MongoDB audit/comment/notification documents và legacy backfill                                   | Có tầng lưu trữ; không đồng nghĩa đã có notification delivery hoặc comment UI/API hoàn chỉnh |
 | Cloud storage, tự động phân công, phát hiện trùng bằng AI, báo cáo nâng cao                       | Hướng phát triển                                                                             |
 

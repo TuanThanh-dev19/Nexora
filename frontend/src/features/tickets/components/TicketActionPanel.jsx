@@ -76,7 +76,7 @@ export function TicketActionPanel({ ticket }) {
         <Alert variant="info">
           {isTicketWorkflowMockEnabled()
             ? 'Bản mô phỏng: thay đổi chỉ nằm trong dữ liệu demo, chưa lưu lên máy chủ.'
-            : 'Tiếp nhận, phân công và đóng phiếu được lưu trên máy chủ.'}
+            : 'Tiếp nhận, phân công, đổi kỹ thuật viên và đóng phiếu được lưu trên máy chủ.'}
         </Alert>
         {notice && (
           <Alert variant="success" role="status">

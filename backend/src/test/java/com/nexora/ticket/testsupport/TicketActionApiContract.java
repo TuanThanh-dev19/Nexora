@@ -37,6 +37,8 @@ import com.nexora.common.exception.BusinessRuleException;
 import com.nexora.common.exception.StaleWriteException;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
 import com.nexora.ticket.dto.request.ReviewTicketRequest;
+import com.nexora.ticket.dto.request.ReassignTicketRequest;
+import com.nexora.ticket.dto.request.StartTicketRequest;
 import com.nexora.ticket.dto.response.TicketActionResultResponse;
 import com.nexora.ticket.entity.*;
 import com.nexora.ticket.repository.*;
@@ -158,6 +160,241 @@ public abstract class TicketActionApiContract {
         assertThat(entries.get(entries.size() - 2).get("transitionAction").asText()).isEqualTo("BEGIN_REVIEW");
         assertThat(entries.get(entries.size() - 1).get("transitionAction").asText()).isEqualTo("ASSIGN");
         assertThat(result.toString()).doesNotContain("passwordHash", "email", "storageKey", "roleAssignments");
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"manager", "admin"})
+    void reassignPreservesHistoryTransfersWorkAndAllowsOnlyTheNewTechnicianToStart(String actorRole) throws Exception {
+        review(f.own);
+        var original = assign(f.own).currentAssignment();
+        JsonNode before = detail(f.own);
+        String reason = "a".repeat(1000);
+        var actor = actorRole.equals("manager") ? f.manager : f.admin;
+        JsonNode result = json.readTree(action("reassign", f.own.getId(), actor,
+                json.writeValueAsString(new ReassignTicketRequest(2L, f.multi.getId(), "  " + reason + "  ")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(result.size()).isEqualTo(4);
+        assertThat(result.path("status").asText()).isEqualTo("ASSIGNED");
+        assertThat(result.path("version").asLong()).isEqualTo(3);
+        assertThat(result.at("/currentAssignment/technician/technicianId").asLong()).isEqualTo(f.multi.getId());
+        assertThat(result.at("/currentAssignment/assignedBy/id").asLong()).isEqualTo(actor.getId());
+        assertThat(result.at("/currentAssignment/acceptedAt").isNull()).isTrue();
+        assertThat(result.at("/currentAssignment/endedAt").isNull()).isTrue();
+        JsonNode after = detail(f.own);
+        assertThat(after.get("currentAssignment")).isEqualTo(result.get("currentAssignment"));
+        assertThat(after.get("assignmentHistory").size()).isEqualTo(2);
+        assertThat(after.at("/assignmentHistory/1/id").asLong()).isEqualTo(original.id());
+        assertThat(after.at("/assignmentHistory/1/technician/technicianId").asLong()).isEqualTo(f.technician.getId());
+        assertThat(after.at("/assignmentHistory/1/assignedBy/id").asLong()).isEqualTo(original.assignedBy().id());
+        assertThat(after.at("/assignmentHistory/1/assignedAt")).isEqualTo(before.at("/currentAssignment/assignedAt"));
+        assertThat(after.at("/assignmentHistory/1/endReason").asText()).isEqualTo(reason);
+        assertThat(after.at("/assignmentHistory/1/endedAt")).isEqualTo(result.at("/currentAssignment/assignedAt"));
+        var event = after.get("statusHistory").get(after.get("statusHistory").size() - 1);
+        assertThat(event.path("transitionAction").asText()).isEqualTo("REASSIGN");
+        assertThat(event.path("fromStatus").asText()).isEqualTo("ASSIGNED");
+        assertThat(event.path("toStatus").asText()).isEqualTo("ASSIGNED");
+        assertThat(event.path("reason").asText()).isEqualTo(reason);
+        assertThat(event.at("/changedBy/id").asLong()).isEqualTo(actor.getId());
+        assertThat(event.get("changedAt")).isEqualTo(result.at("/currentAssignment/assignedAt"));
+        assertThat(after.get("statusHistory").size()).isEqualTo(before.get("statusHistory").size() + 1);
+        assertThat(after.get("updatedAt")).isNotEqualTo(before.get("updatedAt"));
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.technician.getId())).isZero();
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.multi.getId())).isEqualTo(1);
+        mvc.perform(get("/api/v1/tickets/{id}", f.own.getId()).with(jwt().jwt(token(f.technician))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.assignmentHistory.length()").value(2));
+        mvc.perform(get("/api/v1/technicians/me/assigned-tickets").with(jwt().jwt(token(f.technician))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(0));
+        mvc.perform(get("/api/v1/technicians/me/assigned-tickets").with(jwt().jwt(token(f.multi))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(f.own.getId()));
+        action("start", f.own.getId(), f.technician, "{\"version\":2}").andExpect(status().isConflict());
+        action("start", f.own.getId(), f.technician, "{\"version\":3}").andExpect(status().isUnprocessableEntity());
+        action("start", f.own.getId(), f.multi, "{\"version\":3}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"version", "technicianId", "reason", "reasonNull", "reasonBlank",
+            "reasonLong", "reasonType", "versionType", "versionNegative", "technicianType", "technicianZero", "overrideReason"})
+    void reassignRejectsInvalidBodiesWithoutWrites(String invalid) throws Exception {
+        review(f.own); assign(f.own);
+        JsonNode before = detail(f.own);
+        var body = json.createObjectNode().put("version", 2).put("technicianId", f.multi.getId()).put("reason", "Reason");
+        String field = invalid;
+        switch (invalid) {
+            case "version", "technicianId", "reason" -> body.remove(invalid);
+            case "reasonNull" -> { body.putNull("reason"); field = "reason"; }
+            case "reasonBlank" -> { body.put("reason", "   "); field = "reason"; }
+            case "reasonLong" -> { body.put("reason", "a".repeat(1001)); field = "reason"; }
+            case "reasonType" -> { body.put("reason", 123); field = "reason"; }
+            case "versionType" -> { body.put("version", "2"); field = "version"; }
+            case "versionNegative" -> { body.put("version", -1); field = "version"; }
+            case "technicianType" -> { body.put("technicianId", 1.5); field = "technicianId"; }
+            case "technicianZero" -> { body.put("technicianId", 0); field = "technicianId"; }
+            case "overrideReason" -> body.put("overrideReason", "");
+            default -> throw new AssertionError(invalid);
+        }
+        action("reassign", f.own.getId(), f.manager, body.toString()).andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.fieldErrors." + field).exists());
+        assertThat(detail(f.own)).isEqualTo(before);
+    }
+
+    @Test
+    void reassignEnforcesIdentityRolesReferencesAndVersion() throws Exception {
+        review(f.own); assign(f.own);
+        JsonNode before = detail(f.own);
+        String body = json.writeValueAsString(new ReassignTicketRequest(2L, f.multi.getId(), "r"));
+        mvc.perform(post("/api/v1/tickets/{id}/reassign", f.own.getId()).contentType(MediaType.APPLICATION_JSON)
+                .content(body)).andExpect(status().isUnauthorized());
+        for (AppUser actor : List.of(f.requester, f.technician, f.multi))
+            action("reassign", f.own.getId(), actor, body).andExpect(status().isForbidden());
+        action("reassign", Long.MAX_VALUE, f.manager, body).andExpect(status().isNotFound());
+        action("reassign", f.own.getId(), f.manager,
+                json.writeValueAsString(new ReassignTicketRequest(2L, Long.MAX_VALUE, "r"))).andExpect(status().isNotFound());
+        action("reassign", f.own.getId(), f.manager,
+                json.writeValueAsString(new ReassignTicketRequest(1L, f.multi.getId(), "r"))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://nexora.app/problems/stale-write"));
+        action("reassign", f.own.getId(), f.manager,
+                json.writeValueAsString(new ReassignTicketRequest(2L, f.technician.getId(), "r")))
+                .andExpect(status().isUnprocessableEntity());
+        assertThat(detail(f.own)).isEqualTo(before);
+        tx(() -> em.find(AppUser.class, f.admin.getId()).changeStatus(UserStatus.DISABLED));
+        action("reassign", f.own.getId(), f.admin, body).andExpect(status().isUnauthorized());
+        tx(() -> {
+            Role role = em.createQuery("select r from Role r where r.code = :code", Role.class)
+                    .setParameter("code", RoleCode.MANAGER).getSingleResult();
+            em.persist(new UserRole(em.find(AppUser.class, f.multi.getId()), role, null));
+        });
+        try { action("reassign", f.own.getId(), f.multi, body).andExpect(status().isOk()); }
+        finally { tx(() -> em.createQuery("delete from UserRole r where r.user.id = :id and r.role.code = :code")
+                .setParameter("id", f.multi.getId()).setParameter("code", RoleCode.MANAGER).executeUpdate()); }
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"SUBMITTED", "UNDER_REVIEW", "IN_PROGRESS", "RESOLVED", "CLOSED", "REJECTED", "CANCELLED", "REOPENED", "NO_ASSIGNMENT"})
+    void reassignRejectsUnsupportedStatesAndMissingAssignment(String source) throws Exception {
+        review(f.own); assign(f.own);
+        tx(() -> {
+            if (source.equals("NO_ASSIGNMENT")) em.createQuery("delete from TicketAssignment a where a.ticketId = :id")
+                    .setParameter("id", f.own.getId()).executeUpdate();
+            else em.find(Ticket.class, f.own.getId()).changeStatus(TicketStatus.valueOf(source));
+        });
+        JsonNode before = detail(f.own);
+        action("reassign", f.own.getId(), f.manager,
+                json.writeValueAsString(new ReassignTicketRequest(before.get("version").asLong(), f.multi.getId(), "r")))
+                .andExpect(status().isUnprocessableEntity());
+        assertThat(detail(f.own)).isEqualTo(before);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"availability", "coverage", "role", "status", "capacity", "skill", "profile"})
+    void reassignRechecksEveryEligibilityRuleBeforeEndingTheOriginalAssignment(String change) throws Exception {
+        review(f.own); assign(f.own);
+        mvc.perform(get("/api/v1/tickets/{id}/eligible-technicians", f.own.getId()).with(jwt().jwt(token(f.manager))))
+                .andExpect(status().isOk());
+        Skill required = new Skill("REASSIGN-" + f.own.getId(), "Required skill");
+        tx(() -> {
+            switch (change) {
+                case "availability" -> em.find(TechnicianProfile.class, f.multi.getId()).changeAvailability(false);
+                case "coverage", "profile" -> {
+                    em.createQuery("delete from TechnicianServiceArea a where a.technician.technicianId = :id")
+                            .setParameter("id", f.multi.getId()).executeUpdate();
+                    if (change.equals("profile")) em.remove(em.find(TechnicianProfile.class, f.multi.getId()));
+                }
+                case "role" -> em.createQuery("delete from UserRole r where r.user.id = :id and r.role.code = :code")
+                        .setParameter("id", f.multi.getId()).setParameter("code", RoleCode.TECHNICIAN).executeUpdate();
+                case "status" -> em.find(AppUser.class, f.multi.getId()).changeStatus(UserStatus.DISABLED);
+                case "capacity" -> em.persist(new TicketAssignment(f.hidden.getId(), f.multi.getId(), f.manager.getId(), OffsetDateTime.now()));
+                case "skill" -> {
+                    em.persist(required); em.flush();
+                    em.createNativeQuery("update dbo.tickets set required_skill_id = :skill where id = :id")
+                            .setParameter("skill", required.getId()).setParameter("id", f.own.getId()).executeUpdate();
+                }
+                default -> throw new AssertionError(change);
+            }
+        });
+        try {
+            JsonNode before = detail(f.own);
+            action("reassign", f.own.getId(), f.manager,
+                    json.writeValueAsString(new ReassignTicketRequest(2L, f.multi.getId(), "r")))
+                    .andExpect(status().isUnprocessableEntity());
+            assertThat(detail(f.own)).isEqualTo(before);
+        } finally {
+            if (change.equals("skill")) tx(() -> {
+                em.createNativeQuery("update dbo.tickets set required_skill_id = null where id = :id")
+                        .setParameter("id", f.own.getId()).executeUpdate();
+                em.remove(em.find(Skill.class, required.getId()));
+            });
+        }
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"assignment", "history"})
+    void reassignFailureRollsBackEvenAfterTheOldAssignmentHasFlushed(String failure) throws Exception {
+        review(f.own); assign(f.own);
+        JsonNode before = detail(f.own);
+        if (failure.equals("assignment")) doThrow(new DataIntegrityViolationException("Replacement failed"))
+                .when(assignments).save(any(TicketAssignment.class));
+        else doThrow(new DataIntegrityViolationException("History failed"))
+                .when(history).save(any(TicketStatusHistory.class));
+        assertThatThrownBy(() -> reassign(f.own)).isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(detail(f.own)).isEqualTo(before);
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.technician.getId())).isEqualTo(1);
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.multi.getId())).isZero();
+    }
+
+    @Test
+    void concurrentReassignmentsProduceOneReplacementAndOneStaleWrite() throws Exception {
+        review(f.own); assign(f.own);
+        var results = race(() -> reassign(f.own), () -> reassign(f.own));
+        assertThat(results.stream().filter(TicketActionResultResponse.class::isInstance).count()).isEqualTo(1);
+        assertThat(results.stream().filter(StaleWriteException.class::isInstance).count()).isEqualTo(1);
+        assertThat(detail(f.own).get("version").asLong()).isEqualTo(3);
+        assertThat(assignments.findByTicketIdOrderByAssignedAtDescIdDesc(f.own.getId())).hasSize(2);
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.multi.getId())).isEqualTo(1);
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {true, false})
+    void reassignAndStartSerializeInBothOrders(boolean reassignFirst) throws Exception {
+        review(f.own); assign(f.own);
+        var first = reassignFirst ? (Supplier<?>) () -> reassign(f.own)
+                : (Supplier<?>) () -> service.start(token(f.technician), f.own.getId(), new StartTicketRequest(2L));
+        var second = reassignFirst ? (Supplier<?>) () -> service.start(token(f.technician), f.own.getId(), new StartTicketRequest(2L))
+                : (Supplier<?>) () -> reassign(f.own);
+        CountDownLatch written = new CountDownLatch(1), release = new CountDownLatch(1), competing = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var winner = executor.submit(() -> new TransactionTemplate(transactions).execute(status -> {
+                Object result = first.get();
+                written.countDown(); await(release);
+                return result;
+            }));
+            try {
+                assertThat(written.await(15, TimeUnit.SECONDS)).isTrue();
+                var loser = executor.submit(() -> { competing.countDown(); return attempt(second); });
+                assertThat(competing.await(10, TimeUnit.SECONDS)).isTrue();
+                release.countDown();
+                assertThat(winner.get(25, TimeUnit.SECONDS)).isInstanceOf(TicketActionResultResponse.class);
+                assertThat(loser.get(25, TimeUnit.SECONDS)).isInstanceOf(StaleWriteException.class);
+            } finally { release.countDown(); }
+        }
+        JsonNode after = detail(f.own);
+        assertThat(after.get("version").asLong()).isEqualTo(3);
+        assertThat(after.get("status").asText()).isEqualTo(reassignFirst ? "ASSIGNED" : "IN_PROGRESS");
+        assertThat(assignments.findByTicketIdInAndEndedAtIsNull(List.of(f.own.getId()))).hasSize(1);
+        assertThat(after.at("/currentAssignment/technician/technicianId").asLong())
+                .isEqualTo(reassignFirst ? f.multi.getId() : f.technician.getId());
+        if (!reassignFirst) action("reassign", f.own.getId(), f.manager,
+                json.writeValueAsString(new ReassignTicketRequest(3L, f.multi.getId(), "r")))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void reassignmentAndAssignmentCannotConsumeTheSameLastCapacitySlot() throws Exception {
+        review(f.own); assign(f.own); review(f.hidden);
+        var results = race(() -> reassign(f.own), () -> service.assign(token(f.manager), f.hidden.getId(),
+                new AssignTicketRequest(1L, f.multi.getId())));
+        assertThat(results.stream().filter(TicketActionResultResponse.class::isInstance).count()).isEqualTo(1);
+        assertThat(results.stream().filter(BusinessRuleException.class::isInstance).count()).isEqualTo(1);
+        assertThat(assignments.countActiveAssignmentsByTechnicianId(f.multi.getId())).isEqualTo(1);
+    }
+
+    protected TicketActionResultResponse reassign(Ticket ticket) {
+        return service.reassign(token(f.manager), ticket.getId(), new ReassignTicketRequest(2L, f.multi.getId(), "r"));
     }
 
     static Stream<Arguments> invalidBodies() {
@@ -349,7 +586,7 @@ public abstract class TicketActionApiContract {
     void openApiPublishesStrictActionsAndSharedAssignment() throws Exception {
         JsonNode document = json.readTree(mvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsByteArray());
-        for (String action : List.of("review", "assign")) {
+        for (String action : List.of("review", "assign", "reassign")) {
             var endpoint = document.path("paths").path("/api/v1/tickets/{ticketId}/" + action).path("post");
             for (String code : List.of("200", "400", "401", "403", "404", "409", "422"))
                 assertThat(endpoint.path("responses").has(code)).as(action + ":" + code).isTrue();
@@ -357,6 +594,8 @@ public abstract class TicketActionApiContract {
         }
         assertThat(document.at("/components/schemas/TicketDetailResponse/properties").has("currentAssignment")).isTrue();
         assertThat(document.at("/components/schemas/AssignTicketRequest/additionalProperties").asBoolean(true)).isFalse();
+        assertThat(document.at("/components/schemas/ReassignTicketRequest/additionalProperties").asBoolean(true)).isFalse();
+        assertThat(document.at("/components/schemas/TicketDetailResponse/properties").has("assignmentHistory")).isTrue();
     }
 
     protected List<Object> race(Supplier<?> first, Supplier<?> second) throws Exception {

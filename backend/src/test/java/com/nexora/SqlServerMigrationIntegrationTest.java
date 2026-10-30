@@ -18,6 +18,14 @@ class SqlServerMigrationIntegrationTest {
 	private JdbcTemplate jdbcTemplate;
 
 	@Test
+	void assignmentEndReasonStoresOneThousandUnicodeCharacters() {
+		assertThat(jdbcTemplate.queryForObject("""
+				SELECT CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ticket_assignments' AND COLUMN_NAME = 'end_reason'
+				""", Integer.class)).isEqualTo(1000);
+	}
+
+	@Test
 	void flywayCreatesTheSqlServerSchemaAndSeedData() {
 		Integer tableCount = jdbcTemplate.queryForObject("""
 				SELECT COUNT(*)

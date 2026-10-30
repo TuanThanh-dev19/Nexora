@@ -157,6 +157,45 @@ export function TicketDynamicValues({
   )
 }
 
+export function TicketAssignmentHistory({ history }) {
+  return (
+    <Card className="ticket-section mb-3">
+      <Card.Body>
+        <h2 className="h5">Lịch sử phân công</h2>
+        {history.length === 0 ? (
+          <EmptyState message="Chưa có lịch sử phân công." />
+        ) : (
+          <ol className="mb-0 ticket-timeline">
+            {history.map((assignment) => (
+              <li key={assignment.id}>
+                <strong>{assignment.technician.fullName}</strong>
+                <div>
+                  {assignment.endedAt ? 'Đã kết thúc' : 'Đang phụ trách'}
+                </div>
+                <div className="small text-secondary">
+                  {assignment.assignedBy.fullName} ·{' '}
+                  {formatTicketTime(assignment.assignedAt)}
+                </div>
+                {assignment.endedAt && (
+                  <div>Kết thúc: {formatTicketTime(assignment.endedAt)}</div>
+                )}
+                {assignment.endReason && (
+                  <p
+                    className="mb-0 text-break"
+                    style={{ whiteSpace: 'pre-wrap' }}
+                  >
+                    {assignment.endReason}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
+      </Card.Body>
+    </Card>
+  )
+}
+
 export function TicketStatusHistory({ history }) {
   return (
     <Card className="ticket-section mb-3">

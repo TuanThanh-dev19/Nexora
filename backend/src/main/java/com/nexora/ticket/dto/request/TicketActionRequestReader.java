@@ -41,6 +41,15 @@ public final class TicketActionRequestReader {
         }
     }
 
+    public static class Reassign extends JsonDeserializer<ReassignTicketRequest> {
+        @Override
+        public ReassignTicketRequest deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+            JsonNode body = body(parser, Set.of("version", "technicianId", "reason"));
+            return new ReassignTicketRequest(integer(parser, body, "version"),
+                    integer(parser, body, "technicianId"), optionalTrimmedString(parser, body, "reason", 1000));
+        }
+    }
+
     public static class AddWorkLog extends JsonDeserializer<AddWorkLogRequest> {
         private static final Set<String> ALLOWED = Set.of(
                 "version", "logType", "content", "startedAt", "endedAt", "minutesSpent");
