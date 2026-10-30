@@ -94,6 +94,36 @@ Các test Java dưới backend/src/test/java/com/nexora; test UI dưới fronten
 
 ## 4. Kết quả đã ghi nhận
 
+### Kiểm thử đổi Technician (NEX-051)
+
+`TicketActionApiContract` chạy chung trên H2 (`TicketActionApiIntegrationTest`) và SQL Server (`TicketActionSqlServerIntegrationTest`):
+quyền Manager/Admin/mixed-role, reason 1–1000 sau trim, request strict, cùng Technician, tất cả state ngoài ASSIGNED,
+không active assignment, bảy nhóm eligibility, stale version, rollback sau flush và lỗi history.
+Concurrency gồm hai reassign cùng Ticket, reassign/start cả hai thứ tự và assign/reassign tranh capacity cuối.
+Kiểm trực tiếp quyền đọc của A, My Work A/B, A không start được và B start được; assert current assignment/history/version sau GET mới.
+`SqlServerMigrationIntegrationTest` kiểm end_reason dài 1000; frontend TicketDemoScope kiểm mock bật/tắt, pending,
+1000 ký tự, chặn người hiện tại, lịch sử A/B, invalidate cache người khác, 409 reload và 422 chọn lại.
+
+Chạy backend mặc định bằng `./mvnw.cmd verify`. Kiểm SQL Server với Docker:
+
+```powershell
+$env:RUN_SQLSERVER_IT = 'true'
+try {
+    .\mvnw.cmd '-Dtest=TicketActionSqlServerIntegrationTest,TechnicianWorkSqlServerIntegrationTest,TicketReadSqlServerIntegrationTest,SqlServerMigrationIntegrationTest' test
+}
+finally { Remove-Item Env:RUN_SQLSERVER_IT }
+```
+
+Luồng demo thật, mock flags=false:
+
+1. Manager mở Ticket ASSIGNED đang giao A; mở **Đổi kỹ thuật viên**, chọn B eligible và nhập lý do.
+2. Xác nhận rồi refresh: vẫn ASSIGNED, version tăng một, current assignment là B; Lịch sử phân công giữ A với endedAt/reason và row B mới.
+3. A đăng nhập: My Work không còn Ticket, nhưng Ticket List/detail/history vẫn đọc được; nút start bị vô hiệu hóa và API từ chối.
+4. B đăng nhập: My Work có Ticket; mở detail và bắt đầu xử lý; refresh vẫn IN_PROGRESS với acceptedAt trên assignment B.
+5. Manager mở lại: không có action đổi Technician ở IN_PROGRESS; các chức năng hoãn khác vẫn tắt.
+
+Đây là use case **Reassign Technician**; không demo UNASSIGN, override, notification hay đổi người đang IN_PROGRESS.
+
 Mốc **24/10/2026**, sau phần upload ảnh kết quả và trước lần chuẩn hóa tài liệu:
 
 | Lệnh / kiểm tra                             | Kết quả                                                             | Giới hạn                                                             |

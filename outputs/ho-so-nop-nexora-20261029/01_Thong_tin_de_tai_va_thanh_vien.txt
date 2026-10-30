@@ -1,0 +1,15 @@
+﻿THÔNG TIN ĐỀ TÀI VÀ THÀNH VIÊN
+
+Tên topic: Nexora – Hệ thống báo cáo sự cố và điều phối bảo trì trong khuôn viên trường
+Môn học: SBA301 – Integrate Single Page Application with Spring Boot
+
+Thành viên:
+1. Trần Phan Nhật Huy | GitHub: Huytran2903
+2. Lâm Thoại Thanh | GitHub: thoaithanh-web
+3. Phan Tuấn Thành | GitHub: TuanThanh-dev19
+4. Tô Phi Oanh | GitHub: OanhPhiTo
+5. Trần Quốc Thái | GitHub: tranthaigin
+
+Link Git project: https://github.com/TuanThanh-dev19/Nexora
+
+Ngày cập nhật: 29/10/2026

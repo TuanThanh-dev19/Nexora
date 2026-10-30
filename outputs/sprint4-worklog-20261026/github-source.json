@@ -1,0 +1,244 @@
+{
+  "asOf": "2026-10-26",
+  "timezone": "Asia/Bangkok",
+  "repository": "TuanThanh-dev19/Nexora",
+  "issues": [
+    {
+      "number": 72,
+      "title": "[NEX-040] Xây dựng API Dashboard summary theo quyền người dùng",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/72",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "tranthaigin"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-18T12:19:28Z",
+      "plannedStart": "19/10/2026",
+      "plannedEnd": "23/10/2026",
+      "branch": "feature/dashboard-summary-api"
+    },
+    {
+      "number": 73,
+      "title": "[NEX-041] Xây dựng API kiểm tra Technician phù hợp để phân công Ticket",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/73",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "Huytran2903"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-20T13:13:58Z",
+      "plannedStart": "15/10/2026",
+      "plannedEnd": "16/10/2026",
+      "branch": "feature/ticket-technician-eligibility"
+    },
+    {
+      "number": 74,
+      "title": "[NEX-042] Xây dựng API danh sách Technician phục vụ Manager/Admin",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/74",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "Huytran2903"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-20T13:13:59Z",
+      "plannedStart": "17/10/2026",
+      "plannedEnd": "18/10/2026",
+      "branch": "feature/technician-list-api"
+    },
+    {
+      "number": 75,
+      "title": "[NEX-043] Xây dựng API công việc hiện tại và bắt đầu xử lý Ticket",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/75",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "OanhPhiTo"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-21T01:40:36Z",
+      "plannedStart": "19/10/2026",
+      "plannedEnd": "20/10/2026",
+      "branch": "feature/technician-work-start"
+    },
+    {
+      "number": 76,
+      "title": "[NEX-044] Xây dựng API xem và tải ảnh Ticket có phân quyền",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/76",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "tranthaigin"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-18T12:19:53Z",
+      "plannedStart": "15/10/2026",
+      "plannedEnd": "18/10/2026",
+      "branch": "feature/ticket-attachment-content"
+    },
+    {
+      "number": 77,
+      "title": "[NEX-045] Xây dựng API đóng Ticket và hoàn thiện phạm vi giao diện demo",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/77",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "TuanThanh-dev19"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-24T14:01:28Z",
+      "plannedStart": "19/10/2026",
+      "plannedEnd": "23/10/2026",
+      "branch": "feature/ticket-close-demo-scope"
+    },
+    {
+      "number": 78,
+      "title": "[NEX-046] Xây dựng API tạo Ticket và kết nối giao diện tạo phiếu",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/78",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "thoaithanh-web"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-18T09:53:51Z",
+      "plannedStart": "17/10/2026",
+      "plannedEnd": "18/10/2026",
+      "branch": "feature/create-ticket-api"
+    },
+    {
+      "number": 79,
+      "title": "[NEX-047] Xây dựng API tiếp nhận, phân công và đọc phân công hiện tại của Ticket",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/79",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "TuanThanh-dev19"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-22T01:51:37Z",
+      "plannedStart": "17/10/2026",
+      "plannedEnd": "18/10/2026",
+      "branch": "feature/ticket-review-assignment"
+    },
+    {
+      "number": 80,
+      "title": "[NEX-048] Xây dựng validation dữ liệu động và ảnh khi tạo Ticket",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/80",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "thoaithanh-web"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-19T00:59:18Z",
+      "plannedStart": "15/10/2026",
+      "plannedEnd": "16/10/2026",
+      "branch": "feature/ticket-submission-validation"
+    },
+    {
+      "number": 81,
+      "title": "[NEX-049] Xây dựng API nhật ký công việc và hoàn tất xử lý Ticket",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/81",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "OanhPhiTo"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-22T02:21:02Z",
+      "plannedStart": "21/10/2026",
+      "plannedEnd": "22/10/2026",
+      "branch": "feature/ticket-worklog-resolve"
+    },
+    {
+      "number": 88,
+      "title": "[NEX-050] Xây dựng API upload ảnh kết quả xử lý Ticket và tích hợp giao diện kỹ thuật viên",
+      "url": "https://github.com/TuanThanh-dev19/Nexora/issues/88",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [
+        "TuanThanh-dev19"
+      ],
+      "milestone": 5,
+      "closed_at": "2026-10-24T15:00:38Z",
+      "plannedStart": null,
+      "plannedEnd": null,
+      "branch": "feature/ticket-work-result-upload"
+    }
+  ],
+  "prs": [
+    {
+      "number": 82,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/82",
+      "head": "feature/create-ticket-api",
+      "merged": true,
+      "merged_at": "2026-10-19T00:07:11Z",
+      "body": "## Summary\nRequesters can now create a persisted Ticket from the existing Create Ticket page, then refresh List/Detail and read the stored form, typed answers, evidence metadata and initial SUBMIT history.\n\n- Add strict `POST /api/v1/tickets` multipart handling: exactly one JSON ticket part, zero to five indexed JPEG/PNG files, unknown/duplicate properties and scalar coercion rejected, 201 + Location with persisted ID/number/status/version.\n- Authorize against the current ACTIVE database user and REQUESTER role. Lock category/form/reference snapshots through commit; enforce exact-location eligible assets, optional defaults, category priority, published-form skill/SLA and existing sequence generation.\n- Persist Ticket/JSON values/evidence/history atomically. Register each stored file for rollback cleanup immediately; retain committed images. Compute creation time, number year, calendar-minute SLA and history from the same server instant.\n- Add the missing submission-validator dependency. Align existing admin/UI rule validators with JPEG/PNG, five files/5 MiB and offset DATETIME; immutable legacy rules return explicit 422 rather than being repaired. Existing CRUD/editor pages are extended, not rebuilt.\n- Keep the real multipart client and existing selectors/dynamic fields. Require a real location even when category locationRequired=false, limit titles to 200, retain input/images after errors, require 409 reload, and advise checking List after ambiguous network failure without automatic POST retry.\n- Document multipart/OpenAPI/errors and provide `docs/examples/create-ticket.json` plus a secret-free curl example in `docs/CREATE_TICKET_API.md`.\n\n## Validation\n- Backend `mvnw verify` passed; final focused Ticket creation + rule-validator run: **53 tests passed**.\n- Frontend full suite passed (543 tests), with the final additional attachment-minimum check passing in the focused rule suite; lint/build passed.\n- Real HTTP server checks: JWT authorization, multipart create/detail round trip, 5 MiB/file and 30 MiB/request 413 Problem Details.\n- Integration coverage: nine types including false/0; active options/fields; strict request DTO; references/assets/roles; field-linked/general evidence; stale and legacy forms; second-file failure; real SQL failure after storage; preservation of committed evidence; concurrent unique numbers; publishing blocked until submission commits.\n- The same creation contract runs against migrated SQL Server in CI (`RUN_SQLSERVER_IT=true`). Local Docker daemon was unavailable, so local database verification used H2 plus real HTTP; SQL Server results are provided by CI.\n\nAttachment content/download authorization remains the separate API dependency. No assignment/review/work-result/cloud-storage/idempotency feature is included.\n\nCloses #78\n",
+      "user": "thoaithanh-web",
+      "merge_commit_sha": "e30887555dda65a8dae5bdd30de14f8228262fe2"
+    },
+    {
+      "number": 83,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/83",
+      "head": "feature/ticket-submission-validation",
+      "merged": true,
+      "merged_at": "2026-10-19T00:59:17Z",
+      "body": "## Summary\nComplete NEX-048 validation so UI and server agree on optional empty answers, false/zero, exact decimal steps, whole-string regex, real dates, offset instants and evidence limits.\n\n**Dependency: merge #82 first.** This branch builds on the API/validator foundation already reviewed in #82; its base remains `develop` as requested. The issue-80-only changes are available in [this comparison](https://github.com/TuanThanh-dev19/Nexora/compare/feature/create-ticket-api...feature/ticket-submission-validation). No duplicate validation endpoint or creation workflow is introduced.\n\n- Normalize optional null/blank/empty-array answers to no value rows, preserve nonblank multiline text exactly, and retain required/strict-type/key/selection rules.\n- Validate category/form context inside the pure validator; return foreign-category 400 separately from stale-form 409. Return immutable checked answer/image mappings without database or filesystem writes.\n- Reuse FileStorageValidator through streaming signature checks and typed error reasons; keep global empty-count rejection unchanged. Apply 413/415 for field/global byte and MIME limits, and count linked evidence once.\n- Reject combined active IMAGE minimums above five in publish validation and the existing frontend editor. Retain immutable legacy configuration errors and historical reads.\n- Share wire-value/rule fixtures between Java and frontend tests. Use BigDecimal remainder on the server and BigInt decimal step checks on the client, plus matching whitespace, regex and DATE behavior.\n- Provide database-free TicketSubmissionFixtures and docs/TICKET_SUBMISSION_VALIDATION.md for consumers.\n\n## Validation\n- Backend `mvnw verify` passed; focused pure-validator, creation HTTP, publish-rule and storage tests passed.\n- Frontend full suite: 562 passed; the final additional browser decimal/exponent helper test also passed. Lint and production build passed.\n- Shared fixtures cover exact decimal boundaries, false/0, regex/newlines, nonexistent days, equivalent timezone offsets and selections.\n- HTTP integration proves optional nulls persist no value rows and foreign-category errors are 400. Existing rollback, stale/legacy form, upload and historical-read checks remain enabled; migrated SQL Server executes the same contract in CI.\n\nCloses #80\n",
+      "user": "thoaithanh-web",
+      "merge_commit_sha": "ba65e16324b3f692404158ec32cd1f68f8a1e657"
+    },
+    {
+      "number": 84,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/84",
+      "head": "feature/ticket-attachment-content",
+      "merged": true,
+      "merged_at": "2026-10-18T12:19:52Z",
+      "body": "Closes #76.\n\nImplements authenticated JPEG/PNG binary reads using current database roles and the existing Ticket visibility specification (including historical assignments and mixed-role union). Metadata is selected by parent and attachment ID; COMMENT and unsupported MIME remain hidden. Safe Unicode disposition, actual byte length, private/no-store and nosniff; bounded reads close streams before headers and return safe JSON problems on failure. Enables the existing authorized image modal independently of workflow mocks without enabling comments/feedback.\n\nValidation: 19 focused backend tests passed (attachment service/controller and visibility repository); 32 frontend collaboration/API tests passed; frontend lint and production build passed (existing large-chunk warning). Documentation: docs/TICKET_ATTACHMENT_CONTENT.md.\n\nGitHub backend and frontend CI passed: https://github.com/TuanThanh-dev19/Nexora/actions/runs/39125691694. Draft pending live full-stack acceptance. Local Docker daemon is unavailable and Computer Use reports native pipe unavailable, so no claim of real SQL Server/browser/create-upload-refresh acceptance. No local database or environment settings changed.",
+      "user": "tranthaigin",
+      "merge_commit_sha": "9bd68737a69cbd2a403f1db04897374d0db3da3e"
+    },
+    {
+      "number": 85,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/85",
+      "head": "feature/dashboard-summary-api",
+      "merged": true,
+      "merged_at": "2026-10-18T12:19:27Z",
+      "body": "Closes #72.\n\nUses existing Dashboard DTO/service/query boundaries and reuses the exact Ticket visibility specification. A single SQL aggregate uses EXISTS for historical assignments and union-of-roles scope without entity loading or duplicated counts. One injected Clock instant anchors all metrics, inclusive SLA now+2h and the half-open Bangkok ISO week; CLOSED tickets retain their resolved count. Current database roles override token claims; unknown query parameters are rejected and database failures return safe 500 problems rather than fake zeros.\n\nFrontend keeps the existing real client, cards, states, timestamp and production mock guard. Mixed-role scope copy now describes the union. Manager/technician hooks invalidate Dashboard after successful mutations; Create Ticket already does so. No unfinished workflow API or production mock is enabled.\n\nValidation so far: 14 backend query/controller tests passed; 51 relevant frontend tests passed; frontend lint passed. Same aggregation contract is also configured for real SQL Server in CI, including time boundaries, current/history assignments, repeated assignments, mixed-role overlap and fixture status changes. Final verification: local clean Maven verify passed (681 detected, 55 integration tests skipped without Docker); local full frontend passed 532 tests in 72 files with maxWorkers=2, lint and production build passed. The first unrestricted local parallel frontend run hit timeouts under concurrent backend load and was stopped; the lower-concurrency rerun and normal GitHub frontend CI both passed. GitHub CI is green: backend 714 detected / 3 skipped / zero failures, including all 5 real SQL Server Dashboard tests; frontend 532 tests passed plus lint/build. CI: https://github.com/TuanThanh-dev19/Nexora/actions/runs/39126171530. The existing large-chunk build warning remains. See docs/DASHBOARD_UI.md.\n\nDraft pending live full-stack acceptance: Docker daemon is unavailable locally and Computer Use reports native pipe unavailable. Fixture state updates are not claimed as a real Create/Start/Resolve/Close journey; several workflow owners APIs remain separate dependencies. No local database, credentials or env configuration changed.",
+      "user": "tranthaigin",
+      "merge_commit_sha": "01caf4c8517289d75c52db890862f28ff52cdf09"
+    },
+    {
+      "number": 86,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/86",
+      "head": "feature/ticket-review-assignment",
+      "merged": true,
+      "merged_at": "2026-10-19T01:08:01Z",
+      "body": "## Thay đổi\n- Thêm API review: SUBMITTED → UNDER_REVIEW.\n- Hoàn thiện API assign: kiểm tra quyền, version, state và eligibility tại thời điểm ghi.\n- Lưu trạng thái, assignment và history trong cùng transaction; trả version sau flush.\n- Khóa Ticket trước Technician profile để ngăn phân công vượt capacity; giữ unique index bảo đảm một active assignment/Ticket.\n- Bổ sung currentAssignment vào Ticket Detail, giữ nguyên dữ liệu và visibility hiện có.\n- Cho phép UI review/assign khi tắt mock; xử lý 409 bằng tải lại/xác nhận mới và 422 bằng tải lại candidates/chọn lại.\n- Cập nhật OpenAPI và tài liệu kiểm thử/bàn giao.\n\n## Kiểm thử\n- Backend toàn bộ: 690 passed, 69 skipped theo cấu hình opt-in.\n- SQL Server integration: 47 passed, 0 skipped, gồm concurrency và filtered unique index.\n- MVC validation sau chỉnh sửa cuối: 40 passed.\n- Frontend: 532 passed trên 72 files với --maxWorkers=2.\n- Lint, build và git diff --check: đạt.\n\n## Ghi chú\n- Tái sử dụng service eligibility và assignment hiện có; không thêm dependency hoặc migration.\n- Chưa nghiệm thu thủ công luồng tạo Ticket → review → assign trên trình duyệt; bước tạo Ticket phụ thuộc API riêng.\n- Build còn cảnh báo kích thước bundle.",
+      "user": "TuanThanh-dev19",
+      "merge_commit_sha": "d10294da52e3ee0972eb60099ccfc4613eb0c0cb"
+    },
+    {
+      "number": 87,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/87",
+      "head": "feature/ticket-close-demo-scope",
+      "merged": true,
+      "merged_at": "2026-10-24T14:00:49Z",
+      "body": "## Summary\nComplete the real API Ticket demo flow by allowing reporters with the\nREQUESTER role to close RESOLVED tickets, including reporters with\nadditional roles.\n\nClose validates visibility, permissions, version and ticket state;\nrejects inconsistent active assignments; and atomically records CLOSED,\nclosedAt and CLOSE history while preserving resolution data.\n\nA shared demo configuration enables supported real API features and\nhides deferred controls while blocking their queries and mutations.\nSuccessful actions refresh ticket data and Dashboard.\n\n## Scope\n- Enable review, assign, My Work, start, work logs, resolve, close,\n  authorized image reads and Dashboard.\n- Defer reject/cancel, reassign/unassign, reopen/force-close,\n  comments/feedback and WORK_RESULT upload.\n- Preserve existing management routes and role guards.\n\n## Verification\nVerified on 23 October 2026:\n- Backend verify: 842 passed, 131 environment-gated skips.\n- Enabled SQL Server technician-work suite: 96 passed.\n- Frontend: 581 tests passed.\n- Lint and production builds passed; existing warnings remain.\n- Real browser flow passed:\n  create → review → assign → start → work log → resolve → reporter close.\n- Confirmed persisted CLOSED state, one CLOSE entry, version increment,\n  unchanged resolution data and preserved Dashboard resolved count.\n- Confirmed authorization, stale writes, concurrency and rollback behavior.\n\nThis completes the Ticket close/demo scope issue; it does not claim\nacceptance of the entire MVP.",
+      "user": "TuanThanh-dev19",
+      "merge_commit_sha": "1956dcd8f04481b3ce2d288bb5f8f15e710cfabd"
+    },
+    {
+      "number": 89,
+      "url": "https://github.com/TuanThanh-dev19/Nexora/pull/89",
+      "head": "feature/ticket-work-result-upload",
+      "merged": true,
+      "merged_at": "2026-10-24T15:00:37Z",
+      "body": "Closes #88\n\n## What changed?\n\nTrước đây giao diện đã có client upload nhưng backend chưa cung cấp endpoint thực tế và chức năng còn bị tắt. MR bổ sung luồng lưu ảnh kết quả để kỹ thuật viên upload, người có quyền xem Ticket đối chiếu ảnh trước khi đóng phiếu.\n\n- Thêm POST /api/v1/tickets/{ticketId}/attachments với metadata WORK_RESULT nghiêm ngặt.\n- Chỉ cho phép tài khoản ACTIVE, có TECHNICIAN và là người đang được phân công trên Ticket IN_PROGRESS.\n- Kiểm tra visibility trước quyền thao tác và trạng thái.\n- Nhận 1–5 ảnh JPEG/PNG, tối đa 5 MiB/ảnh; kiểm MIME và chữ ký nội dung.\n- Lưu toàn bộ batch trong transaction, đăng ký dọn file khi rollback; trả metadata không chứa đường dẫn nội bộ.\n- Dùng khóa Ticket hiện có để bảo vệ trước resolve hoặc thay đổi phân công đồng thời.\n- Upload giữ nguyên status, version, resolution, history và work logs. Ảnh vẫn tùy chọn khi resolve/close.\n- Bật riêng uploadWorkResult; giữ preview, bỏ ảnh, khóa nút khi gửi, giữ lựa chọn khi lỗi và yêu cầu reload khi quyền/trạng thái thay đổi.\n- Chuẩn hóa README và bảy tài liệu chính theo Part 4, gồm báo cáo bảy phần và nội dung 18 slide; loại tài liệu lịch sử/trùng lặp.\n\n## How was it tested?\n\n- Backend `.\\mvnw.cmd verify`: 885 passed, 142 environment-gated tests skipped.\n- H2 upload và storage tests: 54 passed.\n- SQL Server upload suite với RUN_SQLSERVER_IT=true: 41 passed, một embedded HTTP case chỉ chạy trên H2 được skip.\n- Frontend `npm run test -- --maxWorkers=2`: 597 passed.\n- Frontend lint và production build với mock flags false: passed.\n- Kiểm thử authorization, metadata/file validation, rollback toàn batch và hai thứ tự upload tranh với resolve/assignment change.\n- Production UI trên SQL Server cô lập: start → work log → upload → refresh → resolve → reporter xem/tải ảnh → close → refresh.\n  - Work log được lưu qua API thật do công cụ browser không nhập được datetime.\n  - Upload giữ Ticket version 2; ảnh tải xuống khớp bytes đã upload.\n- Tài liệu: 35 liên kết nội bộ hợp lệ, đủ bảy phần báo cáo, 18 slide, ERD 26 bảng và định dạng Markdown đạt.\n\n## Notes\n\n- Các action/collaboration đang hoãn vẫn giữ nguyên phạm vi demo.\n- Cleanup file tái sử dụng cơ chế hiện có; lỗi xóa file riêng biệt được log.\n- Production build còn advisory kích thước bundle.\n- Thông tin thành viên, phân công và commit nộp bài được đánh dấu để nhóm bổ sung trong báo cáo.",
+      "user": "TuanThanh-dev19",
+      "merge_commit_sha": "8f33803de63099bb4875952969291e684edb7ff2"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.nexora.ticket.dto.request.AddWorkLogRequest;
 import com.nexora.ticket.dto.request.AssignTicketRequest;
+import com.nexora.ticket.dto.request.ReassignTicketRequest;
 import com.nexora.ticket.dto.request.CloseTicketRequest;
 import com.nexora.ticket.dto.request.EligibleTechniciansQuery;
 import com.nexora.ticket.dto.request.ResolveTicketRequest;
@@ -172,6 +173,42 @@ public class TicketAssignmentService {
         ticketRepository.flush();
         return new TicketActionResultResponse(ticket.getId(), ticket.getStatus(), ticket.getVersion(),
                 mapper.assignment(assignment, evaluation.user(), actor));
+    }
+
+    public TicketActionResultResponse reassign(Jwt jwt, Long ticketId, ReassignTicketRequest request) {
+        CurrentUserResponse viewer = getViewer(jwt);
+        requireManagerOrAdmin(getRoles(viewer));
+        Ticket ticket = lockedTicket(ticketId, request.version(), TicketAction.REASSIGN);
+        TicketAssignment current = assignmentRepository.findByTicketIdAndEndedAtIsNull(ticketId)
+                .orElseThrow(() -> new BusinessRuleException("Ticket has no active assignment."));
+        if (Objects.equals(current.getTechnicianId(), request.technicianId())) {
+            throw new BusinessRuleException("Choose a different technician for reassignment.");
+        }
+
+        // Match assign(): Ticket first, then destination profile to serialize capacity checks.
+        profileRepository.findByIdForUpdate(request.technicianId());
+        EligibilityEvaluation evaluation = eligibilityService.evaluateCandidateForAssignment(ticket, request.technicianId());
+        if (!evaluation.isEligible()) {
+            String reasons = evaluation.reasons().stream().map(EligibilityReason::code).collect(Collectors.joining(", "));
+            throw new BusinessRuleException("Technician is not eligible: " + reasons);
+        }
+        AppUser actor = userRepository.findById(viewer.id())
+                .orElseThrow(() -> new BadCredentialsException("Actor identity unavailable."));
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+        current.end(now, request.reason());
+        // Release the filtered unique-index entry before Hibernate inserts the replacement.
+        // This flush is still inside the transaction: later failures also roll back the end.
+        assignmentRepository.flush();
+        TicketAssignment replacement = assignmentRepository.save(
+                new TicketAssignment(ticketId, request.technicianId(), actor.getId(), now));
+
+        // The status stays ASSIGNED, so explicitly dirty the Ticket for one @Version increment.
+        ticket.touch(now);
+        statusHistoryRepository.save(new TicketStatusHistory(ticket, TicketStatus.ASSIGNED, TicketStatus.ASSIGNED,
+                TicketAction.REASSIGN, request.reason(), actor, now));
+        ticketRepository.flush();
+        return new TicketActionResultResponse(ticketId, ticket.getStatus(), ticket.getVersion(),
+                mapper.assignment(replacement, evaluation.user(), actor));
     }
 
     @Transactional(readOnly = true)

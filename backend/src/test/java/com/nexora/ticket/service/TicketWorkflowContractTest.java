@@ -269,7 +269,6 @@ class TicketWorkflowContractTest {
                 transition(TicketStatus.ASSIGNED, TicketAction.UNASSIGN, TicketStatus.UNDER_REVIEW),
                 transition(TicketStatus.IN_PROGRESS, TicketAction.UNASSIGN, TicketStatus.UNDER_REVIEW),
                 transition(TicketStatus.ASSIGNED, TicketAction.REASSIGN, TicketStatus.ASSIGNED),
-                transition(TicketStatus.IN_PROGRESS, TicketAction.REASSIGN, TicketStatus.ASSIGNED),
                 transition(TicketStatus.ASSIGNED, TicketAction.CANCEL_AFTER_ASSIGNMENT, TicketStatus.CANCELLED),
                 transition(TicketStatus.IN_PROGRESS, TicketAction.CANCEL_AFTER_ASSIGNMENT, TicketStatus.CANCELLED),
                 transition(TicketStatus.REOPENED, TicketAction.CANCEL_AFTER_ASSIGNMENT, TicketStatus.CANCELLED),
@@ -296,7 +295,6 @@ class TicketWorkflowContractTest {
                         TicketAction.CANCEL_AFTER_ASSIGNMENT)),
                 Arguments.of(TicketStatus.IN_PROGRESS, Set.of(
                         TicketAction.UNASSIGN,
-                        TicketAction.REASSIGN,
                         TicketAction.CANCEL_AFTER_ASSIGNMENT,
                         TicketAction.RESOLVE)),
                 Arguments.of(TicketStatus.RESOLVED, Set.of(
@@ -310,6 +308,7 @@ class TicketWorkflowContractTest {
 
     private static Stream<Arguments> invalidExistingTransitions() {
         return Stream.of(
+                Arguments.of(TicketStatus.IN_PROGRESS, TicketAction.REASSIGN),
                 Arguments.of(TicketStatus.UNDER_REVIEW, TicketAction.BEGIN_REVIEW),
                 Arguments.of(TicketStatus.SUBMITTED, TicketAction.ASSIGN),
                 Arguments.of(TicketStatus.UNDER_REVIEW, TicketAction.START_WORK),

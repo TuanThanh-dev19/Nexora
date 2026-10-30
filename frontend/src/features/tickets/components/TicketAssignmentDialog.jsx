@@ -18,6 +18,7 @@ import {
 import { useEligibleTechnicians } from '../hooks/useTicketWorkflow'
 import {
   candidateEligibility,
+  REASSIGN_REASON_MAX_LENGTH,
   validateWorkflowPayload,
 } from '../schemas/ticketWorkflowValidation'
 import { TicketReasonField, TicketWorkflowModal } from './TicketActionModal'
@@ -54,6 +55,10 @@ export function TicketAssignmentDialog({
     (candidate) => candidate.technicianId === selectedTechnicianId,
   )
   const eligibility = candidateEligibility(selected)
+  const isCurrentTechnician = (candidate) =>
+    action === 'reassign' &&
+    String(candidate?.technicianId) ===
+      String(ticket.currentAssignment?.technician.technicianId)
   const loading = candidates.isFetching || search.trim() !== queryText
   const fieldErrors = {
     ...mutation.error?.response?.data?.fieldErrors,
@@ -83,6 +88,8 @@ export function TicketAssignmentDialog({
     }
     if (action === 'reassign') payload.reason = reason.trim()
     const next = validateWorkflowPayload(action, payload, selected)
+    if (isCurrentTechnician(selected))
+      next.technicianId = 'Vui lòng chọn kỹ thuật viên khác người hiện tại.'
     setErrors(next)
     if (!Object.keys(next).length) void onSubmit(payload)
   }
@@ -96,7 +103,11 @@ export function TicketAssignmentDialog({
       onSubmit={submit}
       onReload={onReload}
       disabled={
-        !selected || eligibility.blocked || loading || candidates.isError
+        !selected ||
+        eligibility.blocked ||
+        isCurrentTechnician(selected) ||
+        loading ||
+        candidates.isError
       }
     >
       <p>
@@ -203,7 +214,11 @@ export function TicketAssignmentDialog({
                           checked={
                             candidate.technicianId === selectedTechnicianId
                           }
-                          disabled={state.blocked || loading}
+                          disabled={
+                            state.blocked ||
+                            isCurrentTechnician(candidate) ||
+                            loading
+                          }
                           onChange={() => {
                             clearSelection()
                             setTechnicianId(candidate.technicianId)
@@ -313,6 +328,7 @@ export function TicketAssignmentDialog({
       {action === 'reassign' && (
         <TicketReasonField
           id="ticket-reassign-reason"
+          maxLength={REASSIGN_REASON_MAX_LENGTH}
           value={reason}
           error={fieldErrors.reason}
           onChange={(value) => {

@@ -35,8 +35,8 @@ export const TICKET_WORKFLOW_ACTIONS = {
     historyAction: 'ASSIGN',
   },
   reassign: {
-    label: 'Phân công lại',
-    statuses: [STATUS.ASSIGNED, STATUS.IN_PROGRESS],
+    label: 'Đổi kỹ thuật viên',
+    statuses: [STATUS.ASSIGNED],
     targetStatus: STATUS.ASSIGNED,
     historyAction: 'REASSIGN',
     requiresReason: true,
@@ -104,6 +104,7 @@ export function availableTicketActions(ticket, user) {
   return Object.keys(TICKET_WORKFLOW_ACTIONS).filter((action) => {
     if (!TICKET_WORKFLOW_ACTIONS[action].statuses.includes(ticket?.status))
       return false
+    if (action === 'reassign' && !ticket.currentAssignment) return false
     if (action === 'close') return owner
     if (manager) return true
     if (!owner) return false

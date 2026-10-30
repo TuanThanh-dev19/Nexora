@@ -1,0 +1,11 @@
+ Chức năng liên quan	 Select — List	 Tên feature từ AI_PROJECT_KNOWLEDGE/03_Features.md; không tạo mã UC. Issue đa feature dùng phạm vi chính.
+ Việc cần làm	 Title — Text	 Tên Issue gốc; Excel lưu dưới dạng văn bản.
+ Trạng thái	 Status — List	 Đã đóng theo ảnh → Done (chưa xác minh live); Đang mở → Backlog nếu chưa rõ tiến độ.
+ Chủ sở hữu	 Person — List	 Member 1–5 là placeholder theo tài liệu; Owner chỉ đề xuất/Candidate lưu trong Ghi chú, chưa điền Chủ sở hữu.
+ Ngày đến hạn	 Date	 Ngày Hoàn thành được ghi riêng từng Issue; hiển thị DD/MM/YYYY. Không lấy deadline milestone.
+ Ghi chú	 Text	 ID nguồn, milestone/Candidate, dependency, Owner đề xuất, Branch đề xuất và dữ liệu cần xác minh.
+ Số đợt phát triển	 Number — nguyên dương	 Tất cả nguồn chưa xác định Sprint; để trống.
+ Tên nhánh	 Text	 Giữ nguyên Branch đề xuất, kể cả <issue-number>; không thay placeholder bằng số mới.
+ Cập nhật dropdown	 Named Range	 Thêm Usecase ở cột A, Status ở C, thành viên ở E, từ hàng 2 đến 1001; không để dòng trống xen giữa.
+ Thêm công việc	 Excel Table	 Nhập ngay dưới Table để Excel mở rộng. Validation/CF có sẵn đến hàng 10001; định dạng lấy theo Table/cột.
+ Đối chiếu nguồn	 Import Audit	 Mỗi xuất hiện có file, dòng nguồn, ID, Index, kết quả và dữ liệu gốc. Report bên ngoài ghi tổng số và cảnh báo.

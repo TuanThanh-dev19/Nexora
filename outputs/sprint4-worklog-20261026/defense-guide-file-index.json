@@ -1,0 +1,666 @@
+{
+  "issues": [
+    3,
+    7,
+    9,
+    11,
+    13,
+    14,
+    33,
+    34,
+    35,
+    58,
+    59,
+    60,
+    79,
+    77,
+    88
+  ],
+  "files": [
+    {
+      "path": "frontend/src/features/tickets/components/TicketActionPanel.jsx",
+      "line": 18,
+      "anchor": "export function TicketActionPanel"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketAssignmentDialog.jsx",
+      "line": 25,
+      "anchor": "export function TicketAssignmentDialog"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketAssignmentService.java",
+      "line": 127,
+      "anchor": "public TicketActionResultResponse review"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketAttachmentUploadService.java",
+      "line": 64,
+      "anchor": "public List<AttachmentMetadata> upload"
+    },
+    {
+      "path": "frontend/src/shared/config/demoScope.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V1__create_user_and_role_tables.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V4__create_ticket_workflow_tables.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V6__complete_erd_support_tables.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "infrastructure/sqlserver/nexora_full_schema.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "infrastructure/sqlserver/verify-schema.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "docs/DATABASE_SCHEMA.md",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/SqlServerMigrationIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "compose.yaml",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/pom.xml",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/migration/LegacyDocumentBackfillRunner.java",
+      "line": 34,
+      "anchor": "public class LegacyDocumentBackfillRunner"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V8__remove_document_data_tables_from_sql.sql",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/audit/document/AuditEvent.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/document/TicketCommentDocument.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/notification/document/NotificationDocument.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/audit/event/AfterCommitAuditEventListener.java",
+      "line": 22,
+      "anchor": "@TransactionalEventListener"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/common/persistence/SqlReferenceValidator.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/MongoPersistenceIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/LegacyDocumentBackfillIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/AppUser.java",
+      "line": 33,
+      "anchor": "public class AppUser"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/Role.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/UserRole.java",
+      "line": 19,
+      "anchor": "public class UserRole"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/UserRoleId.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/repository/AppUserRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/repository/RoleRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/user/repository/UserPersistenceRepositoryTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/UserPersistenceSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/RoleCode.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/UserStatus.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketStatus.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/common/domain/Priority.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/shared/constants/roles.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/constants/ticketStatuses.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/common/domain/CanonicalDomainVocabularyTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/test/domainVocabulary.test.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketWorkflowContract.java",
+      "line": 81,
+      "anchor": "public static TicketTransitionDefinition requireTransition"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketTransitionDefinition.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketActorScope.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketAction.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketStatus.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/shared/config/demoScope.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/service/TicketWorkflowContractTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/TechnicianProfile.java",
+      "line": 26,
+      "anchor": "public class TechnicianProfile"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/Skill.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/TechnicianSkill.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/entity/TechnicianServiceArea.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/repository/TechnicianProfileRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/user/repository/TechnicianPersistenceRepositoryTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/TechnicianPersistenceSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/Ticket.java",
+      "line": 55,
+      "anchor": "public class Ticket"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/ResolutionOutcome.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/repository/TicketRepositoryTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/TicketPersistenceSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketFieldValue.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketStatusHistory.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketAttachment.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketFieldValueRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketStatusHistoryRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketAttachmentRepository.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/repository/TicketSupportingPersistenceRepositoryTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/TicketSupportingPersistenceSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketListPage.jsx",
+      "line": 27,
+      "anchor": "export function TicketListPage"
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketDetailPage.jsx",
+      "line": 28,
+      "anchor": "export function TicketDetailPage"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/controller/TicketController.java",
+      "line": 77,
+      "anchor": "public PageResponse<TicketSummaryResponse> list"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketReadService.java",
+      "line": 64,
+      "anchor": "public PageResponse<TicketSummaryResponse> list"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketSpecifications.java",
+      "line": 17,
+      "anchor": "public static Specification<Ticket> visibleTo"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketResponseMapper.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/dto/request/TicketListQuery.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTickets.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/api/ticketApi.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/testsupport/TicketReadApiContract.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketListPage.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketActionPanel.jsx",
+      "line": 18,
+      "anchor": "export function TicketActionPanel"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketAssignmentDialog.jsx",
+      "line": 25,
+      "anchor": "export function TicketAssignmentDialog"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketActionModal.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTicketWorkflow.js",
+      "line": 11,
+      "anchor": "export function useTicketWorkflow"
+    },
+    {
+      "path": "frontend/src/features/tickets/constants/ticketWorkflow.js",
+      "line": 101,
+      "anchor": "export function availableTicketActions"
+    },
+    {
+      "path": "frontend/src/features/tickets/api/ticketApi.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketWorkflow.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/MyWorkPage.jsx",
+      "line": 32,
+      "anchor": "export function MyWorkPage"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TechnicianWorkPanel.jsx",
+      "line": 351,
+      "anchor": "export function TechnicianWorkPanel"
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTechnicianWork.js",
+      "line": 8,
+      "anchor": "export function useAssignedTickets"
+    },
+    {
+      "path": "frontend/src/features/tickets/schemas/technicianWorkValidation.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/constants/technicianWork.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/app/router.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TechnicianWorkPage.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketDetailPage.jsx",
+      "line": 28,
+      "anchor": "export function TicketDetailPage"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketDetailSections.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketAttachmentPreview.jsx",
+      "line": 10,
+      "anchor": "export function TicketAttachmentPreview"
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketComments.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketFeedback.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTicketCollaboration.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/shared/config/demoScope.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketCollaboration.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketDemoScope.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/controller/TicketController.java",
+      "line": 141,
+      "anchor": "public TicketActionResultResponse review"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketAssignmentService.java",
+      "line": 127,
+      "anchor": "public TicketActionResultResponse review"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/dto/request/ReviewTicketRequest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/dto/request/AssignTicketRequest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/repository/TicketRepository.java",
+      "line": 22,
+      "anchor": "findByIdForUpdate"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/user/repository/TechnicianProfileRepository.java",
+      "line": 46,
+      "anchor": "findByIdForUpdate"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketAssignment.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TechnicianEligibilityService.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/testsupport/TicketActionApiContract.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/TicketActionSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/controller/TicketController.java",
+      "line": 296,
+      "anchor": "public TicketActionResultResponse close"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketAssignmentService.java",
+      "line": 412,
+      "anchor": "public TicketActionResultResponse close"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/dto/request/CloseTicketRequest.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TicketActionPanel.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTicketWorkflow.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/shared/config/demoScope.js",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/testsupport/TechnicianWorkApiContract.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/pages/TicketDemoScope.test.jsx",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "frontend/src/features/tickets/components/TechnicianWorkPanel.jsx",
+      "line": 258,
+      "anchor": "function WorkImages"
+    },
+    {
+      "path": "frontend/src/features/tickets/hooks/useTechnicianWork.js",
+      "line": 40,
+      "anchor": "export function useTechnicianMutation"
+    },
+    {
+      "path": "frontend/src/features/tickets/api/ticketApi.js",
+      "line": 132,
+      "anchor": "async uploadWorkResult"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/controller/TicketAttachmentUploadController.java",
+      "line": 55,
+      "anchor": "public List<AttachmentMetadata> upload"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/controller/TicketMultipartReader.java",
+      "line": 74,
+      "anchor": "readWorkResult"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/service/TicketAttachmentUploadService.java",
+      "line": 64,
+      "anchor": "public List<AttachmentMetadata> upload"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/common/storage/FileStorageValidator.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/common/storage/FileStorageTransactionCleanup.java",
+      "line": 20,
+      "anchor": "public void deleteOnRollback"
+    },
+    {
+      "path": "backend/src/main/java/com/nexora/ticket/entity/TicketAttachment.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/ticket/testsupport/TicketAttachmentUploadApiContract.java",
+      "line": 1,
+      "anchor": null
+    },
+    {
+      "path": "backend/src/test/java/com/nexora/TicketAttachmentUploadSqlServerIntegrationTest.java",
+      "line": 1,
+      "anchor": null
+    }
+  ]
+}

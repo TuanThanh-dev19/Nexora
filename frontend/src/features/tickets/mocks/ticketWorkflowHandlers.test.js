@@ -84,24 +84,30 @@ describe('ticket workflow mock HTTP contract', () => {
       ),
     ).toHaveLength(0)
   })
-  it('reassigns IN_PROGRESS to ASSIGNED and releases the old technician capacity', async () => {
+  it('rejects IN_PROGRESS reassignment without changing assignment or capacity', async () => {
     const original = ticket(13).currentAssignment
     expect(original.acceptedAt).not.toBeNull()
-    await ticketApi.reassign(13, {
-      version: ticket(13).version,
-      technicianId: 21,
-      reason: 'Đổi người xử lý',
-    })
-    expect(ticket(13).status).toBe('ASSIGNED')
-    expect(ticket(13).currentAssignment.acceptedAt).toBeNull()
-    expect(original.endedAt).not.toBeNull()
+    await expectFailure(
+      ticketApi.reassign(13, {
+        version: ticket(13).version,
+        technicianId: 21,
+        reason: 'Đổi người xử lý',
+      }),
+      422,
+    )
+    expect(ticket(13).status).toBe('IN_PROGRESS')
+    expect(ticket(13).currentAssignment).toBe(original)
+    expect(original.endedAt).toBeNull()
     const candidates = await ticketApi.eligibleTechnicians(13, {
       page: 0,
       size: 20,
     })
     expect(
       candidates.content.find((item) => item.technicianId === 24),
-    ).toMatchObject({ activeTicketCount: 0, eligibilityReasons: [] })
+    ).toMatchObject({
+      activeTicketCount: 1,
+      eligibilityReasons: [{ code: 'CAPACITY_REACHED', overridable: false }],
+    })
   })
   it.each([
     [10, 'CANCEL_BEFORE_ASSIGNMENT'],

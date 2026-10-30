@@ -1,0 +1,447 @@
+{
+  "owners": [
+    "Phan Tuấn Thành",
+    "Trần Phan Nhật Huy",
+    "Phan Tuấn Thành",
+    "Tô Phi Oanh",
+    "Phan Tuấn Thành",
+    "Phan Tuấn Thành",
+    "Lâm Thoại Thanh",
+    "Tô Phi Oanh",
+    "Trần Quốc Thái",
+    "Trần Quốc Thái",
+    "Tô Phi Oanh",
+    "Tô Phi Oanh",
+    "Trần Phan Nhật Huy",
+    "Trần Phan Nhật Huy",
+    "Trần Phan Nhật Huy",
+    "Lâm Thoại Thanh",
+    "Lâm Thoại Thanh",
+    "Lâm Thoại Thanh",
+    "Phan Tuấn Thành",
+    "Phan Tuấn Thành",
+    "Phan Tuấn Thành",
+    "Tô Phi Oanh",
+    "Tô Phi Oanh",
+    "Tô Phi Oanh",
+    "Trần Quốc Thái",
+    "Trần Quốc Thái",
+    "Trần Quốc Thái",
+    "Trần Phan Nhật Huy",
+    "Trần Phan Nhật Huy",
+    "Lâm Thoại Thanh",
+    "Tô Phi Oanh",
+    "Tô Phi Oanh",
+    "Tô Phi Oanh",
+    "Lâm Thoại Thanh",
+    "Phan Tuấn Thành",
+    "Phan Tuấn Thành",
+    "Phan Tuấn Thành",
+    "Trần Quốc Thái",
+    "Trần Quốc Thái"
+  ],
+  "ownerChanges": [
+    {
+      "stt": 2,
+      "row": 3,
+      "issue": 10,
+      "before": "Phan Tuấn Thành",
+      "after": "Trần Phan Nhật Huy"
+    },
+    {
+      "stt": 4,
+      "row": 5,
+      "issue": 12,
+      "before": "Phan Tuấn Thành",
+      "after": "Tô Phi Oanh"
+    },
+    {
+      "stt": 8,
+      "row": 9,
+      "issue": 16,
+      "before": "Lâm Thoại Thanh",
+      "after": "Tô Phi Oanh"
+    },
+    {
+      "stt": 34,
+      "row": 35,
+      "issue": 57,
+      "before": "Phan Tuấn Thành",
+      "after": "Lâm Thoại Thanh"
+    }
+  ],
+  "sourceNotes": [
+    "https://github.com/TuanThanh-dev19/Nexora/issues/9",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/10",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/11",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 12 (tách usecase, không phải issue độc lập).",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/13",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/14",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/15",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 11 (tách usecase, không phải issue độc lập).",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/17",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/18",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/16 — Cùng issue với STT 8 (tách usecase, không phải issue độc lập).",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/12 — Cùng issue với STT 4 (tách usecase, không phải issue độc lập).",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/27",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/28",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/29",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/30",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/31",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/32",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/33",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/34",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/35",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/36",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/37",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/38",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/39",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/40",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/41",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/51",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/52",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/53",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/54",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/55",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/56",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/57",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/58",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/59",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/60",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/61",
+    "https://github.com/TuanThanh-dev19/Nexora/issues/62"
+  ],
+  "usecases": [
+    "Login; Manage Users; Manage User Roles",
+    "Login; Logout",
+    "Shared Foundation and Integration",
+    "Manage Dynamic Form Drafts; View Form Versions",
+    "Review Ticket; Reject Ticket; Cancel Ticket; Assign Technician; Reassign Technician; Unassign Technician; Start Ticket Work; Resolve Ticket; Close Ticket; Reopen Ticket",
+    "View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician",
+    "Manage Locations; Manage Equipment Types",
+    "Manage Assets; Change Asset Status",
+    "Shared Foundation and Integration",
+    "Shared Foundation and Integration",
+    "View Asset Status History",
+    "Archive Form Version; Submit Ticket",
+    "Login",
+    "Login; Logout",
+    "Manage Users",
+    "Submit Ticket; Manage Dynamic Form Drafts",
+    "Manage Incident Categories",
+    "View Form Versions",
+    "Search and Filter Tickets; View Ticket Details",
+    "View Ticket Details; View and Download Ticket Attachments",
+    "Search and Filter Tickets; View Ticket Details",
+    "Manage Locations; Manage Equipment Types",
+    "Manage Assets; Change Asset Status",
+    "Submit Ticket",
+    "Submit Ticket",
+    "Submit Ticket; Upload Work Result Images; View and Download Ticket Attachments",
+    "View Ticket Dashboard",
+    "Login; Logout; Manage Users; Manage User Roles",
+    "View Technician Profiles; Configure Technician Availability and Capacity; Configure Technician Skills; Configure Technician Service Areas; Assign Technician",
+    "Manage Dynamic Form Drafts",
+    "Manage Locations; Manage Equipment Types",
+    "View Asset Status History",
+    "Submit Ticket",
+    "Submit Ticket",
+    "Review Ticket",
+    "View Assigned Work; Start Ticket Work; Record Work Log; Upload Work Result Images; Resolve Ticket",
+    "View Ticket Details",
+    "View Ticket Dashboard",
+    "Shared Foundation and Integration",
+    "Submit Ticket",
+    "Submit Ticket",
+    "View and Download Ticket Attachments",
+    "View Technician Profiles",
+    "Assign Technician",
+    "Review Ticket; Assign Technician",
+    "View Assigned Work; Start Ticket Work",
+    "Record Work Log; Resolve Ticket",
+    "Upload Work Result Images",
+    "Close Ticket",
+    "View Ticket Dashboard; Monitor Ticket SLA",
+    "View Ticket Details; Add Ticket Comment",
+    "Submit Ticket Feedback; View Ticket Feedback"
+  ],
+  "configRows": [
+    [
+      "Chức năng",
+      "Phụ trách hiện tại",
+      "Hạn kế hoạch"
+    ],
+    [
+      "Search and Filter Tickets",
+      "Phan Tuấn Thành",
+      "09/10/2026"
+    ],
+    [
+      "View Ticket Details",
+      "Phan Tuấn Thành",
+      "15/10/2026"
+    ],
+    [
+      "Login",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Logout",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage Users",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage User Roles",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Manage Locations",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Equipment Types",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Assets",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Change Asset Status",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "View Asset Status History",
+      "Tô Phi Oanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Incident Categories",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "View Form Versions",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Manage Dynamic Form Drafts",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Preview Dynamic Forms",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Publish Form Version",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "Archive Form Version",
+      "Lâm Thoại Thanh",
+      "15/10/2026"
+    ],
+    [
+      "View Technician Profiles",
+      "Trần Phan Nhật Huy",
+      "18/10/2026"
+    ],
+    [
+      "Configure Technician Availability and Capacity",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Configure Technician Skills",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Configure Technician Service Areas",
+      "Trần Phan Nhật Huy",
+      "15/10/2026"
+    ],
+    [
+      "Submit Ticket",
+      "Lâm Thoại Thanh",
+      "18/10/2026"
+    ],
+    [
+      "View and Download Ticket Attachments",
+      "Trần Quốc Thái",
+      "18/10/2026"
+    ],
+    [
+      "Review Ticket",
+      "Phan Tuấn Thành",
+      "18/10/2026"
+    ],
+    [
+      "Reject Ticket",
+      "",
+      ""
+    ],
+    [
+      "Cancel Ticket",
+      "",
+      ""
+    ],
+    [
+      "Add Ticket Comment",
+      "",
+      ""
+    ],
+    [
+      "Edit Own Ticket Comment",
+      "",
+      ""
+    ],
+    [
+      "Monitor Ticket SLA",
+      "Trần Quốc Thái",
+      "23/10/2026"
+    ],
+    [
+      "Assign Technician",
+      "Phan Tuấn Thành",
+      "18/10/2026"
+    ],
+    [
+      "Reassign Technician",
+      "",
+      ""
+    ],
+    [
+      "Unassign Technician",
+      "",
+      ""
+    ],
+    [
+      "View Assigned Work",
+      "Tô Phi Oanh",
+      "20/10/2026"
+    ],
+    [
+      "Start Ticket Work",
+      "Tô Phi Oanh",
+      "20/10/2026"
+    ],
+    [
+      "Record Work Log",
+      "Tô Phi Oanh",
+      "22/10/2026"
+    ],
+    [
+      "Upload Work Result Images",
+      "Phan Tuấn Thành",
+      ""
+    ],
+    [
+      "Resolve Ticket",
+      "Tô Phi Oanh",
+      "22/10/2026"
+    ],
+    [
+      "Close Ticket",
+      "Phan Tuấn Thành",
+      "23/10/2026"
+    ],
+    [
+      "Reopen Ticket",
+      "",
+      ""
+    ],
+    [
+      "Submit Ticket Feedback",
+      "",
+      ""
+    ],
+    [
+      "View Ticket Feedback",
+      "",
+      ""
+    ],
+    [
+      "View Ticket Dashboard",
+      "Trần Quốc Thái",
+      "23/10/2026"
+    ],
+    [
+      "Shared Foundation and Integration",
+      "Trần Quốc Thái",
+      "15/10/2026"
+    ]
+  ],
+  "guideRows": [
+    [
+      "Chức năng liên quan",
+      "Select — List",
+      "Tên usecase chuẩn tại Config!A2:A44. Mỗi tên một dòng; backlog nhiều usecase phân tách bằng '; '."
+    ],
+    [
+      "Việc cần làm",
+      "Title — Text",
+      "Tên issue gốc hoặc mô tả đúng scope của issue. Không xem usecase là một issue độc lập."
+    ],
+    [
+      "Trạng thái",
+      "Status — List",
+      "Done khi issue GitHub closed/completed. To Do, In Progress, Blocked theo tiến độ đã xác nhận. Việc hoãn ghi rõ trong Ghi chú."
+    ],
+    [
+      "Chủ sở hữu",
+      "Person — List",
+      "Dùng GitHub assignee và ánh xạ Member 1–5 do nhóm cung cấp; không thay assignee bằng tác giả commit/PR."
+    ],
+    [
+      "Ngày đến hạn",
+      "Date",
+      "Hạn kế hoạch trong nội dung issue, không phải ngày đóng/merge. Thiếu hạn thì để trống. Hiển thị DD/MM/YYYY."
+    ],
+    [
+      "Ghi chú",
+      "Text",
+      "URL issue GitHub, scope hoãn và quan hệ giữa các dòng cùng issue. Đối chiếu ngày 26/10/2026."
+    ],
+    [
+      "Số đợt phát triển",
+      "Number — nguyên dương",
+      "Sprint theo phạm vi nhóm đã chốt. Công việc hoãn để trống Sprint, không tính vào Sprint 4."
+    ],
+    [
+      "Tên nhánh",
+      "Text",
+      "Dùng tên branch thực tế đã kiểm tra trên GitHub/Git hoặc head branch của PR. Không giữ placeholder <issue-number>."
+    ],
+    [
+      "Cập nhật dropdown",
+      "Named Range",
+      "Nguồn danh mục: usecase ở cột A, trạng thái E2:E5, thành viên G2:G6. Giữ tên chuẩn và không chèn dòng trống giữa danh sách."
+    ],
+    [
+      "Thêm công việc",
+      "Google Sheets Table",
+      "Thêm công việc trong ProductBacklogTable, giữ dropdown và định dạng. Mỗi dòng phải có issue tham chiếu hoặc ghi rõ phần việc được tách."
+    ],
+    [
+      "Đối chiếu nguồn",
+      "Import Audit",
+      "Backlog cột I lưu nguồn GitHub. ConfigUsecase B/C theo issue triển khai chính hiện tại; không dùng để ghi đè các issue nền tảng. Usecase hoãn để trống B/C."
+    ]
+  ]
+}

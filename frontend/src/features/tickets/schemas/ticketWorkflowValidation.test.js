@@ -22,7 +22,7 @@ describe('manager workflow presentation', () => {
     ['UNDER_REVIEW', ['reject', 'cancel', 'assign']],
     ['REOPENED', ['cancel', 'assign']],
     ['ASSIGNED', ['cancel', 'reassign', 'unassign']],
-    ['IN_PROGRESS', ['cancel', 'reassign', 'unassign']],
+    ['IN_PROGRESS', ['cancel', 'unassign']],
     ['RESOLVED', ['reopen']],
     ['CLOSED', []],
     ['REJECTED', []],
@@ -32,7 +32,12 @@ describe('manager workflow presentation', () => {
     'exposes only the issue actions from %s for Manager/Admin',
     (status, actions) => {
       for (const roles of [['MANAGER'], ['ADMIN'], ['REQUESTER', 'MANAGER']])
-        expect(availableTicketActions({ status }, { roles })).toEqual(actions)
+        expect(
+          availableTicketActions(
+            { status, currentAssignment: { technician: { technicianId: 21 } } },
+            { roles },
+          ),
+        ).toEqual(actions)
     },
   )
   it.each([['REQUESTER'], ['TECHNICIAN'], ['REQUESTER', 'TECHNICIAN'], []])(
@@ -67,6 +72,30 @@ describe('manager workflow presentation', () => {
 })
 
 describe('workflow form validation', () => {
+  it('allows 1000 trimmed characters only for reassignment', () => {
+    const payload = {
+      version: 2,
+      technicianId: 21,
+      reason: `  ${'a'.repeat(1000)}  `,
+    }
+    expect(validateWorkflowPayload('reassign', payload, candidate)).toEqual({})
+    expect(
+      validateWorkflowPayload(
+        'reassign',
+        { ...payload, reason: 'a'.repeat(1001) },
+        candidate,
+      ),
+    ).toHaveProperty('reason')
+    expect(validateWorkflowPayload('unassign', payload)).toHaveProperty(
+      'reason',
+    )
+    expect(
+      availableTicketActions(
+        { status: 'ASSIGNED', currentAssignment: null },
+        { roles: ['MANAGER'] },
+      ),
+    ).not.toContain('reassign')
+  })
   it('accepts version zero and review without a reason', () => {
     expect(validateWorkflowPayload('review', { version: 0 })).toEqual({})
   })

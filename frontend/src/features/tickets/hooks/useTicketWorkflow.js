@@ -17,8 +17,9 @@ export function useTicketWorkflow() {
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({
-        queryKey: ['tickets', ...ticketViewerKey(user)],
+        queryKey: ['tickets'],
       }),
+      client.invalidateQueries({ queryKey: ['technicians'] }),
       client.invalidateQueries({ queryKey: ['dashboard'] }),
     ])
   const mutation = useMutation({
