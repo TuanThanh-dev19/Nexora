@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../../features/auth/context/useAuth'
 import { navigationForRoles } from '../constants/navigation'
 import { SessionCheckingSpinner } from '../components/SessionCheckingSpinner'
+import { NotificationBell } from '../../features/notifications/components/NotificationBell'
 
 const NAV_ICONS = { grid: FiGrid, tag: FiTag, plus: FiPlus, tool: FiTool }
 
@@ -101,6 +102,7 @@ export function AppLayout() {
               <SessionCheckingSpinner />
             ) : user ? (
               <div className="account-menu">
+                <NotificationBell />
                 <span className="account-avatar" aria-hidden="true">
                   {name.trim().charAt(0).toUpperCase()}
                 </span>
