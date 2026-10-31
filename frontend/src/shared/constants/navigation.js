@@ -25,8 +25,8 @@ export const NAVIGATION_ITEMS = [
   {
     path: '/technicians/me',
     label: 'Hồ sơ kỹ thuật của tôi',
+    icon: 'user',
     roles: [ROLE_CODES.TECHNICIAN],
-    group: 'management',
   },
   {
     path: '/technicians',
@@ -77,4 +77,31 @@ export function navigationForRoles(roles = []) {
   return NAVIGATION_ITEMS.filter((item) =>
     item.roles.some((role) => roles.includes(role)),
   )
+}
+
+/**
+ * Keeps a post-login return URL from sending a user into a route their role
+ * cannot open. The longest matching navigation path wins so `/tickets/new`
+ * is checked against its requester-only entry instead of `/tickets`.
+ */
+export function safeRedirectForRoles(redirect, roles = []) {
+  if (typeof redirect !== 'string' || !redirect.startsWith('/'))
+    return '/dashboard'
+
+  const path = redirect.split(/[?#]/, 1)[0]
+  const item = [...NAVIGATION_ITEMS]
+    .sort((a, b) => b.path.length - a.path.length)
+    .find(
+      (candidate) =>
+        path === candidate.path || path.startsWith(`${candidate.path}/`),
+    )
+
+  // `/administration` is a redirect-only parent route, so it has no direct
+  // navigation item but remains ADMIN-only.
+  if (path === '/administration' || path.startsWith('/administration/')) {
+    return roles.includes(ROLE_CODES.ADMIN) ? redirect : '/dashboard'
+  }
+
+  if (!item || item.roles.some((role) => roles.includes(role))) return redirect
+  return '/dashboard'
 }

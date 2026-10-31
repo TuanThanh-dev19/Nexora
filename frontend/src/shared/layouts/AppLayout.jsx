@@ -8,6 +8,7 @@ import {
   FiPlus,
   FiTag,
   FiTool,
+  FiUser,
   FiUsers,
 } from 'react-icons/fi'
 import { useAuth } from '../../features/auth/context/useAuth'
@@ -15,7 +16,13 @@ import { navigationForRoles } from '../constants/navigation'
 import { SessionCheckingSpinner } from '../components/SessionCheckingSpinner'
 import { NotificationBell } from '../../features/notifications/components/NotificationBell'
 
-const NAV_ICONS = { grid: FiGrid, tag: FiTag, plus: FiPlus, tool: FiTool }
+const NAV_ICONS = {
+  grid: FiGrid,
+  tag: FiTag,
+  plus: FiPlus,
+  tool: FiTool,
+  user: FiUser,
+}
 
 export function AppLayout() {
   const [expanded, setExpanded] = useState(false)

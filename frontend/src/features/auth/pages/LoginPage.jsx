@@ -5,6 +5,7 @@ import { FiClipboard, FiShield } from 'react-icons/fi'
 import { loginApi } from '../api/authApi'
 import { LoginForm } from '../components/LoginForm'
 import { useAuth } from '../context/useAuth'
+import { safeRedirectForRoles } from '../../../shared/constants/navigation'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -18,7 +19,10 @@ export function LoginPage() {
     try {
       const data = await loginApi(normalizedEmail, values.password)
       login({ accessToken: data.accessToken, user: data.user })
-      const redirect = location.state?.from ?? '/dashboard'
+      const redirect = safeRedirectForRoles(
+        location.state?.from,
+        data.user?.roles ?? [],
+      )
       navigate(redirect, { replace: true })
     } catch (err) {
       if (err?.response?.status === 401) {

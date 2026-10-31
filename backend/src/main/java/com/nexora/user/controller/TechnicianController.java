@@ -103,6 +103,15 @@ public class TechnicianController {
         return technicianService.listTechnicians(jwt, query);
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @Operation(summary = "Get the authenticated technician profile")
+    public TechnicianProfileResponse getCurrent(
+            @AuthenticationPrincipal Jwt jwt) {
+        Long currentUserId = jwt != null ? Long.valueOf(jwt.getSubject()) : null;
+        return technicianService.getProfile(currentUserId, currentUserId, false);
+    }
+
     @GetMapping("/{technicianId}")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN', 'TECHNICIAN')")
     @Operation(summary = "Get technician profile details")
